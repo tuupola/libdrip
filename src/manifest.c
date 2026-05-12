@@ -58,3 +58,19 @@ int drip_manifest_set_previous_manifest_hash(drip_manifest_t *manifest, const dr
     memcpy(manifest->previous_manifest_hash, hash, sizeof(drip_hash_t));
     return DRIP_SUCCESS;
 }
+
+int drip_manifest_get_current_manifest_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
+    if (manifest == NULL || hash == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    memcpy(hash, manifest->current_manifest_hash, sizeof(drip_hash_t));
+    return DRIP_SUCCESS;
+}
+
+int drip_manifest_set_current_manifest_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
+    if (manifest == NULL || hash == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    memcpy(manifest->current_manifest_hash, hash, sizeof(drip_hash_t));
+    return DRIP_SUCCESS;
+}
