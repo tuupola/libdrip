@@ -42,3 +42,19 @@ int drip_manifest_set_vna(drip_manifest_t *manifest, uint32_t vna) {
     manifest->vna = vna;
     return DRIP_SUCCESS;
 }
+
+int drip_manifest_get_previous_manifest_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
+    if (manifest == NULL || hash == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    memcpy(hash, manifest->previous_manifest_hash, sizeof(drip_hash_t));
+    return DRIP_SUCCESS;
+}
+
+int drip_manifest_set_previous_manifest_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
+    if (manifest == NULL || hash == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    memcpy(manifest->previous_manifest_hash, hash, sizeof(drip_hash_t));
+    return DRIP_SUCCESS;
+}

@@ -27,9 +27,9 @@ typedef struct drip_manifest {
     uint32_t vnb;
     uint32_t vna;
 
-    drip_hash_t previous_manifest;
-    drip_hash_t current_manifest;
-    drip_hash_t drip_link;
+    drip_hash_t previous_manifest_hash;
+    drip_hash_t current_manifest_hash;
+    drip_hash_t drip_link_hash;
 
     uint8_t astm_hash_count;
     drip_hash_t astm_hashes[DRIP_MANIFEST_ASTM_MAX];
@@ -45,5 +45,8 @@ int drip_manifest_set_vnb(drip_manifest_t *manifest, uint32_t vnb);
 
 uint32_t drip_manifest_get_vna(const drip_manifest_t *manifest);
 int drip_manifest_set_vna(drip_manifest_t *manifest, uint32_t vna);
+
+int drip_manifest_get_previous_manifest_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
+int drip_manifest_set_previous_manifest_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 
 #endif
