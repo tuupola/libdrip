@@ -27,3 +27,18 @@ int drip_manifest_set_vnb(drip_manifest_t *manifest, uint32_t vnb) {
     manifest->vnb = vnb;
     return DRIP_SUCCESS;
 }
+
+uint32_t drip_manifest_get_vna(const drip_manifest_t *manifest) {
+    if (manifest == NULL) {
+        return 0;
+    }
+    return manifest->vna;
+}
+
+int drip_manifest_set_vna(drip_manifest_t *manifest, uint32_t vna) {
+    if (manifest == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    manifest->vna = vna;
+    return DRIP_SUCCESS;
+}

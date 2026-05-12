@@ -43,4 +43,7 @@ int drip_manifest_init(drip_manifest_t *manifest);
 uint32_t drip_manifest_get_vnb(const drip_manifest_t *manifest);
 int drip_manifest_set_vnb(drip_manifest_t *manifest, uint32_t vnb);
 
+uint32_t drip_manifest_get_vna(const drip_manifest_t *manifest);
+int drip_manifest_set_vna(drip_manifest_t *manifest, uint32_t vna);
+
 #endif
