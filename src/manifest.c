@@ -122,3 +122,15 @@ int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_sig_t *sig
     memcpy(manifest->signature, signature, sizeof(drip_sig_t));
     return DRIP_SUCCESS;
 }
+
+int drip_manifest_add_message_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
+    if (manifest == NULL || hash == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    if (manifest->message_hash_count >= DRIP_MANIFEST_MESSAGE_MAX) {
+        return DRIP_ERROR_ARRAY_FULL;
+    }
+    memcpy(manifest->message_hash_array[manifest->message_hash_count], hash, sizeof(drip_hash_t));
+    manifest->message_hash_count++;
+    return DRIP_SUCCESS;
+}

@@ -8,13 +8,13 @@
 #define DRIP_DET_LEN 16
 #define DRIP_SIGNATURE_LEN 64
 #define DRIP_HASH_LEN 8
-#define DRIP_MANIFEST_ASTM_MAX 11
+#define DRIP_MANIFEST_MESSAGE_MAX 11
 #define DRIP_AUTH_DATA_MAX 201
 
 typedef enum {
     DRIP_SUCCESS = 0,
     DRIP_ERROR_NULL_POINTER = -1,
-    DRIP_ERROR_BUFFER_TOO_SMALL = -2,
+    DRIP_ERROR_ARRAY_FULL = -2,
 } drip_status_t;
 
 typedef uint8_t drip_det_t[DRIP_DET_LEN];
@@ -31,8 +31,8 @@ typedef struct drip_manifest {
     drip_hash_t current_manifest_hash;
     drip_hash_t drip_link_hash;
 
-    uint8_t astm_hash_count;
-    drip_hash_t astm_hashes[DRIP_MANIFEST_ASTM_MAX];
+    uint8_t message_hash_count;
+    drip_hash_t message_hash_array[DRIP_MANIFEST_MESSAGE_MAX];
 
     drip_det_t det;
     drip_sig_t signature;
@@ -60,5 +60,7 @@ int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det);
 
 int drip_manifest_get_signature(const drip_manifest_t *manifest, drip_sig_t *signature);
 int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_sig_t *signature);
+
+int drip_manifest_add_message_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 
 #endif

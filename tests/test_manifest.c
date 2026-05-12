@@ -285,6 +285,54 @@ TEST test_set_and_get_signature(void) {
     PASS();
 }
 
+TEST test_add_message_hash_null_ptr_manifest(void) {
+    drip_hash_t hash = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+    int rc = drip_manifest_add_message_hash(NULL, &hash);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_add_message_hash_null_ptr_hash(void) {
+    drip_manifest_t message;
+    drip_manifest_init(&message);
+    int rc = drip_manifest_add_message_hash(&message, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_add_message_hash_array_full(void) {
+    drip_manifest_t message;
+    drip_hash_t hash = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+    int rc;
+
+    drip_manifest_init(&message);
+    for (int i = 0; i < DRIP_MANIFEST_MESSAGE_MAX; i++) {
+        rc = drip_manifest_add_message_hash(&message, &hash);
+        ASSERT_EQ(DRIP_SUCCESS, rc);
+    }
+    rc = drip_manifest_add_message_hash(&message, &hash);
+    ASSERT_EQ(DRIP_ERROR_ARRAY_FULL, rc);
+    PASS();
+}
+
+TEST test_add_message_hash_success(void) {
+    drip_manifest_t message;
+    drip_hash_t hash1 = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+    drip_hash_t hash2 = {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
+
+    drip_manifest_init(&message);
+    int rc = drip_manifest_add_message_hash(&message, &hash1);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(1, message.message_hash_count);
+    ASSERT_MEM_EQ(hash1, message.message_hash_array[0], sizeof(drip_hash_t));
+
+    rc = drip_manifest_add_message_hash(&message, &hash2);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(2, message.message_hash_count);
+    ASSERT_MEM_EQ(hash2, message.message_hash_array[1], sizeof(drip_hash_t));
+    PASS();
+}
+
 SUITE(manifest_suite) {
     RUN_TEST(test_init_null_pointer);
     RUN_TEST(test_init);
@@ -319,4 +367,8 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_signature_null_ptr_manifest);
     RUN_TEST(test_set_signature_null_ptr_sig);
     RUN_TEST(test_set_and_get_signature);
+    RUN_TEST(test_add_message_hash_null_ptr_manifest);
+    RUN_TEST(test_add_message_hash_null_ptr_hash);
+    RUN_TEST(test_add_message_hash_array_full);
+    RUN_TEST(test_add_message_hash_success);
 }
