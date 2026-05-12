@@ -197,6 +197,50 @@ TEST test_set_and_get_drip_link_hash(void) {
     PASS();
 }
 
+TEST test_get_det_null_ptr_manifest(void) {
+    drip_det_t det = {0};
+    int rc = drip_manifest_get_det(NULL, &det);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_get_det_null_ptr_det(void) {
+    drip_manifest_t message;
+    drip_manifest_init(&message);
+    int rc = drip_manifest_get_det(&message, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_set_det_null_ptr_manifest(void) {
+    drip_det_t det = {0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40};
+    int rc = drip_manifest_set_det(NULL, &det);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_set_det_null_ptr_det(void) {
+    drip_manifest_t message;
+    drip_manifest_init(&message);
+    int rc = drip_manifest_set_det(&message, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_set_and_get_det(void) {
+    drip_manifest_t message;
+    drip_det_t det = {0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40};
+    drip_det_t result;
+
+    drip_manifest_init(&message);
+    int rc = drip_manifest_set_det(&message, det);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    rc = drip_manifest_get_det(&message, result);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_MEM_EQ(det, result, sizeof(drip_det_t));
+    PASS();
+}
+
 SUITE(manifest_suite) {
     RUN_TEST(test_init_null_pointer);
     RUN_TEST(test_init);
@@ -221,4 +265,9 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_drip_link_hash_null_ptr_manifest);
     RUN_TEST(test_set_drip_link_hash_null_ptr_hash);
     RUN_TEST(test_set_and_get_drip_link_hash);
+    RUN_TEST(test_get_det_null_ptr_manifest);
+    RUN_TEST(test_get_det_null_ptr_det);
+    RUN_TEST(test_set_det_null_ptr_manifest);
+    RUN_TEST(test_set_det_null_ptr_det);
+    RUN_TEST(test_set_and_get_det);
 }

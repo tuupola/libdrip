@@ -90,3 +90,19 @@ int drip_manifest_set_drip_link_hash(drip_manifest_t *manifest, const drip_hash_
     memcpy(manifest->drip_link_hash, hash, sizeof(drip_hash_t));
     return DRIP_SUCCESS;
 }
+
+int drip_manifest_get_det(const drip_manifest_t *manifest, drip_det_t *det) {
+    if (manifest == NULL || det == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    memcpy(det, manifest->det, sizeof(drip_det_t));
+    return DRIP_SUCCESS;
+}
+
+int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det) {
+    if (manifest == NULL || det == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    memcpy(manifest->det, det, sizeof(drip_det_t));
+    return DRIP_SUCCESS;
+}
