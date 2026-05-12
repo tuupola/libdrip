@@ -58,4 +58,7 @@ int drip_manifest_set_drip_link_hash(drip_manifest_t *manifest, const drip_hash_
 int drip_manifest_get_det(const drip_manifest_t *manifest, drip_det_t *det);
 int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det);
 
+int drip_manifest_get_signature(const drip_manifest_t *manifest, drip_sig_t *signature);
+int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_sig_t *signature);
+
 #endif

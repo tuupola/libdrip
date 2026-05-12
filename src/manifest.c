@@ -106,3 +106,19 @@ int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det) {
     memcpy(manifest->det, det, sizeof(drip_det_t));
     return DRIP_SUCCESS;
 }
+
+int drip_manifest_get_signature(const drip_manifest_t *manifest, drip_sig_t *signature) {
+    if (manifest == NULL || signature == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    memcpy(signature, manifest->signature, sizeof(drip_sig_t));
+    return DRIP_SUCCESS;
+}
+
+int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_sig_t *signature) {
+    if (manifest == NULL || signature == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    memcpy(manifest->signature, signature, sizeof(drip_sig_t));
+    return DRIP_SUCCESS;
+}
