@@ -153,6 +153,50 @@ TEST test_set_and_get_current_manifest_hash(void) {
     PASS();
 }
 
+TEST test_get_drip_link_hash_null_ptr_manifest(void) {
+    drip_hash_t hash = {0};
+    int rc = drip_manifest_get_drip_link_hash(NULL, &hash);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_get_drip_link_hash_null_ptr_hash(void) {
+    drip_manifest_t message;
+    drip_manifest_init(&message);
+    int rc = drip_manifest_get_drip_link_hash(&message, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_set_drip_link_hash_null_ptr_manifest(void) {
+    drip_hash_t hash = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28};
+    int rc = drip_manifest_set_drip_link_hash(NULL, &hash);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_set_drip_link_hash_null_ptr_hash(void) {
+    drip_manifest_t message;
+    drip_manifest_init(&message);
+    int rc = drip_manifest_set_drip_link_hash(&message, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_set_and_get_drip_link_hash(void) {
+    drip_manifest_t message;
+    drip_hash_t hash = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28};
+    drip_hash_t result;
+
+    drip_manifest_init(&message);
+    int rc = drip_manifest_set_drip_link_hash(&message, hash);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    rc = drip_manifest_get_drip_link_hash(&message, result);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_MEM_EQ(hash, result, sizeof(drip_hash_t));
+    PASS();
+}
+
 SUITE(manifest_suite) {
     RUN_TEST(test_init_null_pointer);
     RUN_TEST(test_init);
@@ -172,4 +216,9 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_current_manifest_hash_null_ptr_manifest);
     RUN_TEST(test_set_current_manifest_hash_null_ptr_hash);
     RUN_TEST(test_set_and_get_current_manifest_hash);
+    RUN_TEST(test_get_drip_link_hash_null_ptr_manifest);
+    RUN_TEST(test_get_drip_link_hash_null_ptr_hash);
+    RUN_TEST(test_set_drip_link_hash_null_ptr_manifest);
+    RUN_TEST(test_set_drip_link_hash_null_ptr_hash);
+    RUN_TEST(test_set_and_get_drip_link_hash);
 }
