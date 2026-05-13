@@ -4,10 +4,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "drip/hash.h"
+
 #define DRIP_SAM_TYPE_MANIFEST 3
 #define DRIP_DET_LEN 16
 #define DRIP_SIGNATURE_LEN 64
-#define DRIP_HASH_LEN 8
 #define DRIP_MANIFEST_MESSAGE_MAX 11
 #define DRIP_AUTH_DATA_MAX 201
 
@@ -18,11 +19,11 @@ typedef enum {
     DRIP_ERROR_INVALID_INDEX = -3,
     DRIP_ERROR_SIGNING_FAILED = -4,
     DRIP_ERROR_VERIFICATION_FAILED = -5,
+    DRIP_ERROR_HASHING_FAILED = -6,
 } drip_status_t;
 
 typedef uint8_t drip_det_t[DRIP_DET_LEN];
 typedef uint8_t drip_sig_t[DRIP_SIGNATURE_LEN];
-typedef uint8_t drip_hash_t[DRIP_HASH_LEN];
 
 typedef struct drip_manifest {
     uint8_t sam_type;
