@@ -9,7 +9,7 @@ jobs:
           apt-get update
           apt-get install -y gcc make cmake
       - name: Configure
-        run: cmake -B build -DRID_BUILD_TESTS=ON
+        run: cmake -B build -DDRIP_BUILD_TESTS=ON
       - name: Build
         run: cmake --build build
       - name: Test
