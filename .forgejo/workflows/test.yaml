@@ -7,7 +7,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y gcc make cmake
+          apt-get install -y gcc make cmake libsodium-dev
       - name: Configure
         run: cmake -B build -DDRIP_BUILD_TESTS=ON
       - name: Build
