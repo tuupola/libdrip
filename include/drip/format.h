@@ -14,4 +14,11 @@ typedef enum {
     DRIP_ERROR_HASHING_FAILED = -6,
 } drip_status_t;
 
+typedef enum {
+    DRIP_SAM_TYPE_LINK = 0x01,
+    DRIP_SAM_TYPE_WRAPPER = 0x02,
+    DRIP_SAM_TYPE_MANIFEST = 0x03,
+    DRIP_SAM_TYPE_FRAME = 0x04,
+} drip_sam_type_t;
+
 #endif

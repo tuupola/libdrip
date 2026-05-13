@@ -7,7 +7,6 @@
 #include "drip/format.h"
 #include "drip/hash.h"
 
-#define DRIP_SAM_TYPE_MANIFEST 3
 #define DRIP_DET_LEN 16
 #define DRIP_SIGNATURE_LEN 64
 #define DRIP_MANIFEST_MESSAGE_MAX 11
