@@ -1,7 +1,6 @@
 #include <string.h>
 
 #include "drip/hash.h"
-#include "drip/manifest.h"
 
 int drip_hash(
     const uint8_t *input,

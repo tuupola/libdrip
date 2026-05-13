@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "drip/format.h"
 #include "drip/hash.h"
 
 #define DRIP_SAM_TYPE_MANIFEST 3
@@ -11,16 +12,6 @@
 #define DRIP_SIGNATURE_LEN 64
 #define DRIP_MANIFEST_MESSAGE_MAX 11
 #define DRIP_AUTH_DATA_MAX 201
-
-typedef enum {
-    DRIP_SUCCESS = 0,
-    DRIP_ERROR_NULL_POINTER = -1,
-    DRIP_ERROR_ARRAY_FULL = -2,
-    DRIP_ERROR_INVALID_INDEX = -3,
-    DRIP_ERROR_SIGNING_FAILED = -4,
-    DRIP_ERROR_VERIFICATION_FAILED = -5,
-    DRIP_ERROR_HASHING_FAILED = -6,
-} drip_status_t;
 
 typedef uint8_t drip_det_t[DRIP_DET_LEN];
 typedef uint8_t drip_sig_t[DRIP_SIGNATURE_LEN];

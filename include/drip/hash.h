@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "drip/format.h"
+
 #define DRIP_HASH_LEN 8
 
 typedef uint8_t drip_hash_t[DRIP_HASH_LEN];
