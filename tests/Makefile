@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Wdouble-promotion -Werror=double-promotion -std=c99 -I../include -I.
-LDFLAGS =
+LDFLAGS = -lsodium
 
 SRC_DIR = ../src
 SRC = $(SRC_DIR)/manifest.c

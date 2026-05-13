@@ -134,3 +134,64 @@ int drip_manifest_add_message_hash(drip_manifest_t *manifest, const drip_hash_t 
     manifest->message_hash_count++;
     return DRIP_SUCCESS;
 }
+
+int drip_manifest_get_message_hash_at(const drip_manifest_t *manifest, uint8_t index, drip_hash_t *hash) {
+    if (manifest == NULL || hash == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    if (index >= manifest->message_hash_count) {
+        return DRIP_ERROR_INVALID_INDEX;
+    }
+    memcpy(hash, manifest->message_hash_array[index], sizeof(drip_hash_t));
+    return DRIP_SUCCESS;
+}
+
+int drip_manifest_sign(
+    drip_manifest_t *manifest,
+    drid_manifest_sign_cb_t callback,
+    void *context
+) {
+    if (manifest == NULL || callback == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    size_t payload_length = 48 + (manifest->message_hash_count * 8);
+    uint8_t payload[DRIP_AUTH_DATA_MAX];
+    size_t offset = 0;
+
+    /* Build the payload to be signed. */
+    /* vnb || vna || previous || null | link || messages || det */
+    memcpy(payload + offset, &manifest->vnb, sizeof(manifest->vnb));
+    offset += sizeof(manifest->vnb);
+
+    memcpy(payload + offset, &manifest->vna, sizeof(manifest->vna));
+    offset += sizeof(manifest->vna);
+
+    memcpy(payload + offset, manifest->previous_manifest_hash, sizeof(manifest->previous_manifest_hash));
+    offset += sizeof(manifest->previous_manifest_hash);
+
+    /* Current manifest hash should be null filled when signing. */
+    memset(payload + offset, 0, sizeof(manifest->current_manifest_hash));
+    offset += sizeof(manifest->current_manifest_hash);
+
+    memcpy(payload + offset, manifest->drip_link_hash, sizeof(manifest->drip_link_hash));
+    offset += sizeof(manifest->drip_link_hash);
+
+    /* Copy each filled hash to the payload. In other words remove the empty */
+    /* hash slots from the payload. */
+    for (uint8_t i = 0; i < manifest->message_hash_count; i++) {
+        memcpy(payload + offset, manifest->message_hash_array[i], sizeof(drip_hash_t));
+        offset += sizeof(drip_hash_t);
+    }
+
+    memcpy(payload + offset, manifest->det, sizeof(manifest->det));
+    offset += sizeof(manifest->det);
+
+    size_t signature_length = 0;
+    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_LEN, &signature_length);
+    if (rc != 0) {
+        return DRIP_ERROR_SIGNING_FAILED;
+    }
+
+    return DRIP_SUCCESS;
+}
