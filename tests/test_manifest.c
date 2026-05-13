@@ -1,3 +1,4 @@
+#include <sodium.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -149,9 +150,9 @@ TEST test_set_and_get_previous_manifest_hash(void) {
     drip_hash_t result;
 
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_previous_manifest_hash(&manifest, hash);
+    int rc = drip_manifest_set_previous_manifest_hash(&manifest, &hash);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    rc = drip_manifest_get_previous_manifest_hash(&manifest, result);
+    rc = drip_manifest_get_previous_manifest_hash(&manifest, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(hash, result, sizeof(drip_hash_t));
     PASS();
@@ -193,9 +194,9 @@ TEST test_set_and_get_current_manifest_hash(void) {
     drip_hash_t result;
 
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_current_manifest_hash(&manifest, hash);
+    int rc = drip_manifest_set_current_manifest_hash(&manifest, &hash);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    rc = drip_manifest_get_current_manifest_hash(&manifest, result);
+    rc = drip_manifest_get_current_manifest_hash(&manifest, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(hash, result, sizeof(drip_hash_t));
     PASS();
@@ -237,9 +238,9 @@ TEST test_set_and_get_drip_link_hash(void) {
     drip_hash_t result;
 
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_drip_link_hash(&manifest, hash);
+    int rc = drip_manifest_set_drip_link_hash(&manifest, &hash);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    rc = drip_manifest_get_drip_link_hash(&manifest, result);
+    rc = drip_manifest_get_drip_link_hash(&manifest, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(hash, result, sizeof(drip_hash_t));
     PASS();
@@ -281,9 +282,9 @@ TEST test_set_and_get_det(void) {
     drip_det_t result;
 
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_det(&manifest, det);
+    int rc = drip_manifest_set_det(&manifest, &det);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    rc = drip_manifest_get_det(&manifest, result);
+    rc = drip_manifest_get_det(&manifest, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(det, result, sizeof(drip_det_t));
     PASS();
@@ -325,9 +326,9 @@ TEST test_set_and_get_signature(void) {
     drip_sig_t result;
 
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_signature(&manifest, sig);
+    int rc = drip_manifest_set_signature(&manifest, &sig);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    rc = drip_manifest_get_signature(&manifest, result);
+    rc = drip_manifest_get_signature(&manifest, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(sig, result, sizeof(drip_sig_t));
     PASS();
@@ -415,11 +416,11 @@ TEST test_get_message_hash_at_success(void) {
     drip_manifest_add_message_hash(&manifest, &hash1);
     drip_manifest_add_message_hash(&manifest, &hash2);
 
-    int rc = drip_manifest_get_message_hash_at(&manifest, 0, result);
+    int rc = drip_manifest_get_message_hash_at(&manifest, 0, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(hash1, result, sizeof(drip_hash_t));
 
-    rc = drip_manifest_get_message_hash_at(&manifest, 1, result);
+    rc = drip_manifest_get_message_hash_at(&manifest, 1, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(hash2, result, sizeof(drip_hash_t));
     PASS();
@@ -448,9 +449,9 @@ TEST test_sign_and_verify_success(void) {
     drip_manifest_init(&manifest);
     drip_manifest_set_vnb(&manifest, 100000000);
     drip_manifest_set_vna(&manifest, 100000120);
-    drip_manifest_set_previous_manifest_hash(&manifest, previous_hash);
-    drip_manifest_set_drip_link_hash(&manifest, drip_link_hash);
-    drip_manifest_set_det(&manifest, det);
+    drip_manifest_set_previous_manifest_hash(&manifest, &previous_hash);
+    drip_manifest_set_drip_link_hash(&manifest, &drip_link_hash);
+    drip_manifest_set_det(&manifest, &det);
 
     int rc = drip_manifest_sign(&manifest, sign_ed25519, (void *)secret_key);
     ASSERT_EQ(DRIP_SUCCESS, rc);
