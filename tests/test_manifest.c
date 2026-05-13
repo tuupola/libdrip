@@ -42,6 +42,16 @@ static int sign_ed25519(
     return rc;
 }
 
+/* Callback wrapper for libsodium */
+static int verify_ed25519(
+    void *context, const uint8_t *message, size_t message_len,
+    const uint8_t *signature, size_t signature_length
+) {
+    (void)signature_length;
+    const uint8_t *key = (const uint8_t *)context;
+    return crypto_sign_verify_detached(signature, message, message_len, key);
+}
+
 TEST test_init_null_pointer(void) {
     int rc = drip_manifest_init(NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
@@ -429,7 +439,7 @@ TEST test_sign_null_ptr_callback(void) {
     PASS();
 }
 
-TEST test_sign_success(void) {
+TEST test_sign_and_verify_success(void) {
     drip_manifest_t manifest;
     drip_hash_t previous_hash = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
     drip_hash_t drip_link_hash = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
@@ -445,19 +455,8 @@ TEST test_sign_success(void) {
     int rc = drip_manifest_sign(&manifest, sign_ed25519, (void *)secret_key);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
-    drip_sig_t signature = {0};
-    drip_manifest_get_signature(&manifest, signature);
-
-    /* Test signature is not all zeros anymore. */
-    /* TODO: actually verify the signature */
-    int is_nonzero = 0;
-    for (int i = 0; i < DRIP_SIGNATURE_LEN; i++) {
-        if (signature[i] != 0) {
-            is_nonzero = 1;
-            break;
-        }
-    }
-    ASSERT_EQ(1, is_nonzero);
+    rc = drip_manifest_verify(&manifest, verify_ed25519, (void *)public_key);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
     PASS();
 }
 
@@ -505,5 +504,5 @@ SUITE(manifest_suite) {
     RUN_TEST(test_get_message_hash_at_success);
     RUN_TEST(test_sign_null_ptr_manifest);
     RUN_TEST(test_sign_null_ptr_callback);
-    RUN_TEST(test_sign_success);
+    RUN_TEST(test_sign_and_verify_success);
 }

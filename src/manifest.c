@@ -195,3 +195,46 @@ int drip_manifest_sign(
 
     return DRIP_SUCCESS;
 }
+
+int drip_manifest_verify(
+    drip_manifest_t *manifest,
+    rid_manifest_verify_cb_t callback,
+    void *context
+) {
+    if (manifest == NULL || callback == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    size_t payload_length = 48 + (manifest->message_hash_count * 8);
+    uint8_t payload[DRIP_AUTH_DATA_MAX];
+    size_t offset = 0;
+
+    memcpy(payload + offset, &manifest->vnb, sizeof(manifest->vnb));
+    offset += sizeof(manifest->vnb);
+
+    memcpy(payload + offset, &manifest->vna, sizeof(manifest->vna));
+    offset += sizeof(manifest->vna);
+
+    memcpy(payload + offset, manifest->previous_manifest_hash, sizeof(manifest->previous_manifest_hash));
+    offset += sizeof(manifest->previous_manifest_hash);
+
+    memset(payload + offset, 0, sizeof(manifest->current_manifest_hash));
+    offset += sizeof(manifest->current_manifest_hash);
+
+    memcpy(payload + offset, manifest->drip_link_hash, sizeof(manifest->drip_link_hash));
+    offset += sizeof(manifest->drip_link_hash);
+
+    for (uint8_t i = 0; i < manifest->message_hash_count; i++) {
+        memcpy(payload + offset, manifest->message_hash_array[i], sizeof(drip_hash_t));
+        offset += sizeof(drip_hash_t);
+    }
+
+    memcpy(payload + offset, manifest->det, sizeof(manifest->det));
+
+    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_LEN);
+    if (rc != 0) {
+        return DRIP_ERROR_VERIFICATION_FAILED;
+    }
+
+    return DRIP_SUCCESS;
+}

@@ -17,6 +17,7 @@ typedef enum {
     DRIP_ERROR_ARRAY_FULL = -2,
     DRIP_ERROR_INVALID_INDEX = -3,
     DRIP_ERROR_SIGNING_FAILED = -4,
+    DRIP_ERROR_VERIFICATION_FAILED = -5,
 } drip_status_t;
 
 typedef uint8_t drip_det_t[DRIP_DET_LEN];
@@ -41,7 +42,7 @@ typedef struct drip_manifest {
 } drip_manifest_t;
 
 /**
- * @brief Callback function type for producing authentication signatures.
+ * @brief Callback function type for producing manifest signatures.
  *
  * Called by drip_manifest_sign() to perform the actual signing of the payload.
  *
@@ -62,6 +63,29 @@ typedef int (*drid_manifest_sign_cb_t)(
     uint8_t *signature,
     size_t signature_size,
     size_t *signature_length
+);
+
+/**
+ * @brief Callback function type for verifying manifest signatures.
+ *
+ * Called by drip_manifest_verify() to perform the actual verification of
+ * the signed payload.
+ *
+ * @param context Opaque context passed to the callback.
+ * @param input Pointer to the signed payload data.
+ * @param input_length Length of the signed payload in bytes.
+ * @param signature Pointer to the signature to verify against.
+ * @param signature_length Length of the signature in bytes.
+ *
+ * @retval 0 on success.
+ * @retval Non-zero on verification failure.
+ */
+typedef int (*rid_manifest_verify_cb_t)(
+    void *context,
+    const uint8_t *input,
+    size_t input_length,
+    const uint8_t *signature,
+    size_t signature_length
 );
 
 int drip_manifest_init(drip_manifest_t *manifest);
@@ -104,6 +128,12 @@ int drip_manifest_get_message_hash_at(const drip_manifest_t *manifest, uint8_t i
 int drip_manifest_sign(
     drip_manifest_t *manifest,
     drid_manifest_sign_cb_t callback,
+    void *context
+);
+
+int drip_manifest_verify(
+    drip_manifest_t *manifest,
+    rid_manifest_verify_cb_t callback,
     void *context
 );
 
