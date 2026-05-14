@@ -14,7 +14,7 @@ int drip_hash(
         return DRIP_ERROR_NULL_POINTER;
     }
     if (hash_size < DRIP_HASH_LEN) {
-        return DRIP_ERROR_CALLBACK_FAILED;
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
 
     size_t hash_length = 0;
