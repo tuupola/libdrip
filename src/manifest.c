@@ -190,7 +190,7 @@ int drip_manifest_sign(
     size_t signature_length = 0;
     int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_LEN, &signature_length);
     if (rc != 0) {
-        return DRIP_ERROR_SIGNING_FAILED;
+        return DRIP_ERROR_CALLBACK_FAILED;
     }
 
     return DRIP_SUCCESS;
