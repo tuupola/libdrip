@@ -128,4 +128,11 @@ int drip_manifest_verify(
     void *context
 );
 
+int drip_manifest_encode(
+    const drip_manifest_t *manifest,
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *encoded_length
+);
+
 #endif

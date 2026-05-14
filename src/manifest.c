@@ -238,3 +238,56 @@ int drip_manifest_verify(
 
     return DRIP_SUCCESS;
 }
+
+int drip_manifest_encode(
+    const drip_manifest_t *manifest,
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *encoded_length
+) {
+    if (manifest == NULL || buffer == NULL || encoded_length == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    size_t required_length = 9 + (3 + manifest->message_hash_count) * DRIP_HASH_LEN +
+        sizeof(manifest->det) + sizeof(manifest->signature);
+
+    if (buffer_size < required_length) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    size_t offset = 0;
+
+    memcpy(buffer + offset, &manifest->sam_type, 1);
+    offset += 1;
+
+    memcpy(buffer + offset, &manifest->vnb, sizeof(manifest->vnb));
+    offset += sizeof(manifest->vnb);
+
+    memcpy(buffer + offset, &manifest->vna, sizeof(manifest->vna));
+    offset += sizeof(manifest->vna);
+
+    memcpy(buffer + offset, manifest->previous_manifest_hash, sizeof(manifest->previous_manifest_hash));
+    offset += sizeof(manifest->previous_manifest_hash);
+
+    memcpy(buffer + offset, manifest->current_manifest_hash, sizeof(manifest->current_manifest_hash));
+    offset += sizeof(manifest->current_manifest_hash);
+
+    memcpy(buffer + offset, manifest->drip_link_hash, sizeof(manifest->drip_link_hash));
+    offset += sizeof(manifest->drip_link_hash);
+
+    for (uint8_t i = 0; i < manifest->message_hash_count; i++) {
+        memcpy(buffer + offset, manifest->message_hash_array[i], sizeof(drip_hash_t));
+        offset += sizeof(drip_hash_t);
+    }
+
+    memcpy(buffer + offset, manifest->det, sizeof(manifest->det));
+    offset += sizeof(manifest->det);
+
+    memcpy(buffer + offset, manifest->signature, sizeof(manifest->signature));
+    offset += sizeof(manifest->signature);
+
+    *encoded_length = offset;
+
+    return DRIP_SUCCESS;
+}

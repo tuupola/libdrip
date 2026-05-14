@@ -461,6 +461,70 @@ TEST test_sign_and_verify_success(void) {
     PASS();
 }
 
+TEST test_encode_null_ptr_manifest(void) {
+    uint8_t buffer[256];
+    size_t encoded_length = 0;
+    int rc = drip_manifest_encode(NULL, buffer, sizeof(buffer), &encoded_length);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_encode_null_ptr_buffer(void) {
+    drip_manifest_t manifest;
+    size_t encoded_length = 0;
+    drip_manifest_init(&manifest);
+    int rc = drip_manifest_encode(&manifest, NULL, 256, &encoded_length);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_encode_null_ptr_encoded_length(void) {
+    drip_manifest_t manifest;
+    uint8_t buffer[256];
+    drip_manifest_init(&manifest);
+    int rc = drip_manifest_encode(&manifest, buffer, sizeof(buffer), NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_encode_buffer_too_small(void) {
+    drip_manifest_t manifest;
+    uint8_t buffer[10];
+    size_t encoded_length = 0;
+    drip_manifest_init(&manifest);
+    int rc = drip_manifest_encode(&manifest, buffer, sizeof(buffer), &encoded_length);
+    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    PASS();
+}
+
+TEST test_encode_success(void) {
+    drip_manifest_t manifest;
+    drip_hash_t previous_hash = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
+    drip_hash_t current_hash = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
+    drip_hash_t drip_link_hash = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+    drip_hash_t msg_hash1 = {0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04};
+    drip_hash_t msg_hash2 = {0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05};
+    drip_det_t det = {0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06};
+    drip_sig_t sig = {0x07};
+
+    drip_manifest_init(&manifest);
+    drip_manifest_set_vnb(&manifest, 100000000);
+    drip_manifest_set_vna(&manifest, 100000120);
+    drip_manifest_set_previous_manifest_hash(&manifest, &previous_hash);
+    drip_manifest_set_current_manifest_hash(&manifest, &current_hash);
+    drip_manifest_set_drip_link_hash(&manifest, &drip_link_hash);
+    drip_manifest_add_message_hash(&manifest, &msg_hash1);
+    drip_manifest_add_message_hash(&manifest, &msg_hash2);
+    drip_manifest_set_det(&manifest, &det);
+    drip_manifest_set_signature(&manifest, &sig);
+
+    uint8_t buffer[256];
+    size_t encoded_length = 0;
+    int rc = drip_manifest_encode(&manifest, buffer, sizeof(buffer), &encoded_length);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
 SUITE(manifest_suite) {
     RUN_TEST(test_init_null_pointer);
     RUN_TEST(test_init);
@@ -506,4 +570,9 @@ SUITE(manifest_suite) {
     RUN_TEST(test_sign_null_ptr_manifest);
     RUN_TEST(test_sign_null_ptr_callback);
     RUN_TEST(test_sign_and_verify_success);
+    RUN_TEST(test_encode_null_ptr_manifest);
+    RUN_TEST(test_encode_null_ptr_buffer);
+    RUN_TEST(test_encode_null_ptr_encoded_length);
+    RUN_TEST(test_encode_buffer_too_small);
+    RUN_TEST(test_encode_success);
 }
