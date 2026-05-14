@@ -3,9 +3,9 @@ CFLAGS = -Wall -Wextra -Wdouble-promotion -Werror=double-promotion -std=c99 -I..
 LDFLAGS = -lsodium
 
 SRC_DIR = ../src
-SRC = $(SRC_DIR)/manifest.c
+SRC = $(SRC_DIR)/manifest.c $(SRC_DIR)/hash.c
 
-TEST_SRC = unit.c test_manifest.c
+TEST_SRC = unit.c test_manifest.c test_hash.c
 
 OBJ = $(SRC:.c=.o)
 TEST_OBJ = $(TEST_SRC:.c=.o)

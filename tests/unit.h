@@ -4,5 +4,6 @@
 #include "greatest.h"
 
 extern SUITE(manifest_suite);
+extern SUITE(hash_suite);
 
 #endif

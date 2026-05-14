@@ -4,6 +4,7 @@ pkg_check_modules(SODIUM libsodium REQUIRED)
 add_executable(test_runner
     unit.c
     test_manifest.c
+    test_hash.c
 )
 
 target_include_directories(test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
