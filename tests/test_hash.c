@@ -65,7 +65,7 @@ TEST test_hash_len(void) {
     uint8_t hash[DRIP_HASH_LEN];
     uint8_t input[] = {0x01, 0x02};
     int rc = drip_hash(input, sizeof(input), hash, DRIP_HASH_LEN - 1, pass_through_callback, NULL);
-    ASSERT_EQ(DRIP_ERROR_HASHING_FAILED, rc);
+    ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
 }
 
@@ -73,7 +73,7 @@ TEST test_callback(void) {
     uint8_t hash[DRIP_HASH_LEN];
     uint8_t input[] = {0x01, 0x02};
     int rc = drip_hash(input, sizeof(input), hash, sizeof(hash), failing_callback, NULL);
-    ASSERT_EQ(DRIP_ERROR_HASHING_FAILED, rc);
+    ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
 }
 

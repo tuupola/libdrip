@@ -11,7 +11,6 @@ typedef enum {
     DRIP_ERROR_INVALID_INDEX = -3,
     DRIP_ERROR_CALLBACK_FAILED = -4,
 
-    DRIP_ERROR_HASHING_FAILED = -6,
 } drip_status_t;
 
 typedef enum {

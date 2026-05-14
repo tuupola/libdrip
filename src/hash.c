@@ -14,13 +14,13 @@ int drip_hash(
         return DRIP_ERROR_NULL_POINTER;
     }
     if (hash_size < DRIP_HASH_LEN) {
-        return DRIP_ERROR_HASHING_FAILED;
+        return DRIP_ERROR_CALLBACK_FAILED;
     }
 
     size_t hash_length = 0;
     int rc = callback(context, input, input_length, hash, hash_size, &hash_length);
     if (rc != 0) {
-        return DRIP_ERROR_HASHING_FAILED;
+        return DRIP_ERROR_CALLBACK_FAILED;
     }
 
     return DRIP_SUCCESS;
