@@ -233,7 +233,7 @@ int drip_manifest_verify(
 
     int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_LEN);
     if (rc != 0) {
-        return DRIP_ERROR_VERIFICATION_FAILED;
+        return DRIP_ERROR_CALLBACK_FAILED;
     }
 
     return DRIP_SUCCESS;
