@@ -137,6 +137,29 @@ TEST test_set_and_get_vnb_unixtime(void) {
     PASS();
 }
 
+TEST test_set_vna_unixtime_null_ptr(void) {
+    int rc = drip_manifest_set_vna_unixtime(NULL, 1546300800);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_get_vna_unixtime_null_ptr(void) {
+    uint32_t result = drip_manifest_get_vna_unixtime(NULL);
+    ASSERT_EQ(0, result);
+    PASS();
+}
+
+TEST test_set_and_get_vna_unixtime(void) {
+    drip_manifest_t manifest;
+    uint32_t unixtime = 1546300800;
+
+    drip_manifest_init(&manifest);
+    int rc = drip_manifest_set_vna_unixtime(&manifest, unixtime);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(unixtime, drip_manifest_get_vna_unixtime(&manifest));
+    PASS();
+}
+
 TEST test_get_previous_manifest_hash_null_ptr_manifest(void) {
     drip_hash_t hash = {0};
     int rc = drip_manifest_get_previous_manifest_hash(NULL, &hash);
@@ -560,6 +583,9 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_vnb_unixtime_null_ptr);
     RUN_TEST(test_get_vnb_unixtime_null_ptr);
     RUN_TEST(test_set_and_get_vnb_unixtime);
+    RUN_TEST(test_set_vna_unixtime_null_ptr);
+    RUN_TEST(test_get_vna_unixtime_null_ptr);
+    RUN_TEST(test_set_and_get_vna_unixtime);
     RUN_TEST(test_get_previous_manifest_hash_null_ptr_manifest);
     RUN_TEST(test_get_previous_manifest_hash_null_ptr_hash);
     RUN_TEST(test_set_previous_manifest_hash_null_ptr_manifest);

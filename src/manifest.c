@@ -46,6 +46,21 @@ uint32_t drip_manifest_get_vnb_unixtime(const drip_manifest_t *manifest) {
     return manifest->vnb + DRIP_MANIFEST_TIMESTAMP_EPOCH;
 }
 
+int drip_manifest_set_vna_unixtime(drip_manifest_t *manifest, uint32_t unixtime) {
+    if (manifest == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    manifest->vna = unixtime - DRIP_MANIFEST_TIMESTAMP_EPOCH;
+    return DRIP_SUCCESS;
+}
+
+uint32_t drip_manifest_get_vna_unixtime(const drip_manifest_t *manifest) {
+    if (manifest == NULL) {
+        return 0;
+    }
+    return manifest->vna + DRIP_MANIFEST_TIMESTAMP_EPOCH;
+}
+
 uint32_t drip_manifest_get_vna(const drip_manifest_t *manifest) {
     if (manifest == NULL) {
         return 0;
