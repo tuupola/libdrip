@@ -11,14 +11,16 @@ else()
   set(CMAKE_C_STANDARD_REQUIRED ON)
   set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-  add_custom_target(compile_commands_symlink ALL
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-                ${CMAKE_BINARY_DIR}/compile_commands.json
-                ${CMAKE_SOURCE_DIR}/compile_commands.json
-        DEPENDS ${CMAKE_BINARY_DIR}/compile_commands.json
-        COMMENT "Creating compile_commands.json symlink"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
+  if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    add_custom_target(compile_commands_symlink ALL
+          COMMAND ${CMAKE_COMMAND} -E create_symlink
+                  ${CMAKE_BINARY_DIR}/compile_commands.json
+                  ${CMAKE_SOURCE_DIR}/compile_commands.json
+          DEPENDS ${CMAKE_BINARY_DIR}/compile_commands.json
+          COMMENT "Creating compile_commands.json symlink"
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
+  endif()
 
   option(DRIP_BUILD_EXAMPLES "Build example programs" OFF)
   option(DRIP_BUILD_TESTS "Build unit tests" OFF)
@@ -40,12 +42,14 @@ else()
 
   install(DIRECTORY include/drip DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-  add_custom_target(uninstall
-        COMMAND echo "Removing ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/drip"
-        COMMAND rm -rf ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/drip
-        COMMAND echo "Removing ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libdrip*"
-        COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libdrip*
-    )
+  if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    add_custom_target(uninstall
+          COMMAND echo "Removing ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/drip"
+          COMMAND rm -rf ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/drip
+          COMMAND echo "Removing ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libdrip*"
+          COMMAND rm -f ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libdrip*
+      )
+  endif()
 
   if(DRIP_BUILD_EXAMPLES)
     add_subdirectory(examples)
