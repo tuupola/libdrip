@@ -12,6 +12,9 @@
 #define DRIP_MANIFEST_MESSAGE_MAX 11
 #define DRIP_AUTH_DATA_MAX 201
 
+/** @brief Timestamp epoch (2019-01-01 00:00:00 UTC as Unix timestamp). */
+#define DRIP_MANIFEST_TIMESTAMP_EPOCH 1546300800
+
 typedef uint8_t drip_det_t[DRIP_DET_LEN];
 typedef uint8_t drip_sig_t[DRIP_SIGNATURE_LEN];
 
@@ -86,6 +89,9 @@ int drip_manifest_set_vnb(drip_manifest_t *manifest, uint32_t vnb);
 
 uint32_t drip_manifest_get_vna(const drip_manifest_t *manifest);
 int drip_manifest_set_vna(drip_manifest_t *manifest, uint32_t vna);
+
+int drip_manifest_set_vnb_unixtime(drip_manifest_t *manifest, uint32_t unixtime);
+uint32_t drip_manifest_get_vnb_unixtime(const drip_manifest_t *manifest);
 
 int drip_manifest_get_previous_manifest_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
 int drip_manifest_set_previous_manifest_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
