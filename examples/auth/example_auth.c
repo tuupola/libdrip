@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "drip/manifest.h"
 #include "rid/auth.h"
@@ -35,6 +36,8 @@ int main(void) {
     rid_message_pack_t pack;
 
     drip_manifest_init(&manifest);
+    drip_manifest_set_vna_unixtime(&manifest, (uint32_t)time(NULL));
+    drip_manifest_set_vnb_unixtime(&manifest, (uint32_t)time(NULL) + 120);
     drip_manifest_encode(&manifest, encoded, sizeof(encoded), &encoded_length);
 
     printf("Manifest:\n");
