@@ -43,4 +43,6 @@ int drip_hash(
     void *context
 );
 
+int drip_hash_to_hex(const drip_hash_t *hash, char *hex, size_t hex_size);
+
 #endif

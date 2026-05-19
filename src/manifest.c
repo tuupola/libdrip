@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include <string.h>
 
+#include "drip/hash.h"
 #include "drip/manifest.h"
 
 int drip_manifest_init(drip_manifest_t *manifest) {
@@ -76,23 +78,23 @@ int drip_manifest_set_vna(drip_manifest_t *manifest, uint32_t vna) {
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_previous_manifest_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
+int drip_manifest_get_previous_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    memcpy(hash, manifest->previous_manifest_hash, sizeof(drip_hash_t));
+    memcpy(hash, manifest->previous_hash, sizeof(drip_hash_t));
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_set_previous_manifest_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
+int drip_manifest_set_previous_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    memcpy(manifest->previous_manifest_hash, hash, sizeof(drip_hash_t));
+    memcpy(manifest->previous_hash, hash, sizeof(drip_hash_t));
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_current_manifest_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
+int drip_manifest_get_current_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -100,7 +102,7 @@ int drip_manifest_get_current_manifest_hash(const drip_manifest_t *manifest, dri
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_set_current_manifest_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
+int drip_manifest_set_current_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -108,19 +110,19 @@ int drip_manifest_set_current_manifest_hash(drip_manifest_t *manifest, const dri
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_drip_link_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
+int drip_manifest_get_link_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    memcpy(hash, manifest->drip_link_hash, sizeof(drip_hash_t));
+    memcpy(hash, manifest->link_hash, sizeof(drip_hash_t));
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_set_drip_link_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
+int drip_manifest_set_link_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    memcpy(manifest->drip_link_hash, hash, sizeof(drip_hash_t));
+    memcpy(manifest->link_hash, hash, sizeof(drip_hash_t));
     return DRIP_SUCCESS;
 }
 
@@ -200,15 +202,15 @@ int drip_manifest_sign(
     memcpy(payload + offset, &manifest->vna, sizeof(manifest->vna));
     offset += sizeof(manifest->vna);
 
-    memcpy(payload + offset, manifest->previous_manifest_hash, sizeof(manifest->previous_manifest_hash));
-    offset += sizeof(manifest->previous_manifest_hash);
+    memcpy(payload + offset, manifest->previous_hash, sizeof(manifest->previous_hash));
+    offset += sizeof(manifest->previous_hash);
 
     /* Current manifest hash should be null filled when signing. */
     memset(payload + offset, 0, sizeof(manifest->current_manifest_hash));
     offset += sizeof(manifest->current_manifest_hash);
 
-    memcpy(payload + offset, manifest->drip_link_hash, sizeof(manifest->drip_link_hash));
-    offset += sizeof(manifest->drip_link_hash);
+    memcpy(payload + offset, manifest->link_hash, sizeof(manifest->link_hash));
+    offset += sizeof(manifest->link_hash);
 
     /* Copy each filled hash to the payload. In other words remove the empty */
     /* hash slots from the payload. */
@@ -248,14 +250,14 @@ int drip_manifest_verify(
     memcpy(payload + offset, &manifest->vna, sizeof(manifest->vna));
     offset += sizeof(manifest->vna);
 
-    memcpy(payload + offset, manifest->previous_manifest_hash, sizeof(manifest->previous_manifest_hash));
-    offset += sizeof(manifest->previous_manifest_hash);
+    memcpy(payload + offset, manifest->previous_hash, sizeof(manifest->previous_hash));
+    offset += sizeof(manifest->previous_hash);
 
     memset(payload + offset, 0, sizeof(manifest->current_manifest_hash));
     offset += sizeof(manifest->current_manifest_hash);
 
-    memcpy(payload + offset, manifest->drip_link_hash, sizeof(manifest->drip_link_hash));
-    offset += sizeof(manifest->drip_link_hash);
+    memcpy(payload + offset, manifest->link_hash, sizeof(manifest->link_hash));
+    offset += sizeof(manifest->link_hash);
 
     for (uint8_t i = 0; i < manifest->evidence_count; i++) {
         memcpy(payload + offset, manifest->evidence[i], sizeof(drip_hash_t));
@@ -300,13 +302,13 @@ int drip_manifest_encode(
     memcpy(buffer + offset, &manifest->vna, DRIP_TIMESTAMP_SIZE);
     offset += DRIP_TIMESTAMP_SIZE;
 
-    memcpy(buffer + offset, manifest->previous_manifest_hash, DRIP_HASH_SIZE);
+    memcpy(buffer + offset, manifest->previous_hash, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
     memcpy(buffer + offset, manifest->current_manifest_hash, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
-    memcpy(buffer + offset, manifest->drip_link_hash, DRIP_HASH_SIZE);
+    memcpy(buffer + offset, manifest->link_hash, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
     for (uint8_t i = 0; i < manifest->evidence_count; i++) {
@@ -361,13 +363,13 @@ int drip_manifest_decode(
     memcpy(&manifest->vna, buffer + offset, DRIP_TIMESTAMP_SIZE);
     offset += DRIP_TIMESTAMP_SIZE;
 
-    memcpy(manifest->previous_manifest_hash, buffer + offset, DRIP_HASH_SIZE);
+    memcpy(manifest->previous_hash, buffer + offset, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
     memcpy(manifest->current_manifest_hash, buffer + offset, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
-    memcpy(manifest->drip_link_hash, buffer + offset, DRIP_HASH_SIZE);
+    memcpy(manifest->link_hash, buffer + offset, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
     for (uint8_t i = 0; i < evidence_count; i++) {
@@ -383,4 +385,78 @@ int drip_manifest_decode(
     offset += DRIP_SIGNATURE_SIZE;
 
     return DRIP_SUCCESS;
+}
+
+int drip_manifest_to_json(const drip_manifest_t *manifest, char *buffer, size_t buffer_size) {
+    if (manifest == NULL || buffer == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    drip_hash_t previous_hash, current_hash, link_hash;
+    drip_manifest_get_previous_hash(manifest, &previous_hash);
+    drip_manifest_get_current_hash(manifest, &current_hash);
+    drip_manifest_get_link_hash(manifest, &link_hash);
+
+    drip_det_t det;
+    char det_hex[33];
+    drip_manifest_get_det(manifest, &det);
+
+    for (uint8_t i = 0; i < 16; i++) {
+        snprintf(det_hex + i * 2, 3, "%02x", det[i]);
+    }
+
+    drip_sig_t signature;
+    drip_manifest_get_signature(manifest, &signature);
+
+    char previous_hex[17], current_hex[17], link_hex[17];
+    drip_hash_to_hex(&previous_hash, previous_hex, sizeof(previous_hex));
+    drip_hash_to_hex(&current_hash, current_hex, sizeof(current_hex));
+    drip_hash_to_hex(&link_hash, link_hex, sizeof(link_hex));
+
+
+    char sig_hex[129];
+    size_t sig_pos = 0;
+    for (uint8_t i = 0; i < 64; i++) {
+        sig_pos += snprintf(sig_hex + sig_pos, 3, "%02x", signature[i]);
+    }
+
+    char evidence_json[256] = "[";
+    for (uint8_t i = 0; i < manifest->evidence_count; i++) {
+        if (i > 0) {
+            strcat(evidence_json, ",");
+        }
+        char ev_hex[17];
+        drip_hash_to_hex(&manifest->evidence[i], ev_hex, sizeof(ev_hex));
+        strcat(evidence_json, "\"");
+        strcat(evidence_json, ev_hex);
+        strcat(evidence_json, "\"");
+    }
+    strcat(evidence_json, "]");
+
+    return snprintf(
+        buffer,
+        buffer_size,
+        "{"
+        "\"sam_type\": %u, "
+        "\"vnb\": %u, "
+        "\"vna\": %u, "
+        "\"previous_hash\": \"%s\", "
+        "\"current_hash\": \"%s\", "
+        "\"link_hash\": \"%s\", "
+        "\"evidence_count\": %u, "
+        "\"evidence\": %s, "
+        "\"det\": \"%s\", "
+        "\"signature\": \"%s\""
+        "}",
+        manifest->sam_type,
+        manifest->vnb,
+        manifest->vna,
+        previous_hex,
+        current_hex,
+        link_hex,
+        manifest->evidence_count,
+        evidence_json,
+        det_hex,
+        sig_hex
+    );
 }

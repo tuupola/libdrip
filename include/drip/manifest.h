@@ -29,9 +29,9 @@ typedef struct drip_manifest {
     uint32_t vnb;
     uint32_t vna;
 
-    drip_hash_t previous_manifest_hash;
+    drip_hash_t previous_hash;
     drip_hash_t current_manifest_hash;
-    drip_hash_t drip_link_hash;
+    drip_hash_t link_hash;
 
     uint8_t evidence_count;
     drip_hash_t evidence[DRIP_MANIFEST_EVIDENCE_MAX];
@@ -101,14 +101,14 @@ uint32_t drip_manifest_get_vna_unixtime(const drip_manifest_t *manifest);
 int drip_manifest_set_vnb_unixtime(drip_manifest_t *manifest, uint32_t unixtime);
 uint32_t drip_manifest_get_vnb_unixtime(const drip_manifest_t *manifest);
 
-int drip_manifest_get_previous_manifest_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
-int drip_manifest_set_previous_manifest_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
+int drip_manifest_get_previous_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
+int drip_manifest_set_previous_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 
-int drip_manifest_get_current_manifest_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
-int drip_manifest_set_current_manifest_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
+int drip_manifest_get_current_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
+int drip_manifest_set_current_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 
-int drip_manifest_get_drip_link_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
-int drip_manifest_set_drip_link_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
+int drip_manifest_get_link_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
+int drip_manifest_set_link_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 
 int drip_manifest_get_det(const drip_manifest_t *manifest, drip_det_t *det);
 int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det);
@@ -151,6 +151,12 @@ int drip_manifest_encode(
 int drip_manifest_decode(
     drip_manifest_t *manifest,
     const uint8_t *buffer,
+    size_t buffer_size
+);
+
+int drip_manifest_to_json(
+    const drip_manifest_t *manifest,
+    char *buffer,
     size_t buffer_size
 );
 
