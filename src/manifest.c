@@ -156,23 +156,23 @@ int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_sig_t *sig
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_add_message_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
+int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    if (manifest->message_hash_count >= DRIP_MANIFEST_MESSAGES_MAX) {
+    if (manifest->evidence_count >= DRIP_MANIFEST_EVIDENCE_MAX) {
         return DRIP_ERROR_ARRAY_FULL;
     }
-    memcpy(manifest->evidence[manifest->message_hash_count], hash, sizeof(drip_hash_t));
-    manifest->message_hash_count++;
+    memcpy(manifest->evidence[manifest->evidence_count], hash, sizeof(drip_hash_t));
+    manifest->evidence_count++;
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_message_hash_at(const drip_manifest_t *manifest, uint8_t index, drip_hash_t *hash) {
+int drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index, drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    if (index >= manifest->message_hash_count) {
+    if (index >= manifest->evidence_count) {
         return DRIP_ERROR_INVALID_INDEX;
     }
     memcpy(hash, manifest->evidence[index], sizeof(drip_hash_t));
@@ -188,7 +188,7 @@ int drip_manifest_sign(
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t payload_length = 48 + (manifest->message_hash_count * 8);
+    size_t payload_length = 48 + (manifest->evidence_count * 8);
     uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
     size_t offset = 0;
 
@@ -212,7 +212,7 @@ int drip_manifest_sign(
 
     /* Copy each filled hash to the payload. In other words remove the empty */
     /* hash slots from the payload. */
-    for (uint8_t i = 0; i < manifest->message_hash_count; i++) {
+    for (uint8_t i = 0; i < manifest->evidence_count; i++) {
         memcpy(payload + offset, manifest->evidence[i], sizeof(drip_hash_t));
         offset += sizeof(drip_hash_t);
     }
@@ -238,7 +238,7 @@ int drip_manifest_verify(
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t payload_length = 48 + (manifest->message_hash_count * 8);
+    size_t payload_length = 48 + (manifest->evidence_count * 8);
     uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
     size_t offset = 0;
 
@@ -257,7 +257,7 @@ int drip_manifest_verify(
     memcpy(payload + offset, manifest->drip_link_hash, sizeof(manifest->drip_link_hash));
     offset += sizeof(manifest->drip_link_hash);
 
-    for (uint8_t i = 0; i < manifest->message_hash_count; i++) {
+    for (uint8_t i = 0; i < manifest->evidence_count; i++) {
         memcpy(payload + offset, manifest->evidence[i], sizeof(drip_hash_t));
         offset += sizeof(drip_hash_t);
     }
@@ -283,7 +283,7 @@ int drip_manifest_encode(
     }
 
     size_t required_length = DRIP_MANIFEST_MIN_SIZE +
-        manifest->message_hash_count * DRIP_HASH_SIZE;
+        manifest->evidence_count * DRIP_HASH_SIZE;
 
     if (buffer_size < required_length) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
@@ -309,7 +309,7 @@ int drip_manifest_encode(
     memcpy(buffer + offset, manifest->drip_link_hash, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
-    for (uint8_t i = 0; i < manifest->message_hash_count; i++) {
+    for (uint8_t i = 0; i < manifest->evidence_count; i++) {
         memcpy(buffer + offset, manifest->evidence[i], DRIP_HASH_SIZE);
         offset += DRIP_HASH_SIZE;
     }
@@ -343,8 +343,8 @@ int drip_manifest_decode(
         return DRIP_ERROR_INVALID_LENGTH;
     }
 
-    uint8_t message_hash_count = (uint8_t)(evidence_size / DRIP_HASH_SIZE);
-    if (message_hash_count > DRIP_MANIFEST_MESSAGES_MAX) {
+    uint8_t evidence_count = (uint8_t)(evidence_size / DRIP_HASH_SIZE);
+    if (evidence_count > DRIP_MANIFEST_EVIDENCE_MAX) {
         return DRIP_ERROR_ARRAY_FULL;
     }
 
@@ -370,11 +370,11 @@ int drip_manifest_decode(
     memcpy(manifest->drip_link_hash, buffer + offset, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
-    for (uint8_t i = 0; i < message_hash_count; i++) {
+    for (uint8_t i = 0; i < evidence_count; i++) {
         memcpy(manifest->evidence[i], buffer + offset, DRIP_HASH_SIZE);
         offset += DRIP_HASH_SIZE;
     }
-    manifest->message_hash_count = message_hash_count;
+    manifest->evidence_count = evidence_count;
 
     memcpy(manifest->det, buffer + offset, DRIP_DET_SIZE);
     offset += DRIP_DET_SIZE;

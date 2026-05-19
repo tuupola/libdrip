@@ -12,7 +12,7 @@
 #define DRIP_EVIDENCE_SIZE 112
 #define DRIP_DET_SIZE 16
 #define DRIP_SIGNATURE_SIZE 64
-#define DRIP_MANIFEST_MESSAGES_MAX 11
+#define DRIP_MANIFEST_EVIDENCE_MAX 11
 
 #define DRIP_MANIFEST_MIN_SIZE 113 /* when zero hashes */
 #define DRIP_MANIFEST_MAX_SIZE 201 /* when 11 hashes */
@@ -33,8 +33,8 @@ typedef struct drip_manifest {
     drip_hash_t current_manifest_hash;
     drip_hash_t drip_link_hash;
 
-    uint8_t message_hash_count;
-    drip_hash_t evidence[DRIP_MANIFEST_MESSAGES_MAX];
+    uint8_t evidence_count;
+    drip_hash_t evidence[DRIP_MANIFEST_EVIDENCE_MAX];
 
     drip_det_t det;
     drip_sig_t signature;
@@ -116,9 +116,8 @@ int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det);
 int drip_manifest_get_signature(const drip_manifest_t *manifest, drip_sig_t *signature);
 int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_sig_t *signature);
 
-int drip_manifest_add_message_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
-
-int drip_manifest_get_message_hash_at(const drip_manifest_t *manifest, uint8_t index, drip_hash_t *hash);
+int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *hash);
+int drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index, drip_hash_t *hash);
 
 /**
  * @brief Sign a DRIP manifest with caller supplied callback.
