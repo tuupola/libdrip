@@ -6,9 +6,9 @@
 
 #include "drip/format.h"
 
-#define DRIP_HASH_LEN 8
+#define DRIP_HASH_SIZE 8
 
-typedef uint8_t drip_hash_t[DRIP_HASH_LEN];
+typedef uint8_t drip_hash_t[DRIP_HASH_SIZE];
 
 /**
  * @brief Callback function type for producing manifest hashes.

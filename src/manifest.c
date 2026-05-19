@@ -160,10 +160,10 @@ int drip_manifest_add_message_hash(drip_manifest_t *manifest, const drip_hash_t 
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    if (manifest->message_hash_count >= DRIP_MANIFEST_MESSAGE_MAX) {
+    if (manifest->message_hash_count >= DRIP_MANIFEST_MESSAGES_MAX) {
         return DRIP_ERROR_ARRAY_FULL;
     }
-    memcpy(manifest->message_hash_array[manifest->message_hash_count], hash, sizeof(drip_hash_t));
+    memcpy(manifest->evidence[manifest->message_hash_count], hash, sizeof(drip_hash_t));
     manifest->message_hash_count++;
     return DRIP_SUCCESS;
 }
@@ -175,7 +175,7 @@ int drip_manifest_get_message_hash_at(const drip_manifest_t *manifest, uint8_t i
     if (index >= manifest->message_hash_count) {
         return DRIP_ERROR_INVALID_INDEX;
     }
-    memcpy(hash, manifest->message_hash_array[index], sizeof(drip_hash_t));
+    memcpy(hash, manifest->evidence[index], sizeof(drip_hash_t));
     return DRIP_SUCCESS;
 }
 
@@ -189,7 +189,7 @@ int drip_manifest_sign(
     }
 
     size_t payload_length = 48 + (manifest->message_hash_count * 8);
-    uint8_t payload[DRIP_AUTH_DATA_MAX];
+    uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
     size_t offset = 0;
 
     /* Build the payload to be signed. */
@@ -213,7 +213,7 @@ int drip_manifest_sign(
     /* Copy each filled hash to the payload. In other words remove the empty */
     /* hash slots from the payload. */
     for (uint8_t i = 0; i < manifest->message_hash_count; i++) {
-        memcpy(payload + offset, manifest->message_hash_array[i], sizeof(drip_hash_t));
+        memcpy(payload + offset, manifest->evidence[i], sizeof(drip_hash_t));
         offset += sizeof(drip_hash_t);
     }
 
@@ -221,7 +221,7 @@ int drip_manifest_sign(
     offset += sizeof(manifest->det);
 
     size_t signature_length = 0;
-    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_LEN, &signature_length);
+    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE, &signature_length);
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }
@@ -239,7 +239,7 @@ int drip_manifest_verify(
     }
 
     size_t payload_length = 48 + (manifest->message_hash_count * 8);
-    uint8_t payload[DRIP_AUTH_DATA_MAX];
+    uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
     size_t offset = 0;
 
     memcpy(payload + offset, &manifest->vnb, sizeof(manifest->vnb));
@@ -258,13 +258,13 @@ int drip_manifest_verify(
     offset += sizeof(manifest->drip_link_hash);
 
     for (uint8_t i = 0; i < manifest->message_hash_count; i++) {
-        memcpy(payload + offset, manifest->message_hash_array[i], sizeof(drip_hash_t));
+        memcpy(payload + offset, manifest->evidence[i], sizeof(drip_hash_t));
         offset += sizeof(drip_hash_t);
     }
 
     memcpy(payload + offset, manifest->det, sizeof(manifest->det));
 
-    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_LEN);
+    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE);
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }
@@ -282,8 +282,8 @@ int drip_manifest_encode(
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t required_length = 9 + (3 + manifest->message_hash_count) * DRIP_HASH_LEN +
-        sizeof(manifest->det) + sizeof(manifest->signature);
+    size_t required_length = DRIP_MANIFEST_MIN_SIZE +
+        manifest->message_hash_count * DRIP_HASH_SIZE;
 
     if (buffer_size < required_length) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
@@ -291,36 +291,96 @@ int drip_manifest_encode(
 
     size_t offset = 0;
 
-    memcpy(buffer + offset, &manifest->sam_type, 1);
-    offset += 1;
+    memcpy(buffer + offset, &manifest->sam_type, DRIP_SAM_TYPE_SIZE);
+    offset += DRIP_SAM_TYPE_SIZE;
 
-    memcpy(buffer + offset, &manifest->vnb, sizeof(manifest->vnb));
-    offset += sizeof(manifest->vnb);
+    memcpy(buffer + offset, &manifest->vnb, DRIP_TIMESTAMP_SIZE);
+    offset += DRIP_TIMESTAMP_SIZE;
 
-    memcpy(buffer + offset, &manifest->vna, sizeof(manifest->vna));
-    offset += sizeof(manifest->vna);
+    memcpy(buffer + offset, &manifest->vna, DRIP_TIMESTAMP_SIZE);
+    offset += DRIP_TIMESTAMP_SIZE;
 
-    memcpy(buffer + offset, manifest->previous_manifest_hash, sizeof(manifest->previous_manifest_hash));
-    offset += sizeof(manifest->previous_manifest_hash);
+    memcpy(buffer + offset, manifest->previous_manifest_hash, DRIP_HASH_SIZE);
+    offset += DRIP_HASH_SIZE;
 
-    memcpy(buffer + offset, manifest->current_manifest_hash, sizeof(manifest->current_manifest_hash));
-    offset += sizeof(manifest->current_manifest_hash);
+    memcpy(buffer + offset, manifest->current_manifest_hash, DRIP_HASH_SIZE);
+    offset += DRIP_HASH_SIZE;
 
-    memcpy(buffer + offset, manifest->drip_link_hash, sizeof(manifest->drip_link_hash));
-    offset += sizeof(manifest->drip_link_hash);
+    memcpy(buffer + offset, manifest->drip_link_hash, DRIP_HASH_SIZE);
+    offset += DRIP_HASH_SIZE;
 
     for (uint8_t i = 0; i < manifest->message_hash_count; i++) {
-        memcpy(buffer + offset, manifest->message_hash_array[i], sizeof(drip_hash_t));
-        offset += sizeof(drip_hash_t);
+        memcpy(buffer + offset, manifest->evidence[i], DRIP_HASH_SIZE);
+        offset += DRIP_HASH_SIZE;
     }
 
-    memcpy(buffer + offset, manifest->det, sizeof(manifest->det));
-    offset += sizeof(manifest->det);
+    memcpy(buffer + offset, manifest->det, DRIP_DET_SIZE);
+    offset += DRIP_DET_SIZE;
 
-    memcpy(buffer + offset, manifest->signature, sizeof(manifest->signature));
-    offset += sizeof(manifest->signature);
+    memcpy(buffer + offset, manifest->signature, DRIP_SIGNATURE_SIZE);
+    offset += DRIP_SIGNATURE_SIZE;
 
     *encoded_length = offset;
+
+    return DRIP_SUCCESS;
+}
+
+int drip_manifest_decode(
+    drip_manifest_t *manifest,
+    const uint8_t *buffer,
+    size_t buffer_size
+) {
+    if (manifest == NULL || buffer == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (buffer_size < DRIP_MANIFEST_MIN_SIZE) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    size_t evidence_size = buffer_size - DRIP_MANIFEST_MIN_SIZE;
+    if (evidence_size % DRIP_HASH_SIZE != 0) {
+        return DRIP_ERROR_INVALID_LENGTH;
+    }
+
+    uint8_t message_hash_count = (uint8_t)(evidence_size / DRIP_HASH_SIZE);
+    if (message_hash_count > DRIP_MANIFEST_MESSAGES_MAX) {
+        return DRIP_ERROR_ARRAY_FULL;
+    }
+
+    drip_manifest_init(manifest);
+
+    size_t offset = 0;
+
+    memcpy(&manifest->sam_type, buffer + offset, DRIP_SAM_TYPE_SIZE);
+    offset += DRIP_SAM_TYPE_SIZE;
+
+    memcpy(&manifest->vnb, buffer + offset, DRIP_TIMESTAMP_SIZE);
+    offset += DRIP_TIMESTAMP_SIZE;
+
+    memcpy(&manifest->vna, buffer + offset, DRIP_TIMESTAMP_SIZE);
+    offset += DRIP_TIMESTAMP_SIZE;
+
+    memcpy(manifest->previous_manifest_hash, buffer + offset, DRIP_HASH_SIZE);
+    offset += DRIP_HASH_SIZE;
+
+    memcpy(manifest->current_manifest_hash, buffer + offset, DRIP_HASH_SIZE);
+    offset += DRIP_HASH_SIZE;
+
+    memcpy(manifest->drip_link_hash, buffer + offset, DRIP_HASH_SIZE);
+    offset += DRIP_HASH_SIZE;
+
+    for (uint8_t i = 0; i < message_hash_count; i++) {
+        memcpy(manifest->evidence[i], buffer + offset, DRIP_HASH_SIZE);
+        offset += DRIP_HASH_SIZE;
+    }
+    manifest->message_hash_count = message_hash_count;
+
+    memcpy(manifest->det, buffer + offset, DRIP_DET_SIZE);
+    offset += DRIP_DET_SIZE;
+
+    memcpy(manifest->signature, buffer + offset, DRIP_SIGNATURE_SIZE);
+    offset += DRIP_SIGNATURE_SIZE;
 
     return DRIP_SUCCESS;
 }

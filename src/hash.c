@@ -13,7 +13,7 @@ int drip_hash(
     if (input == NULL || hash == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    if (hash_size < DRIP_HASH_LEN) {
+    if (hash_size < DRIP_HASH_SIZE) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
 

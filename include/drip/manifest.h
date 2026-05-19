@@ -7,16 +7,21 @@
 #include "drip/format.h"
 #include "drip/hash.h"
 
-#define DRIP_DET_LEN 16
-#define DRIP_SIGNATURE_LEN 64
-#define DRIP_MANIFEST_MESSAGE_MAX 11
-#define DRIP_AUTH_DATA_MAX 201
+#define DRIP_SAM_TYPE_SIZE 1
+#define DRIP_TIMESTAMP_SIZE 4
+#define DRIP_EVIDENCE_SIZE 112
+#define DRIP_DET_SIZE 16
+#define DRIP_SIGNATURE_SIZE 64
+#define DRIP_MANIFEST_MESSAGES_MAX 11
+
+#define DRIP_MANIFEST_MIN_SIZE 113 /* when zero hashes */
+#define DRIP_MANIFEST_MAX_SIZE 201 /* when 11 hashes */
 
 /** @brief Timestamp epoch (2019-01-01 00:00:00 UTC as Unix timestamp). */
 #define DRIP_MANIFEST_TIMESTAMP_EPOCH 1546300800
 
-typedef uint8_t drip_det_t[DRIP_DET_LEN];
-typedef uint8_t drip_sig_t[DRIP_SIGNATURE_LEN];
+typedef uint8_t drip_det_t[DRIP_DET_SIZE];
+typedef uint8_t drip_sig_t[DRIP_SIGNATURE_SIZE];
 
 typedef struct drip_manifest {
     uint8_t sam_type;
@@ -29,7 +34,7 @@ typedef struct drip_manifest {
     drip_hash_t drip_link_hash;
 
     uint8_t message_hash_count;
-    drip_hash_t message_hash_array[DRIP_MANIFEST_MESSAGE_MAX];
+    drip_hash_t evidence[DRIP_MANIFEST_MESSAGES_MAX];
 
     drip_det_t det;
     drip_sig_t signature;
@@ -142,6 +147,12 @@ int drip_manifest_encode(
     uint8_t *buffer,
     size_t buffer_size,
     size_t *encoded_length
+);
+
+int drip_manifest_decode(
+    drip_manifest_t *manifest,
+    const uint8_t *buffer,
+    size_t buffer_size
 );
 
 #endif
