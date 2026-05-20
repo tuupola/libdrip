@@ -1,3 +1,20 @@
+add_executable(example_cli cli/example_cli.c)
+target_link_libraries(example_cli drip rid)
+
+find_package(PkgConfig)
+if(PkgConfig_FOUND)
+  pkg_check_modules(SODIUM libsodium)
+  if(SODIUM_FOUND)
+    add_executable(example_auth auth/example_auth.c)
+    target_link_libraries(example_auth drip rid ${SODIUM_LIBRARIES})
+    target_include_directories(example_auth PRIVATE ${SODIUM_INCLUDE_DIRS})
+
+    add_executable(example_sign manifest/example_sign.c)
+    target_link_libraries(example_sign drip ${SODIUM_LIBRARIES})
+    target_include_directories(example_sign PRIVATE ${SODIUM_INCLUDE_DIRS})
+  endif()
+endif()
+
 include(FetchContent)
 FetchContent_Declare(
     librid
@@ -5,14 +22,3 @@ FetchContent_Declare(
     GIT_TAG master
 )
 FetchContent_MakeAvailable(librid)
-
-add_executable(example_auth auth/example_auth.c)
-target_link_libraries(example_auth drip rid)
-
-if(PkgConfig_FOUND)
-  pkg_check_modules(SODIUM libsodium)
-  if(SODIUM_FOUND)
-    target_link_libraries(example_auth ${SODIUM_LIBRARIES})
-    target_include_directories(example_auth PRIVATE ${SODIUM_INCLUDE_DIRS})
-  endif()
-endif()
