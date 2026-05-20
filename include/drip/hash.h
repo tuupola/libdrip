@@ -37,8 +37,7 @@ typedef int (*drip_hash_cb_t)(
 int drip_hash(
     const uint8_t *input,
     size_t input_length,
-    uint8_t *hash,
-    size_t hash_size,
+    drip_hash_t *hash,
     drip_hash_cb_t callback,
     void *context
 );

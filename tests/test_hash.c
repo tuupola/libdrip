@@ -40,47 +40,47 @@ static int failing_callback(
 }
 
 TEST test_null_ptr_input(void) {
-    uint8_t hash[DRIP_HASH_SIZE];
-    int rc = drip_hash(NULL, 0, hash, sizeof(hash), pass_through_callback, NULL);
+    drip_hash_t hash;
+    int rc = drip_hash(NULL, 0, &hash, pass_through_callback, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
 TEST test_null_ptr_hash(void) {
     uint8_t input[] = {0x01, 0x02};
-    int rc = drip_hash(input, sizeof(input), NULL, DRIP_HASH_SIZE, pass_through_callback, NULL);
+    int rc = drip_hash(input, sizeof(input), NULL, pass_through_callback, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
 TEST test_null_ptr_callback(void) {
-    uint8_t hash[DRIP_HASH_SIZE];
+    drip_hash_t hash;
     uint8_t input[] = {0x01, 0x02};
-    int rc = drip_hash(input, sizeof(input), hash, sizeof(hash), NULL, NULL);
+    int rc = drip_hash(input, sizeof(input), &hash, NULL, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
 TEST test_hash_len(void) {
-    uint8_t hash[DRIP_HASH_SIZE];
+    drip_hash_t hash;
     uint8_t input[] = {0x01, 0x02};
-    int rc = drip_hash(input, sizeof(input), hash, DRIP_HASH_SIZE - 1, pass_through_callback, NULL);
-    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    int rc = drip_hash(input, sizeof(input), &hash, pass_through_callback, NULL);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
     PASS();
 }
 
 TEST test_callback(void) {
-    uint8_t hash[DRIP_HASH_SIZE];
+    drip_hash_t hash;
     uint8_t input[] = {0x01, 0x02};
-    int rc = drip_hash(input, sizeof(input), hash, sizeof(hash), failing_callback, NULL);
+    int rc = drip_hash(input, sizeof(input), &hash, failing_callback, NULL);
     ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
 }
 
 TEST test_success(void) {
-    uint8_t hash[DRIP_HASH_SIZE];
+    drip_hash_t hash;
     uint8_t input[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-    int rc = drip_hash(input, sizeof(input), hash, sizeof(hash), pass_through_callback, NULL);
+    int rc = drip_hash(input, sizeof(input), &hash, pass_through_callback, NULL);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(input, hash, DRIP_HASH_SIZE);
     PASS();
