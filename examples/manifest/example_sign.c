@@ -48,17 +48,20 @@ static int sign_ed25519(
 }
 
 int main(void) {
-    drip_manifest_t manifest, decoded;
+    drip_manifest_t manifest;
     uint8_t encoded[DRIP_MANIFEST_MAX_SIZE];
     size_t encoded_length;
 
     drip_manifest_init(&manifest);
     drip_manifest_set_vna_unixtime(&manifest, (uint32_t)time(NULL));
     drip_manifest_set_vnb_unixtime(&manifest, (uint32_t)time(NULL) + 120);
+
+    drip_hash_t hash = {0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD, 0xBE, 0xEF};
+    drip_manifest_add_evidence(&manifest, &hash);
+
     drip_manifest_sign(&manifest, sign_ed25519, (void *)secret_key);
 
     drip_manifest_encode(&manifest, encoded, sizeof(encoded), &encoded_length);
-    drip_manifest_decode(&decoded, encoded, sizeof(encoded));
 
     printf("Manifest:\n\n");
     hexdump(encoded, encoded_length);
@@ -67,9 +70,6 @@ int main(void) {
     char json[4096];
     printf("\n");
     drip_manifest_to_json(&manifest, json, sizeof(json));
-    printf("%s\n\n", json);
-
-    drip_manifest_to_json(&decoded, json, sizeof(json));
     printf("%s\n\n", json);
 
     return 0;
