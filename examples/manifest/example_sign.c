@@ -72,5 +72,10 @@ int main(void) {
     drip_manifest_to_json(&manifest, json, sizeof(json));
     printf("%s\n\n", json);
 
+    printf("Verify with:\n");
+    printf("$ ./example_verify ");
+    hexstring(&encoded, encoded_length);
+    printf("\n");
+
     return 0;
 }

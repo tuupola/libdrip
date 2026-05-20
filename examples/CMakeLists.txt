@@ -12,6 +12,10 @@ if(PkgConfig_FOUND)
     add_executable(example_sign manifest/example_sign.c)
     target_link_libraries(example_sign drip ${SODIUM_LIBRARIES})
     target_include_directories(example_sign PRIVATE ${SODIUM_INCLUDE_DIRS})
+
+    add_executable(example_verify manifest/example_verify.c)
+    target_link_libraries(example_verify drip ${SODIUM_LIBRARIES})
+    target_include_directories(example_verify PRIVATE ${SODIUM_INCLUDE_DIRS})
   endif()
 endif()
 
