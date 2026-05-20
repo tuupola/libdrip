@@ -160,45 +160,45 @@ TEST test_set_and_get_vna_unixtime(void) {
     PASS();
 }
 
-TEST test_get_previous_manifest_hash_null_ptr_manifest(void) {
+TEST test_get_previous_hash_null_ptr_manifest(void) {
     drip_hash_t hash = {0};
-    int rc = drip_manifest_get_previous_manifest_hash(NULL, &hash);
+    int rc = drip_manifest_get_previous_hash(NULL, &hash);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_get_previous_manifest_hash_null_ptr_hash(void) {
+TEST test_get_previous_hash_null_ptr_hash(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_get_previous_manifest_hash(&manifest, NULL);
+    int rc = drip_manifest_get_previous_hash(&manifest, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_set_previous_manifest_hash_null_ptr_manifest(void) {
+TEST test_set_previous_hash_null_ptr_manifest(void) {
     drip_hash_t hash = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-    int rc = drip_manifest_set_previous_manifest_hash(NULL, &hash);
+    int rc = drip_manifest_set_previous_hash(NULL, &hash);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_set_previous_manifest_hash_null_ptr_hash(void) {
+TEST test_set_previous_hash_null_ptr_hash(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_previous_manifest_hash(&manifest, NULL);
+    int rc = drip_manifest_set_previous_hash(&manifest, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_set_and_get_previous_manifest_hash(void) {
+TEST test_set_and_get_previous_hash(void) {
     drip_manifest_t manifest;
     drip_hash_t hash = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
     drip_hash_t result;
 
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_previous_manifest_hash(&manifest, &hash);
+    int rc = drip_manifest_set_previous_hash(&manifest, &hash);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    rc = drip_manifest_get_previous_manifest_hash(&manifest, &result);
+    rc = drip_manifest_get_previous_hash(&manifest, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(hash, result, sizeof(drip_hash_t));
     PASS();
@@ -206,7 +206,7 @@ TEST test_set_and_get_previous_manifest_hash(void) {
 
 TEST test_get_current_manifest_hash_null_ptr_manifest(void) {
     drip_hash_t hash = {0};
-    int rc = drip_manifest_get_current_manifest_hash(NULL, &hash);
+    int rc = drip_manifest_get_current_hash(NULL, &hash);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -214,14 +214,14 @@ TEST test_get_current_manifest_hash_null_ptr_manifest(void) {
 TEST test_get_current_manifest_hash_null_ptr_hash(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_get_current_manifest_hash(&manifest, NULL);
+    int rc = drip_manifest_get_current_hash(&manifest, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
 TEST test_set_current_manifest_hash_null_ptr_manifest(void) {
     drip_hash_t hash = {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
-    int rc = drip_manifest_set_current_manifest_hash(NULL, &hash);
+    int rc = drip_manifest_set_current_hash(NULL, &hash);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -229,7 +229,7 @@ TEST test_set_current_manifest_hash_null_ptr_manifest(void) {
 TEST test_set_current_manifest_hash_null_ptr_hash(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_current_manifest_hash(&manifest, NULL);
+    int rc = drip_manifest_set_current_hash(&manifest, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -240,53 +240,53 @@ TEST test_set_and_get_current_manifest_hash(void) {
     drip_hash_t result;
 
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_current_manifest_hash(&manifest, &hash);
+    int rc = drip_manifest_set_current_hash(&manifest, &hash);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    rc = drip_manifest_get_current_manifest_hash(&manifest, &result);
+    rc = drip_manifest_get_current_hash(&manifest, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(hash, result, sizeof(drip_hash_t));
     PASS();
 }
 
-TEST test_get_drip_link_hash_null_ptr_manifest(void) {
+TEST test_get_link_hash_null_ptr_manifest(void) {
     drip_hash_t hash = {0};
-    int rc = drip_manifest_get_drip_link_hash(NULL, &hash);
+    int rc = drip_manifest_get_link_hash(NULL, &hash);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_get_drip_link_hash_null_ptr_hash(void) {
+TEST test_get_link_hash_null_ptr_hash(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_get_drip_link_hash(&manifest, NULL);
+    int rc = drip_manifest_get_link_hash(&manifest, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_set_drip_link_hash_null_ptr_manifest(void) {
+TEST test_set_link_hash_null_ptr_manifest(void) {
     drip_hash_t hash = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28};
-    int rc = drip_manifest_set_drip_link_hash(NULL, &hash);
+    int rc = drip_manifest_set_link_hash(NULL, &hash);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_set_drip_link_hash_null_ptr_hash(void) {
+TEST test_set_link_hash_null_ptr_hash(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_drip_link_hash(&manifest, NULL);
+    int rc = drip_manifest_set_link_hash(&manifest, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_set_and_get_drip_link_hash(void) {
+TEST test_set_and_get_link_hash(void) {
     drip_manifest_t manifest;
     drip_hash_t hash = {0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28};
     drip_hash_t result;
 
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_drip_link_hash(&manifest, &hash);
+    int rc = drip_manifest_set_link_hash(&manifest, &hash);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    rc = drip_manifest_get_drip_link_hash(&manifest, &result);
+    rc = drip_manifest_get_link_hash(&manifest, &result);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(hash, result, sizeof(drip_hash_t));
     PASS();
@@ -489,14 +489,14 @@ TEST test_sign_null_ptr_callback(void) {
 TEST test_sign_and_verify_success(void) {
     drip_manifest_t manifest;
     drip_hash_t previous_hash = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
-    drip_hash_t drip_link_hash = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
+    drip_hash_t link_hash = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
     drip_det_t det = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
 
     drip_manifest_init(&manifest);
     drip_manifest_set_vnb(&manifest, 100000000);
     drip_manifest_set_vna(&manifest, 100000120);
-    drip_manifest_set_previous_manifest_hash(&manifest, &previous_hash);
-    drip_manifest_set_drip_link_hash(&manifest, &drip_link_hash);
+    drip_manifest_set_previous_hash(&manifest, &previous_hash);
+    drip_manifest_set_link_hash(&manifest, &link_hash);
     drip_manifest_set_det(&manifest, &det);
 
     int rc = drip_manifest_sign(&manifest, sign_ed25519, (void *)secret_key);
@@ -547,7 +547,7 @@ TEST test_encode_success(void) {
     drip_manifest_t manifest;
     drip_hash_t previous_hash = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
     drip_hash_t current_hash = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
-    drip_hash_t drip_link_hash = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+    drip_hash_t link_hash = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
     drip_hash_t msg_hash1 = {0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04};
     drip_hash_t msg_hash2 = {0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05};
     drip_det_t det = {0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06};
@@ -556,9 +556,9 @@ TEST test_encode_success(void) {
     drip_manifest_init(&manifest);
     drip_manifest_set_vnb(&manifest, 100000000);
     drip_manifest_set_vna(&manifest, 100000120);
-    drip_manifest_set_previous_manifest_hash(&manifest, &previous_hash);
-    drip_manifest_set_current_manifest_hash(&manifest, &current_hash);
-    drip_manifest_set_drip_link_hash(&manifest, &drip_link_hash);
+    drip_manifest_set_previous_hash(&manifest, &previous_hash);
+    drip_manifest_set_current_hash(&manifest, &current_hash);
+    drip_manifest_set_link_hash(&manifest, &link_hash);
     drip_manifest_add_evidence(&manifest, &msg_hash1);
     drip_manifest_add_evidence(&manifest, &msg_hash2);
     drip_manifest_set_det(&manifest, &det);
@@ -607,7 +607,7 @@ TEST test_decode_success(void) {
     drip_manifest_t in, out;
     drip_hash_t previous_hash = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
     drip_hash_t current_hash = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
-    drip_hash_t drip_link_hash = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+    drip_hash_t link_hash = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
     drip_hash_t msg_hash1 = {0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04};
     drip_hash_t msg_hash2 = {0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05};
     drip_det_t det = {0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06};
@@ -616,9 +616,9 @@ TEST test_decode_success(void) {
     drip_manifest_init(&in);
     drip_manifest_set_vnb(&in, 100000000);
     drip_manifest_set_vna(&in, 100000120);
-    drip_manifest_set_previous_manifest_hash(&in, &previous_hash);
-    drip_manifest_set_current_manifest_hash(&in, &current_hash);
-    drip_manifest_set_drip_link_hash(&in, &drip_link_hash);
+    drip_manifest_set_previous_hash(&in, &previous_hash);
+    drip_manifest_set_current_hash(&in, &current_hash);
+    drip_manifest_set_link_hash(&in, &link_hash);
     drip_manifest_add_evidence(&in, &msg_hash1);
     drip_manifest_add_evidence(&in, &msg_hash2);
     drip_manifest_set_det(&in, &det);
@@ -635,9 +635,9 @@ TEST test_decode_success(void) {
     ASSERT_EQ(DRIP_SAM_TYPE_MANIFEST, out.sam_type);
     ASSERT_EQ(100000000, out.vnb);
     ASSERT_EQ(100000120, out.vna);
-    ASSERT_MEM_EQ(previous_hash, out.previous_manifest_hash, sizeof(drip_hash_t));
+    ASSERT_MEM_EQ(previous_hash, out.previous_hash, sizeof(drip_hash_t));
     ASSERT_MEM_EQ(current_hash, out.current_manifest_hash, sizeof(drip_hash_t));
-    ASSERT_MEM_EQ(drip_link_hash, out.drip_link_hash, sizeof(drip_hash_t));
+    ASSERT_MEM_EQ(link_hash, out.link_hash, sizeof(drip_hash_t));
     ASSERT_EQ(2, out.evidence_count);
     ASSERT_MEM_EQ(msg_hash1, out.evidence[0], sizeof(drip_hash_t));
     ASSERT_MEM_EQ(msg_hash2, out.evidence[1], sizeof(drip_hash_t));
@@ -661,21 +661,21 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_vna_unixtime_null_ptr);
     RUN_TEST(test_get_vna_unixtime_null_ptr);
     RUN_TEST(test_set_and_get_vna_unixtime);
-    RUN_TEST(test_get_previous_manifest_hash_null_ptr_manifest);
-    RUN_TEST(test_get_previous_manifest_hash_null_ptr_hash);
-    RUN_TEST(test_set_previous_manifest_hash_null_ptr_manifest);
-    RUN_TEST(test_set_previous_manifest_hash_null_ptr_hash);
-    RUN_TEST(test_set_and_get_previous_manifest_hash);
+    RUN_TEST(test_get_previous_hash_null_ptr_manifest);
+    RUN_TEST(test_get_previous_hash_null_ptr_hash);
+    RUN_TEST(test_set_previous_hash_null_ptr_manifest);
+    RUN_TEST(test_set_previous_hash_null_ptr_hash);
+    RUN_TEST(test_set_and_get_previous_hash);
     RUN_TEST(test_get_current_manifest_hash_null_ptr_manifest);
     RUN_TEST(test_get_current_manifest_hash_null_ptr_hash);
     RUN_TEST(test_set_current_manifest_hash_null_ptr_manifest);
     RUN_TEST(test_set_current_manifest_hash_null_ptr_hash);
     RUN_TEST(test_set_and_get_current_manifest_hash);
-    RUN_TEST(test_get_drip_link_hash_null_ptr_manifest);
-    RUN_TEST(test_get_drip_link_hash_null_ptr_hash);
-    RUN_TEST(test_set_drip_link_hash_null_ptr_manifest);
-    RUN_TEST(test_set_drip_link_hash_null_ptr_hash);
-    RUN_TEST(test_set_and_get_drip_link_hash);
+    RUN_TEST(test_get_link_hash_null_ptr_manifest);
+    RUN_TEST(test_get_link_hash_null_ptr_hash);
+    RUN_TEST(test_set_link_hash_null_ptr_manifest);
+    RUN_TEST(test_set_link_hash_null_ptr_hash);
+    RUN_TEST(test_set_and_get_link_hash);
     RUN_TEST(test_get_det_null_ptr_manifest);
     RUN_TEST(test_get_det_null_ptr_det);
     RUN_TEST(test_set_det_null_ptr_manifest);
