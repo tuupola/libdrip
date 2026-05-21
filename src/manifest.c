@@ -232,7 +232,7 @@ int drip_manifest_sign(
 
 int drip_manifest_verify(
     drip_manifest_t *manifest,
-    rid_manifest_verify_cb_t callback,
+    drip_manifest_verify_cb_t callback,
     void *context
 ) {
     if (manifest == NULL || callback == NULL) {

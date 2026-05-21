@@ -79,7 +79,7 @@ typedef int (*drid_manifest_sign_cb_t)(
  * @retval 0 on success.
  * @retval Non-zero on verification failure.
  */
-typedef int (*rid_manifest_verify_cb_t)(
+typedef int (*drip_manifest_verify_cb_t)(
     void *context,
     const uint8_t *input,
     size_t input_length,
