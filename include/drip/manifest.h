@@ -30,7 +30,7 @@ typedef struct drip_manifest {
     uint32_t vna;
 
     drip_hash_t previous_hash;
-    drip_hash_t current_manifest_hash;
+    drip_hash_t current_hash;
     drip_hash_t link_hash;
 
     uint8_t evidence_count;

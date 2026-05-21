@@ -204,14 +204,14 @@ TEST test_set_and_get_previous_hash(void) {
     PASS();
 }
 
-TEST test_get_current_manifest_hash_null_ptr_manifest(void) {
+TEST test_get_current_hash_null_ptr_manifest(void) {
     drip_hash_t hash = {0};
     int rc = drip_manifest_get_current_hash(NULL, &hash);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_get_current_manifest_hash_null_ptr_hash(void) {
+TEST test_get_current_hash_null_ptr_hash(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
     int rc = drip_manifest_get_current_hash(&manifest, NULL);
@@ -219,14 +219,14 @@ TEST test_get_current_manifest_hash_null_ptr_hash(void) {
     PASS();
 }
 
-TEST test_set_current_manifest_hash_null_ptr_manifest(void) {
+TEST test_set_current_hash_null_ptr_manifest(void) {
     drip_hash_t hash = {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
     int rc = drip_manifest_set_current_hash(NULL, &hash);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_set_current_manifest_hash_null_ptr_hash(void) {
+TEST test_set_current_hash_null_ptr_hash(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
     int rc = drip_manifest_set_current_hash(&manifest, NULL);
@@ -234,7 +234,7 @@ TEST test_set_current_manifest_hash_null_ptr_hash(void) {
     PASS();
 }
 
-TEST test_set_and_get_current_manifest_hash(void) {
+TEST test_set_and_get_current_hash(void) {
     drip_manifest_t manifest;
     drip_hash_t hash = {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
     drip_hash_t result;
@@ -636,7 +636,7 @@ TEST test_decode_success(void) {
     ASSERT_EQ(100000000, out.vnb);
     ASSERT_EQ(100000120, out.vna);
     ASSERT_MEM_EQ(previous_hash, out.previous_hash, sizeof(drip_hash_t));
-    ASSERT_MEM_EQ(current_hash, out.current_manifest_hash, sizeof(drip_hash_t));
+    ASSERT_MEM_EQ(current_hash, out.current_hash, sizeof(drip_hash_t));
     ASSERT_MEM_EQ(link_hash, out.link_hash, sizeof(drip_hash_t));
     ASSERT_EQ(2, out.evidence_count);
     ASSERT_MEM_EQ(msg_hash1, out.evidence[0], sizeof(drip_hash_t));
@@ -666,11 +666,11 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_previous_hash_null_ptr_manifest);
     RUN_TEST(test_set_previous_hash_null_ptr_hash);
     RUN_TEST(test_set_and_get_previous_hash);
-    RUN_TEST(test_get_current_manifest_hash_null_ptr_manifest);
-    RUN_TEST(test_get_current_manifest_hash_null_ptr_hash);
-    RUN_TEST(test_set_current_manifest_hash_null_ptr_manifest);
-    RUN_TEST(test_set_current_manifest_hash_null_ptr_hash);
-    RUN_TEST(test_set_and_get_current_manifest_hash);
+    RUN_TEST(test_get_current_hash_null_ptr_manifest);
+    RUN_TEST(test_get_current_hash_null_ptr_hash);
+    RUN_TEST(test_set_current_hash_null_ptr_manifest);
+    RUN_TEST(test_set_current_hash_null_ptr_hash);
+    RUN_TEST(test_set_and_get_current_hash);
     RUN_TEST(test_get_link_hash_null_ptr_manifest);
     RUN_TEST(test_get_link_hash_null_ptr_hash);
     RUN_TEST(test_set_link_hash_null_ptr_manifest);

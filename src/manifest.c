@@ -98,7 +98,7 @@ int drip_manifest_get_current_hash(const drip_manifest_t *manifest, drip_hash_t 
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    memcpy(hash, manifest->current_manifest_hash, sizeof(drip_hash_t));
+    memcpy(hash, manifest->current_hash, sizeof(drip_hash_t));
     return DRIP_SUCCESS;
 }
 
@@ -106,7 +106,7 @@ int drip_manifest_set_current_hash(drip_manifest_t *manifest, const drip_hash_t 
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    memcpy(manifest->current_manifest_hash, hash, sizeof(drip_hash_t));
+    memcpy(manifest->current_hash, hash, sizeof(drip_hash_t));
     return DRIP_SUCCESS;
 }
 
@@ -195,7 +195,7 @@ int drip_manifest_sign(
     size_t offset = 0;
 
     /* Build the payload to be signed. */
-    /* vnb || vna || previous || null | link || messages || det */
+    /* vnb || vna || previous || current | link || messages || det */
     memcpy(payload + offset, &manifest->vnb, sizeof(manifest->vnb));
     offset += sizeof(manifest->vnb);
 
@@ -205,9 +205,8 @@ int drip_manifest_sign(
     memcpy(payload + offset, manifest->previous_hash, sizeof(manifest->previous_hash));
     offset += sizeof(manifest->previous_hash);
 
-    /* Current manifest hash should be null filled when signing. */
-    memset(payload + offset, 0, sizeof(manifest->current_manifest_hash));
-    offset += sizeof(manifest->current_manifest_hash);
+    memcpy(payload + offset, &manifest->current_hash, sizeof(manifest->current_hash));
+    offset += sizeof(manifest->current_hash);
 
     memcpy(payload + offset, manifest->link_hash, sizeof(manifest->link_hash));
     offset += sizeof(manifest->link_hash);
@@ -253,8 +252,8 @@ int drip_manifest_verify(
     memcpy(payload + offset, manifest->previous_hash, sizeof(manifest->previous_hash));
     offset += sizeof(manifest->previous_hash);
 
-    memset(payload + offset, 0, sizeof(manifest->current_manifest_hash));
-    offset += sizeof(manifest->current_manifest_hash);
+    memcpy(payload + offset, &manifest->current_hash, sizeof(manifest->current_hash));
+    offset += sizeof(manifest->current_hash);
 
     memcpy(payload + offset, manifest->link_hash, sizeof(manifest->link_hash));
     offset += sizeof(manifest->link_hash);
@@ -305,7 +304,7 @@ int drip_manifest_encode(
     memcpy(buffer + offset, manifest->previous_hash, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
-    memcpy(buffer + offset, manifest->current_manifest_hash, DRIP_HASH_SIZE);
+    memcpy(buffer + offset, manifest->current_hash, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
     memcpy(buffer + offset, manifest->link_hash, DRIP_HASH_SIZE);
@@ -366,7 +365,7 @@ int drip_manifest_decode(
     memcpy(manifest->previous_hash, buffer + offset, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
-    memcpy(manifest->current_manifest_hash, buffer + offset, DRIP_HASH_SIZE);
+    memcpy(manifest->current_hash, buffer + offset, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
     memcpy(manifest->link_hash, buffer + offset, DRIP_HASH_SIZE);
@@ -412,7 +411,6 @@ int drip_manifest_to_json(const drip_manifest_t *manifest, char *buffer, size_t 
     drip_hash_to_hex(&previous_hash, previous_hex, sizeof(previous_hex));
     drip_hash_to_hex(&current_hash, current_hex, sizeof(current_hex));
     drip_hash_to_hex(&link_hash, link_hex, sizeof(link_hex));
-
 
     char sig_hex[129];
     size_t sig_pos = 0;
