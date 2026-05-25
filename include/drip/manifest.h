@@ -106,6 +106,11 @@ int drip_manifest_set_previous_hash(drip_manifest_t *manifest, const drip_hash_t
 
 int drip_manifest_get_current_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
 int drip_manifest_set_current_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
+int drip_manifest_update_current_hash(
+    drip_manifest_t *manifest,
+    drip_hash_cb_t callback,
+    void *context
+);
 
 int drip_manifest_get_link_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
 int drip_manifest_set_link_hash(drip_manifest_t *manifest, const drip_hash_t *hash);

@@ -110,6 +110,41 @@ int drip_manifest_set_current_hash(drip_manifest_t *manifest, const drip_hash_t 
     return DRIP_SUCCESS;
 }
 
+int drip_manifest_update_current_hash(
+    drip_manifest_t *manifest,
+    drip_hash_cb_t callback,
+    void *context
+) {
+    if (manifest == NULL || callback == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    uint8_t buffer[DRIP_HASH_SIZE * (2 + DRIP_MANIFEST_EVIDENCE_MAX)];
+    size_t offset = 0;
+
+    memcpy(buffer + offset, manifest->previous_hash, DRIP_HASH_SIZE);
+    offset += DRIP_HASH_SIZE;
+
+    /* Current hash is zeroed. */
+    memset(buffer + offset, 0, DRIP_HASH_SIZE);
+    offset += DRIP_HASH_SIZE;
+
+    for (uint8_t i = 0; i < manifest->evidence_count; i++) {
+        memcpy(buffer + offset, manifest->evidence[i], DRIP_HASH_SIZE);
+        offset += DRIP_HASH_SIZE;
+    }
+
+    size_t hash_length = 0;
+    int rc = callback(
+        context, buffer, offset, manifest->current_hash, DRIP_HASH_SIZE, &hash_length
+    );
+    if (rc != 0) {
+        return DRIP_ERROR_CALLBACK_FAILED;
+    }
+
+    return DRIP_SUCCESS;
+}
+
 int drip_manifest_get_link_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
