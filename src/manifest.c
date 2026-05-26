@@ -78,12 +78,11 @@ int drip_manifest_set_vna(drip_manifest_t *manifest, uint32_t vna) {
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_previous_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
-    if (manifest == NULL || hash == NULL) {
-        return DRIP_ERROR_NULL_POINTER;
+const drip_hash_t *drip_manifest_get_previous_hash(const drip_manifest_t *manifest) {
+    if (manifest == NULL) {
+        return NULL;
     }
-    memcpy(hash, manifest->previous_hash, sizeof(drip_hash_t));
-    return DRIP_SUCCESS;
+    return &manifest->previous_hash;
 }
 
 int drip_manifest_set_previous_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
@@ -94,12 +93,11 @@ int drip_manifest_set_previous_hash(drip_manifest_t *manifest, const drip_hash_t
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_current_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
-    if (manifest == NULL || hash == NULL) {
-        return DRIP_ERROR_NULL_POINTER;
+const drip_hash_t *drip_manifest_get_current_hash(const drip_manifest_t *manifest) {
+    if (manifest == NULL) {
+        return NULL;
     }
-    memcpy(hash, manifest->current_hash, sizeof(drip_hash_t));
-    return DRIP_SUCCESS;
+    return &manifest->current_hash;
 }
 
 int drip_manifest_set_current_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
@@ -145,12 +143,11 @@ int drip_manifest_update_current_hash(
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_link_hash(const drip_manifest_t *manifest, drip_hash_t *hash) {
-    if (manifest == NULL || hash == NULL) {
-        return DRIP_ERROR_NULL_POINTER;
+const drip_hash_t *drip_manifest_get_link_hash(const drip_manifest_t *manifest) {
+    if (manifest == NULL) {
+        return NULL;
     }
-    memcpy(hash, manifest->link_hash, sizeof(drip_hash_t));
-    return DRIP_SUCCESS;
+    return &manifest->link_hash;
 }
 
 int drip_manifest_set_link_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
@@ -161,12 +158,11 @@ int drip_manifest_set_link_hash(drip_manifest_t *manifest, const drip_hash_t *ha
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_det(const drip_manifest_t *manifest, drip_det_t *det) {
-    if (manifest == NULL || det == NULL) {
-        return DRIP_ERROR_NULL_POINTER;
+const drip_det_t *drip_manifest_get_det(const drip_manifest_t *manifest) {
+    if (manifest == NULL) {
+        return NULL;
     }
-    memcpy(det, manifest->det, sizeof(drip_det_t));
-    return DRIP_SUCCESS;
+    return &manifest->det;
 }
 
 int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det) {
@@ -177,19 +173,18 @@ int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det) {
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_signature(const drip_manifest_t *manifest, drip_sig_t *signature) {
-    if (manifest == NULL || signature == NULL) {
-        return DRIP_ERROR_NULL_POINTER;
+const drip_signature_t *drip_manifest_get_signature(const drip_manifest_t *manifest) {
+    if (manifest == NULL) {
+        return NULL;
     }
-    memcpy(signature, manifest->signature, sizeof(drip_sig_t));
-    return DRIP_SUCCESS;
+    return &manifest->signature;
 }
 
-int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_sig_t *signature) {
+int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_signature_t *signature) {
     if (manifest == NULL || signature == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-    memcpy(manifest->signature, signature, sizeof(drip_sig_t));
+    memcpy(manifest->signature, signature, sizeof(drip_signature_t));
     return DRIP_SUCCESS;
 }
 
@@ -205,15 +200,14 @@ int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *has
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index, drip_hash_t *hash) {
-    if (manifest == NULL || hash == NULL) {
-        return DRIP_ERROR_NULL_POINTER;
+const drip_hash_t *drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index) {
+    if (manifest == NULL) {
+        return NULL;
     }
     if (index >= manifest->evidence_count) {
-        return DRIP_ERROR_INVALID_INDEX;
+        return NULL;
     }
-    memcpy(hash, manifest->evidence[index], sizeof(drip_hash_t));
-    return DRIP_SUCCESS;
+    return &manifest->evidence[index];
 }
 
 int drip_manifest_sign(
@@ -426,31 +420,28 @@ int drip_manifest_to_json(const drip_manifest_t *manifest, char *buffer, size_t 
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    drip_hash_t previous_hash, current_hash, link_hash;
-    drip_manifest_get_previous_hash(manifest, &previous_hash);
-    drip_manifest_get_current_hash(manifest, &current_hash);
-    drip_manifest_get_link_hash(manifest, &link_hash);
+    const drip_hash_t *previous_hash = drip_manifest_get_previous_hash(manifest);
+    const drip_hash_t *current_hash = drip_manifest_get_current_hash(manifest);
+    const drip_hash_t *link_hash = drip_manifest_get_link_hash(manifest);
 
-    drip_det_t det;
+    const drip_det_t *det = drip_manifest_get_det(manifest);
+
     char det_hex[33];
-    drip_manifest_get_det(manifest, &det);
-
     for (uint8_t i = 0; i < 16; i++) {
-        snprintf(det_hex + i * 2, 3, "%02x", det[i]);
+        snprintf(det_hex + i * 2, 3, "%02x", (*det)[i]);
     }
 
-    drip_sig_t signature;
-    drip_manifest_get_signature(manifest, &signature);
+    const drip_signature_t *signature = drip_manifest_get_signature(manifest);
 
     char previous_hex[17], current_hex[17], link_hex[17];
-    drip_hash_to_hex(&previous_hash, previous_hex, sizeof(previous_hex));
-    drip_hash_to_hex(&current_hash, current_hex, sizeof(current_hex));
-    drip_hash_to_hex(&link_hash, link_hex, sizeof(link_hex));
+    drip_hash_to_hex(previous_hash, previous_hex, sizeof(previous_hex));
+    drip_hash_to_hex(current_hash, current_hex, sizeof(current_hex));
+    drip_hash_to_hex(link_hash, link_hex, sizeof(link_hex));
 
     char sig_hex[129];
     size_t sig_pos = 0;
     for (uint8_t i = 0; i < 64; i++) {
-        sig_pos += snprintf(sig_hex + sig_pos, 3, "%02x", signature[i]);
+        sig_pos += snprintf(sig_hex + sig_pos, 3, "%02x", (*signature)[i]);
     }
 
     char evidence_json[256] = "[";

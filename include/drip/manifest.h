@@ -21,7 +21,7 @@
 #define DRIP_MANIFEST_TIMESTAMP_EPOCH 1546300800
 
 typedef uint8_t drip_det_t[DRIP_DET_SIZE];
-typedef uint8_t drip_sig_t[DRIP_SIGNATURE_SIZE];
+typedef uint8_t drip_signature_t[DRIP_SIGNATURE_SIZE];
 
 typedef struct drip_manifest {
     uint8_t sam_type;
@@ -37,7 +37,7 @@ typedef struct drip_manifest {
     drip_hash_t evidence[DRIP_MANIFEST_EVIDENCE_MAX];
 
     drip_det_t det;
-    drip_sig_t signature;
+    drip_signature_t signature;
 } drip_manifest_t;
 
 /**
@@ -101,10 +101,9 @@ uint32_t drip_manifest_get_vna_unixtime(const drip_manifest_t *manifest);
 int drip_manifest_set_vnb_unixtime(drip_manifest_t *manifest, uint32_t unixtime);
 uint32_t drip_manifest_get_vnb_unixtime(const drip_manifest_t *manifest);
 
-int drip_manifest_get_previous_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
+const drip_hash_t *drip_manifest_get_previous_hash(const drip_manifest_t *manifest);
 int drip_manifest_set_previous_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
-
-int drip_manifest_get_current_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
+const drip_hash_t *drip_manifest_get_current_hash(const drip_manifest_t *manifest);
 int drip_manifest_set_current_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 int drip_manifest_update_current_hash(
     drip_manifest_t *manifest,
@@ -112,17 +111,14 @@ int drip_manifest_update_current_hash(
     void *context
 );
 
-int drip_manifest_get_link_hash(const drip_manifest_t *manifest, drip_hash_t *hash);
+const drip_hash_t *drip_manifest_get_link_hash(const drip_manifest_t *manifest);
 int drip_manifest_set_link_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
-
-int drip_manifest_get_det(const drip_manifest_t *manifest, drip_det_t *det);
+const drip_det_t *drip_manifest_get_det(const drip_manifest_t *manifest);
 int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det);
-
-int drip_manifest_get_signature(const drip_manifest_t *manifest, drip_sig_t *signature);
-int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_sig_t *signature);
-
+const drip_signature_t *drip_manifest_get_signature(const drip_manifest_t *manifest);
+int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_signature_t *signature);
+const drip_hash_t *drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index);
 int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *hash);
-int drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index, drip_hash_t *hash);
 
 /**
  * @brief Sign a DRIP manifest with caller supplied callback.
