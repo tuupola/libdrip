@@ -10,18 +10,10 @@
 #define DRIP_SAM_TYPE_SIZE 1
 #define DRIP_TIMESTAMP_SIZE 4
 #define DRIP_EVIDENCE_SIZE 112
-#define DRIP_DET_SIZE 16
-#define DRIP_SIGNATURE_SIZE 64
 #define DRIP_MANIFEST_EVIDENCE_MAX 11
 
 #define DRIP_MANIFEST_MIN_SIZE 113 /* when zero hashes */
 #define DRIP_MANIFEST_MAX_SIZE 201 /* when 11 hashes */
-
-/** @brief Timestamp epoch (2019-01-01 00:00:00 UTC as Unix timestamp). */
-#define DRIP_MANIFEST_TIMESTAMP_EPOCH 1546300800
-
-typedef uint8_t drip_det_t[DRIP_DET_SIZE];
-typedef uint8_t drip_signature_t[DRIP_SIGNATURE_SIZE];
 
 typedef struct drip_manifest {
     uint8_t sam_type;

@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "drip/format.h"
+#include "drip/link.h"
 #include "drip/manifest.h"
 
 static int hex_to_bytes(const char *hex, uint8_t *bytes, size_t max_length) {
@@ -35,6 +37,7 @@ static void strip_newline(char *str) {
 
 static int decode_and_print(const char *hex_string, int force) {
     int rc;
+    char json[4096];
 
     uint8_t buffer[DRIP_MANIFEST_MAX_SIZE];
     int length = hex_to_bytes(hex_string, buffer, sizeof(buffer));
@@ -43,40 +46,47 @@ static int decode_and_print(const char *hex_string, int force) {
         return 1;
     }
 
-    uint8_t *message = buffer;
-    drip_manifest_t manifest;
+    uint8_t sam_type = buffer[0];
 
-    if (length < DRIP_MANIFEST_MIN_SIZE) {
-        fprintf(stderr, "Error: Expected at least %d bytes, got %d\n", DRIP_MANIFEST_MIN_SIZE, length);
-        return 1;
-    }
+    if (sam_type == DRIP_SAM_TYPE_LINK) {
+        if (length != DRIP_LINK_SIZE) {
+            fprintf(stderr, "Error: Expected %d bytes for LINK, got %d\n", DRIP_LINK_SIZE, length);
+            return 1;
+        }
 
-    if (length > DRIP_MANIFEST_MAX_SIZE) {
-        fprintf(stderr, "Error: Expected at most %d bytes, got %d\n", DRIP_MANIFEST_MAX_SIZE, length);
-        return 1;
-    }
+        drip_link_t link;
+        memcpy(&link, buffer, sizeof(link));
 
-    // int rc = drip_format_validate(message);
-    // if (rc < 0) {
-    //     if (force) {
-    //         fprintf(stderr, "Warning: %s\n", rid_error_to_string(rc));
-    //     } else {
-    //         fprintf(stderr, "Error: %s\n", rid_error_to_string(rc));
-    //         return 1;
-    //     }
-    // }
+        rc = drip_link_to_json(&link, json, sizeof(json));
+        if (rc < 0) {
+            fprintf(stderr, "Error: %d\n", rc);
+            return 1;
+        }
+    } else if (sam_type == DRIP_SAM_TYPE_MANIFEST) {
+        if (length < DRIP_MANIFEST_MIN_SIZE) {
+            fprintf(stderr, "Error: Expected at least %d bytes, got %d\n", DRIP_MANIFEST_MIN_SIZE, length);
+            return 1;
+        }
 
-    char json[4096];
-    rc = drip_manifest_decode(&manifest, message, length);
-    if (rc < 0) {
-        fprintf(stderr, "Error: %d\n", rc);
-        return 1;
-    }
+        if (length > DRIP_MANIFEST_MAX_SIZE) {
+            fprintf(stderr, "Error: Expected at most %d bytes, got %d\n", DRIP_MANIFEST_MAX_SIZE, length);
+            return 1;
+        }
 
-    rc = drip_manifest_to_json(&manifest, json, sizeof(json));
-    if (rc < 0) {
-        //fprintf(stderr, "Error: %s\n", rid_error_to_string(rc));
-        fprintf(stderr, "Error: %d\n", rc);
+        drip_manifest_t manifest;
+        rc = drip_manifest_decode(&manifest, buffer, length);
+        if (rc < 0) {
+            fprintf(stderr, "Error: %d\n", rc);
+            return 1;
+        }
+
+        rc = drip_manifest_to_json(&manifest, json, sizeof(json));
+        if (rc < 0) {
+            fprintf(stderr, "Error: %d\n", rc);
+            return 1;
+        }
+    } else {
+        fprintf(stderr, "Error: Unsupported SAM type: 0x%02x\n", sam_type);
         return 1;
     }
 

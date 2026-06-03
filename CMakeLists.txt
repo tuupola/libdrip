@@ -27,6 +27,7 @@ else()
 
   add_library(drip
         src/hash.c
+        src/link.c
         src/manifest.c
     )
 
