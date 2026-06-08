@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "drip/format.h"
 #include "drip/manifest.h"
 #include "unit.h"
 
@@ -157,6 +158,24 @@ TEST test_set_and_get_vna_unixtime(void) {
     int rc = drip_manifest_set_vna_unixtime(&manifest, unixtime);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_EQ(unixtime, drip_manifest_get_vna_unixtime(&manifest));
+    PASS();
+}
+
+TEST test_set_vnb_unixtime_before_epoch(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+
+    int rc = drip_manifest_set_vnb_unixtime(&manifest, 1546300799);
+    ASSERT_EQ(DRIP_ERROR_OUT_OF_RANGE, rc);
+    PASS();
+}
+
+TEST test_set_vna_unixtime_before_epoch(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+
+    int rc = drip_manifest_set_vna_unixtime(&manifest, 1546300799);
+    ASSERT_EQ(DRIP_ERROR_OUT_OF_RANGE, rc);
     PASS();
 }
 
@@ -593,9 +612,11 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_vnb_unixtime_null_ptr);
     RUN_TEST(test_get_vnb_unixtime_null_ptr);
     RUN_TEST(test_set_and_get_vnb_unixtime);
+    RUN_TEST(test_set_vnb_unixtime_before_epoch);
     RUN_TEST(test_set_vna_unixtime_null_ptr);
     RUN_TEST(test_get_vna_unixtime_null_ptr);
     RUN_TEST(test_set_and_get_vna_unixtime);
+    RUN_TEST(test_set_vna_unixtime_before_epoch);
     RUN_TEST(test_get_previous_hash_null_manifest);
     RUN_TEST(test_set_previous_hash_null_ptr_manifest);
     RUN_TEST(test_set_previous_hash_null_ptr_hash);
