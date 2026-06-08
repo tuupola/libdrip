@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <sodium.h>
 
 #include "drip/link.h"
-#include "keys.h"
 
 static int hex_to_bytes(const char *hex, uint8_t *bytes, size_t max_length) {
     size_t hex_length = strlen(hex);
@@ -41,33 +41,60 @@ static int verify_ed25519(
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <hex string>\n", argv[0]);
+    if (argc < 3) {
+        fprintf(stderr, "Usage: %s <parent hex> <child hex>\n", argv[0]);
         return 1;
     }
-
-    const char *hex_input = argv[1];
-    int rc = 0;
 
     if (sodium_init() < 0) {
         return 1;
     }
 
+    drip_link_t parent_link, child_link;
+
+    const char *parent_hex = argv[1];
+    const char *child_hex = argv[2];
+    int rc = 0;
+    int length = 0;
+    uint32_t now, vnb, vna;
+
     uint8_t buffer[DRIP_LINK_SIZE];
-    int length = hex_to_bytes(hex_input, buffer, sizeof(buffer));
+
+    length = hex_to_bytes(parent_hex, buffer, sizeof(buffer));
     if (length < 0) {
-        fprintf(stderr, "Error: Invalid hex string\n");
+        fprintf(stderr, "Error: Invalid parent hex string\n");
         return 1;
     }
 
-    drip_link_t link;
-    rc = drip_link_decode(&link, buffer, (size_t)length);
+    rc = drip_link_decode(&parent_link, buffer, (size_t)length);
     if (rc != 0) {
-        fprintf(stderr, "Error: Failed to decode link\n");
+        fprintf(stderr, "Error: Failed to decode parent link\n");
         return 1;
     }
 
-    rc = drip_link_verify(&link, verify_ed25519, (void *)public_key);
+    length = hex_to_bytes(child_hex, buffer, sizeof(buffer));
+    if (length < 0) {
+        fprintf(stderr, "Error: Invalid child hex string\n");
+        return 1;
+    }
+
+    rc = drip_link_decode(&child_link, buffer, (size_t)length);
+    if (rc != 0) {
+        fprintf(stderr, "Error: Failed to decode child link\n");
+        return 1;
+    }
+
+    now = (uint32_t)time(NULL);
+    vnb = drip_link_get_vnb_unixtime(&child_link);
+    vna = drip_link_get_vna_unixtime(&child_link);
+    if (now < vnb || now > vna) {
+        fprintf(stderr, "Error: Timestamp now=%u vnb=%u vna=%u\n", now, vnb, vna);
+        return 1;
+    }
+
+    const drip_hi_t *child_hi = drip_link_get_child_hi(&parent_link);
+
+    rc = drip_link_verify(&child_link, verify_ed25519, (void *)child_hi);
 
     if (0 == rc) {
         printf("\nSignature verified.\n\n");

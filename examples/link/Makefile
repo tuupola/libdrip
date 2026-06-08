@@ -5,14 +5,11 @@ LDFLAGS = -lsodium
 SRC_DIR = ../../src
 SRC = $(SRC_DIR)/hash.c $(SRC_DIR)/link.c
 
-TARGET = example_link_sign example_link_verify
+TARGET = example_link
 
 all: $(TARGET)
 
-example_link_sign: example_link_sign.c $(SRC)
-	$(CC) $(CFLAGS) -o $@ $^ -lsodium
-
-example_link_verify: example_link_verify.c $(SRC)
+example_link: example_link.c $(SRC)
 	$(CC) $(CFLAGS) -o $@ $^ -lsodium
 
 clean:

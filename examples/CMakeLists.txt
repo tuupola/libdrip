@@ -17,13 +17,9 @@ if(PkgConfig_FOUND)
     target_link_libraries(example_verify drip ${SODIUM_LIBRARIES})
     target_include_directories(example_verify PRIVATE ${SODIUM_INCLUDE_DIRS})
 
-    add_executable(example_link_sign link/example_link_sign.c)
-    target_link_libraries(example_link_sign drip ${SODIUM_LIBRARIES})
-    target_include_directories(example_link_sign PRIVATE ${SODIUM_INCLUDE_DIRS})
-
-    add_executable(example_link_verify link/example_link_verify.c)
-    target_link_libraries(example_link_verify drip ${SODIUM_LIBRARIES})
-    target_include_directories(example_link_verify PRIVATE ${SODIUM_INCLUDE_DIRS})
+    add_executable(example_link link/example_link.c)
+    target_link_libraries(example_link drip ${SODIUM_LIBRARIES})
+    target_include_directories(example_link PRIVATE ${SODIUM_INCLUDE_DIRS})
   endif()
 endif()
 
