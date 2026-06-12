@@ -1,8 +1,21 @@
 add_executable(example_cli cli/example_cli.c)
 target_link_libraries(example_cli drip rid)
 
-add_executable(det_generate det/det_generate.c)
+add_executable(det_generate det/det_generate.c
+    external/cSHAKE128-tiny/SP800-185.c
+    external/cSHAKE128-tiny/KeccakSponge.c
+    external/cSHAKE128-tiny/KeccakP-1600-inplace32BI.c
+)
+target_include_directories(det_generate PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/cSHAKE128-tiny)
 target_link_libraries(det_generate drip rid)
+
+add_executable(det_verify det/det_verify.c
+    external/cSHAKE128-tiny/SP800-185.c
+    external/cSHAKE128-tiny/KeccakSponge.c
+    external/cSHAKE128-tiny/KeccakP-1600-inplace32BI.c
+)
+target_include_directories(det_verify PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/cSHAKE128-tiny)
+target_link_libraries(det_verify drip rid)
 
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
