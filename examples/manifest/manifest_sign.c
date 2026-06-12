@@ -60,7 +60,6 @@ int main(void) {
     drip_manifest_add_evidence(&manifest, &hash);
 
     drip_manifest_sign(&manifest, sign_ed25519, (void *)secret_key);
-
     drip_manifest_encode(&manifest, encoded, sizeof(encoded), &encoded_length);
 
     printf("Manifest:\n\n");
@@ -73,7 +72,7 @@ int main(void) {
     printf("%s\n\n", json);
 
     printf("Verify with:\n");
-    printf("$ ./example_verify ");
+    printf("$ ./manifest_verify ");
     hexstring(&encoded, encoded_length);
     printf("\n");
 

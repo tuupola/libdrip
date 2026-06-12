@@ -30,20 +30,6 @@ static int hex_to_bytes(const char *hex, uint8_t *bytes, size_t max_length) {
     return (int)byte_length;
 }
 
-static void hexdump(const void *data, size_t size) {
-    const uint8_t *bytes = (const uint8_t *)data;
-
-    for (size_t i = 0; i < size; ++i) {
-        if (i > 0 && i % 16 == 0) {
-            printf("\n");
-        } else if (i > 0 && i % 8 == 0) {
-            printf(" ");
-        }
-        printf("%02x ", bytes[i]);
-    }
-    printf("\n\n");
-}
-
 /* Callback wrapper for libsodium */
 static int verify_ed25519(
     void *context, const uint8_t *message, size_t message_len,
@@ -56,7 +42,7 @@ static int verify_ed25519(
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s <hex string>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <manifest hex>\n", argv[0]);
         return 1;
     }
 
