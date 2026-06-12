@@ -5,17 +5,17 @@ LDFLAGS = -lsodium
 SRC_DIR = ../../src
 SRC = $(SRC_DIR)/hash.c $(SRC_DIR)/link.c
 
-TARGET = example_link
+TARGET = link_verify
 
 all: $(TARGET)
 
-example_link: example_link.c $(SRC)
+link_verify: link_verify.c $(SRC)
 	$(CC) $(CFLAGS) -o $@ $^ -lsodium
 
 clean:
 	rm -f $(TARGET)
 
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) 01800b2b0d0021ec102001003ffe3ff8050a8f96a9d7525c19a492e2039827377aa4d0a8b757048d55e456ff49f6a9b319e40bbd01656509c82001003ffe3ff8050325d34f5a5ad186a0de89eaf633f2d3752d9a70b8dba35ea2444aaf7cbc7e4808823c81aeeff5953bb373e01db7842460c8e9ec9142d8eb629953bed4225540364f4be6a802f903 01800b2b0d80ed0a0f2001003ffe3ff80522879e7592f2d155b41176c5b305e1823a47715c398f575dcc2a4f16bbdeebdc42d6518907f23b722001003ffe3ff8050a8f96a9d7525c192421d625aca0c454f23747b01dca51c194883444f59d90cdaa7d07022efd76c9bd7449b38b87595619861dde4a86910e3befcd96948a1c4042b6338ed721ea09
 
 .PHONY: all clean run

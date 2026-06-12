@@ -20,9 +20,9 @@ if(PkgConfig_FOUND)
     target_link_libraries(example_verify drip ${SODIUM_LIBRARIES})
     target_include_directories(example_verify PRIVATE ${SODIUM_INCLUDE_DIRS})
 
-    add_executable(example_link link/example_link.c)
-    target_link_libraries(example_link drip ${SODIUM_LIBRARIES})
-    target_include_directories(example_link PRIVATE ${SODIUM_INCLUDE_DIRS})
+    add_executable(link_verify link/link_verify.c)
+    target_link_libraries(link_verify drip ${SODIUM_LIBRARIES})
+    target_include_directories(link_verify PRIVATE ${SODIUM_INCLUDE_DIRS})
   endif()
 endif()
 
