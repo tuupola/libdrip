@@ -6,5 +6,6 @@
 extern SUITE(manifest_suite);
 extern SUITE(hash_suite);
 extern SUITE(link_suite);
+extern SUITE(det_suite);
 
 #endif

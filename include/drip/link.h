@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "drip/det.h"
 #include "drip/format.h"
 
 #define DRIP_LINK_SIZE 137

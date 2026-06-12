@@ -7,11 +7,9 @@
 /** @brief Timestamp epoch (2019-01-01 00:00:00 UTC as Unix timestamp). */
 #define DRIP_TIMESTAMP_EPOCH 1546300800
 
-#define DRIP_DET_SIZE 16
 #define DRIP_HI_SIZE 32
 #define DRIP_SIGNATURE_SIZE 64
 
-typedef uint8_t drip_det_t[DRIP_DET_SIZE];
 typedef uint8_t drip_hi_t[DRIP_HI_SIZE];
 typedef uint8_t drip_signature_t[DRIP_SIGNATURE_SIZE];
 
@@ -26,6 +24,8 @@ typedef enum {
     DRIP_ERROR_INVALID_LENGTH = -7,
     DRIP_ERROR_INVALID_SAM_TYPE = -8,
     DRIP_ERROR_OUT_OF_RANGE = -9,
+    DRIP_ERROR_INVALID_IPV6_PREFIX = -10,
+    DRIP_ERROR_VERIFICATION_FAILED = -11,
 } drip_status_t;
 
 typedef enum {

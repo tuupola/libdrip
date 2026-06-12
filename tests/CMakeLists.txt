@@ -6,6 +6,7 @@ add_executable(test_runner
     test_manifest.c
     test_hash.c
     test_link.c
+    test_det.c
 )
 
 target_include_directories(test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

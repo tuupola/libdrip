@@ -29,6 +29,7 @@ else()
         src/hash.c
         src/link.c
         src/manifest.c
+        src/det.c
     )
 
   target_include_directories(drip PUBLIC include)

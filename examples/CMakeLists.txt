@@ -1,6 +1,9 @@
 add_executable(example_cli cli/example_cli.c)
 target_link_libraries(example_cli drip rid)
 
+add_executable(det_generate det/det_generate.c)
+target_link_libraries(det_generate drip rid)
+
 find_package(PkgConfig)
 if(PkgConfig_FOUND)
   pkg_check_modules(SODIUM libsodium)
