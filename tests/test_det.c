@@ -351,4 +351,7 @@ SUITE(det_suite) {
     RUN_TEST(test_get_hash_null_pointer);
     RUN_TEST(test_set_and_get_hash);
     RUN_TEST(test_get_hash_rfc_9374_example);
+    RUN_TEST(test_validate_null_pointer);
+    RUN_TEST(test_validate_valid_det);
+    RUN_TEST(test_validate_invalid_prefix);
 }
