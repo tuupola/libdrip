@@ -540,6 +540,123 @@ TEST test_sign_invalid_signature_length(void) {
     PASS();
 }
 
+TEST test_validate_null_pointer(void) {
+    int rc = drip_link_validate(NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_validate_invalid_sam_type(void) {
+    drip_link_t link;
+    drip_det_t child_det;
+    drip_det_t parent_det;
+
+    drip_det_init(&child_det);
+    drip_det_init(&parent_det);
+
+    drip_link_init(&link);
+    drip_link_set_vnb(&link, 50);
+    drip_link_set_vna(&link, 100);
+    drip_link_set_child_det(&link, &child_det);
+    drip_link_set_parent_det(&link, &parent_det);
+    link.sam_type = DRIP_SAM_TYPE_WRAPPER;
+
+    int rc = drip_link_validate(&link);
+    ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, rc);
+    PASS();
+}
+
+TEST test_validate_vnb_gt_vna(void) {
+    drip_link_t link;
+    drip_det_t child_det;
+    drip_det_t parent_det;
+
+    drip_det_init(&child_det);
+    drip_det_init(&parent_det);
+
+    drip_link_init(&link);
+    drip_link_set_child_det(&link, &child_det);
+    drip_link_set_parent_det(&link, &parent_det);
+    drip_link_set_vnb(&link, 200);
+    drip_link_set_vna(&link, 100);
+
+    int rc = drip_link_validate(&link);
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+    PASS();
+}
+
+TEST test_validate_vnb_eq_vna(void) {
+    drip_link_t link;
+    drip_det_t child_det;
+    drip_det_t parent_det;
+
+    drip_det_init(&child_det);
+    drip_det_init(&parent_det);
+
+    drip_link_init(&link);
+    drip_link_set_child_det(&link, &child_det);
+    drip_link_set_parent_det(&link, &parent_det);
+    drip_link_set_vnb(&link, 100);
+    drip_link_set_vna(&link, 100);
+
+    int rc = drip_link_validate(&link);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_validate_invalid_child_det(void) {
+    drip_link_t link;
+    drip_det_t parent_det;
+
+    drip_det_init(&parent_det);
+
+    drip_link_init(&link);
+    drip_link_set_vnb(&link, 50);
+    drip_link_set_vna(&link, 100);
+    link.child_det[0] = 0xFF;
+    drip_link_set_parent_det(&link, &parent_det);
+
+    int rc = drip_link_validate(&link);
+    ASSERT_EQ(DRIP_ERROR_INVALID_CHILD_DET, rc);
+    PASS();
+}
+
+TEST test_validate_invalid_parent_det(void) {
+    drip_link_t link;
+    drip_det_t child_det;
+
+    drip_det_init(&child_det);
+
+    drip_link_init(&link);
+    drip_link_set_vnb(&link, 50);
+    drip_link_set_vna(&link, 100);
+    drip_link_set_child_det(&link, &child_det);
+    link.parent_det[0] = 0xFF;
+
+    int rc = drip_link_validate(&link);
+    ASSERT_EQ(DRIP_ERROR_INVALID_PARENT_DET, rc);
+    PASS();
+}
+
+TEST test_validate_success(void) {
+    drip_link_t link;
+    drip_det_t child_det;
+    drip_det_t parent_det;
+
+    drip_det_init(&child_det);
+    drip_det_init(&parent_det);
+
+    drip_link_init(&link);
+    drip_link_set_vnb(&link, 50);
+    drip_link_set_vna(&link, 100);
+    drip_link_set_child_det(&link, &child_det);
+    drip_link_set_parent_det(&link, &parent_det);
+
+    int rc = drip_link_validate(&link);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
 SUITE(link_suite) {
     RUN_TEST(test_init_null_ptr);
     RUN_TEST(test_init);
@@ -588,4 +705,11 @@ SUITE(link_suite) {
     RUN_TEST(test_sign_null_ptr_callback);
     RUN_TEST(test_sign_and_verify_success);
     RUN_TEST(test_sign_invalid_signature_length);
+    RUN_TEST(test_validate_null_pointer);
+    RUN_TEST(test_validate_invalid_sam_type);
+    RUN_TEST(test_validate_vnb_gt_vna);
+    RUN_TEST(test_validate_vnb_eq_vna);
+    RUN_TEST(test_validate_invalid_child_det);
+    RUN_TEST(test_validate_invalid_parent_det);
+    RUN_TEST(test_validate_success);
 }

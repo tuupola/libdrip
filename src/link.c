@@ -145,6 +145,25 @@ int drip_link_set_signature(drip_link_t *link, const drip_signature_t *signature
     return DRIP_SUCCESS;
 }
 
+int drip_link_validate(const drip_link_t *link) {
+    if (link == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    if (link->sam_type != DRIP_SAM_TYPE_LINK) {
+        return DRIP_ERROR_INVALID_SAM_TYPE;
+    }
+    if (link->vnb > link->vna) {
+        return DRIP_ERROR_INVALID_TIMESTAMP;
+    }
+    if (drip_det_validate(&link->child_det) != DRIP_SUCCESS) {
+        return DRIP_ERROR_INVALID_CHILD_DET;
+    }
+    if (drip_det_validate(&link->parent_det) != DRIP_SUCCESS) {
+        return DRIP_ERROR_INVALID_PARENT_DET;
+    }
+    return DRIP_SUCCESS;
+}
+
 int drip_link_decode(drip_link_t *link, const uint8_t *buffer, size_t buffer_size) {
     if (link == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
