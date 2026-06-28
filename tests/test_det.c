@@ -209,17 +209,39 @@ TEST test_set_and_get_hhsi(void) {
     drip_det_t det;
     drip_det_init(&det);
 
-    int rc = drip_det_set_hhsi(&det, 5);
+    int rc = drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    ASSERT_EQ(5, drip_det_get_hhsi(&det));
+    ASSERT_EQ(DRIP_HHSI_EDDSA_CSHAKE128, drip_det_get_hhsi(&det));
 
     rc = drip_det_set_hhsi(&det, 0xFF);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_EQ(0xFF, drip_det_get_hhsi(&det));
 
-    rc = drip_det_set_hhsi(&det, 0);
+    rc = drip_det_set_hhsi(&det, 17);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    ASSERT_EQ(0, drip_det_get_hhsi(&det));
+    ASSERT_EQ(17, drip_det_get_hhsi(&det));
+    PASS();
+}
+
+TEST test_set_hhsi_zero(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+
+    det[7] = DRIP_HHSI_EDDSA_CSHAKE128;
+    int rc = drip_det_set_hhsi(&det, DRIP_HHSI_RESERVED);
+    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
+    ASSERT_EQ(DRIP_HHSI_EDDSA_CSHAKE128, drip_det_get_hhsi(&det));
+    PASS();
+}
+
+TEST test_set_hhsi_16(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+
+    det[7] = DRIP_HHSI_EDDSA_CSHAKE128;
+    int rc = drip_det_set_hhsi(&det, 16);
+    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
+    ASSERT_EQ(DRIP_HHSI_EDDSA_CSHAKE128, drip_det_get_hhsi(&det));
     PASS();
 }
 
@@ -292,6 +314,7 @@ TEST test_validate_null_pointer(void) {
 TEST test_validate_valid_det(void) {
     drip_det_t det;
     drip_det_init(&det);
+    drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
 
     int rc = drip_det_validate(&det);
     ASSERT_EQ(DRIP_SUCCESS, rc);
@@ -323,6 +346,40 @@ TEST test_validate_invalid_prefix(void) {
     PASS();
 }
 
+TEST test_validate_hhsi_zero(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+
+    det[7] = 0;
+    int rc = drip_det_validate(&det);
+    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
+    PASS();
+}
+
+TEST test_validate_hhsi_16(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+
+    det[7] = 16;
+    int rc = drip_det_validate(&det);
+    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
+    PASS();
+}
+
+TEST test_validate_success(void) {
+    uint8_t valid[] = {1, 2, 3, 5, 17, 254, 255};
+
+    for (size_t i = 0; i < sizeof(valid); i++) {
+        drip_det_t det;
+        drip_det_init(&det);
+        det[7] = valid[i];
+
+        int rc = drip_det_validate(&det);
+        ASSERT_EQ(DRIP_SUCCESS, rc);
+    }
+    PASS();
+}
+
 SUITE(det_suite) {
     RUN_TEST(test_init_null_pointer);
     RUN_TEST(test_init);
@@ -345,6 +402,8 @@ SUITE(det_suite) {
     RUN_TEST(test_set_hhsi_null_pointer);
     RUN_TEST(test_get_hhsi_null_pointer);
     RUN_TEST(test_set_and_get_hhsi);
+    RUN_TEST(test_set_hhsi_zero);
+    RUN_TEST(test_set_hhsi_16);
     RUN_TEST(test_get_hhsi_rfc_9374_example);
     RUN_TEST(test_set_hash_null_pointer);
     RUN_TEST(test_set_hash_null_hash);
@@ -354,4 +413,7 @@ SUITE(det_suite) {
     RUN_TEST(test_validate_null_pointer);
     RUN_TEST(test_validate_valid_det);
     RUN_TEST(test_validate_invalid_prefix);
+    RUN_TEST(test_validate_hhsi_zero);
+    RUN_TEST(test_validate_hhsi_16);
+    RUN_TEST(test_validate_success);
 }

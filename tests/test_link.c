@@ -591,7 +591,9 @@ TEST test_validate_vnb_eq_vna(void) {
     drip_det_t parent_det;
 
     drip_det_init(&child_det);
+    drip_det_set_hhsi(&child_det, DRIP_HHSI_EDDSA_CSHAKE128);
     drip_det_init(&parent_det);
+    drip_det_set_hhsi(&parent_det, DRIP_HHSI_EDDSA_CSHAKE128);
 
     drip_link_init(&link);
     drip_link_set_child_det(&link, &child_det);
@@ -626,6 +628,7 @@ TEST test_validate_invalid_parent_det(void) {
     drip_det_t child_det;
 
     drip_det_init(&child_det);
+    drip_det_set_hhsi(&child_det, DRIP_HHSI_EDDSA_CSHAKE128);
 
     drip_link_init(&link);
     drip_link_set_vnb(&link, 50);
@@ -644,7 +647,9 @@ TEST test_validate_success(void) {
     drip_det_t parent_det;
 
     drip_det_init(&child_det);
+    drip_det_set_hhsi(&child_det, DRIP_HHSI_EDDSA_CSHAKE128);
     drip_det_init(&parent_det);
+    drip_det_set_hhsi(&parent_det, DRIP_HHSI_EDDSA_CSHAKE128);
 
     drip_link_init(&link);
     drip_link_set_vnb(&link, 50);

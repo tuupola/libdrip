@@ -29,6 +29,7 @@ typedef enum {
     DRIP_ERROR_INVALID_TIMESTAMP = -12,
     DRIP_ERROR_INVALID_CHILD_DET = -13,
     DRIP_ERROR_INVALID_PARENT_DET = -14,
+    DRIP_ERROR_INVALID_HHSI = -15,
 } drip_status_t;
 
 typedef enum {

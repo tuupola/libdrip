@@ -103,9 +103,14 @@ uint32_t drip_det_get_hid(const drip_det_t *det) {
         ((uint32_t)(*det)[5] << 8) | (uint32_t)(*det)[6];
 }
 
-int drip_det_set_hhsi(drip_det_t *det, uint8_t hhsi) {
+int drip_det_set_hhsi(drip_det_t *det, drip_hhsi_t hhsi) {
     if (det == NULL) {
         return DRIP_ERROR_NULL_POINTER;
+    }
+
+    /* 16 is skipped per RFC 9374 §3.2 */
+    if (hhsi == DRIP_HHSI_RESERVED || hhsi == 16) {
+        return DRIP_ERROR_INVALID_HHSI;
     }
 
     (*det)[7] = hhsi;
@@ -167,6 +172,11 @@ int drip_det_validate(const drip_det_t *det) {
     if ((*det)[0] != 0x20 || (*det)[1] != 0x01 || (*det)[2] != 0x00 ||
         ((*det)[3] & 0xF0) != 0x30) {
         return DRIP_ERROR_INVALID_IPV6_PREFIX;
+    }
+
+    /* 16 is skipped per RFC 9374 §3.2 */
+    if ((*det)[7] == DRIP_HHSI_RESERVED || (*det)[7] == 16) {
+        return DRIP_ERROR_INVALID_HHSI;
     }
     return DRIP_SUCCESS;
 }

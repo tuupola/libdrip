@@ -117,8 +117,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    /* We only support 5 atm */
-    drip_det_set_hhsi(&det, 5);
+    /* We only support hhsi=5 atm */
+    drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
 
     rc = drip_det_update_hash(&det, &hi, det_cshake128_cb, NULL);
     if (rc != DRIP_SUCCESS) {
