@@ -173,10 +173,6 @@ int drip_link_decode(drip_link_t *link, const uint8_t *buffer, size_t buffer_siz
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
 
-    if (buffer_size > DRIP_LINK_SIZE) {
-        return DRIP_ERROR_BUFFER_TOO_LARGE;
-    }
-
     memcpy(link, buffer, DRIP_LINK_SIZE);
 
     if (link->sam_type != DRIP_SAM_TYPE_LINK) {

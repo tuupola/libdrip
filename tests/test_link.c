@@ -343,14 +343,6 @@ TEST test_decode_buffer_too_small(void) {
     PASS();
 }
 
-TEST test_decode_buffer_too_large(void) {
-    drip_link_t link;
-    uint8_t buffer[256] = {0};
-    int rc = drip_link_decode(&link, buffer, sizeof(buffer));
-    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_LARGE, rc);
-    PASS();
-}
-
 TEST test_decode_invalid_sam_type(void) {
     drip_link_t link;
     uint8_t buffer[DRIP_LINK_SIZE] = {0};
@@ -698,7 +690,6 @@ SUITE(link_suite) {
     RUN_TEST(test_decode_null_ptr_link);
     RUN_TEST(test_decode_null_ptr_buffer);
     RUN_TEST(test_decode_buffer_too_small);
-    RUN_TEST(test_decode_buffer_too_large);
     RUN_TEST(test_decode_invalid_sam_type);
     RUN_TEST(test_decode_success);
     RUN_TEST(test_encode_null_ptr_link);
