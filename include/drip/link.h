@@ -1,6 +1,7 @@
 #ifndef DRIP_LINK_H
 #define DRIP_LINK_H
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -38,6 +39,8 @@ typedef struct __attribute__((__packed__)) drip_link {
 
     drip_signature_t signature;
 } drip_link_t;
+
+static_assert(sizeof(drip_link_t) == DRIP_LINK_SIZE, "drip_link_t size mismatch");
 
 int drip_link_init(drip_link_t *link);
 

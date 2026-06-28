@@ -1,6 +1,7 @@
 #ifndef DRIP_DET_H
 #define DRIP_DET_H
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,6 +14,8 @@
 #define DRIP_DET_SIZE 16
 
 typedef uint8_t drip_det_t[DRIP_DET_SIZE];
+
+static_assert(sizeof(drip_det_t) == DRIP_DET_SIZE, "drip_det_t size mismatch");
 
 /**
  * @brief HHIT Suite ID (HHSI) values per RFC 9374.

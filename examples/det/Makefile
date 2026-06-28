@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -Wno-implicit-fallthrough -I../../include -isystem ../external/cSHAKE128-tiny
+CFLAGS = -Wall -Wextra -std=c11 -Wno-implicit-fallthrough -I../../include -isystem ../external/cSHAKE128-tiny
 
 CSHAKE_DIR = ../external/cSHAKE128-tiny
 CSHAKE_SRC = $(CSHAKE_DIR)/SP800-185.c \

@@ -1,6 +1,7 @@
 #ifndef DRIP_HASH_H
 #define DRIP_HASH_H
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -9,6 +10,8 @@
 #define DRIP_HASH_SIZE 8
 
 typedef uint8_t drip_hash_t[DRIP_HASH_SIZE];
+
+static_assert(sizeof(drip_hash_t) == DRIP_HASH_SIZE, "drip_hash_t size mismatch");
 
 /**
  * @brief Callback function type for producing manifest hashes.

@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -I../../include -I../../../librid/include
+CFLAGS = -Wall -Wextra -std=c11 -I../../include -I../../../librid/include
 LDFLAGS = -lsodium
 
 SRC_DIR = ../../src
