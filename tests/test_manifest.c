@@ -91,6 +91,16 @@ TEST test_set_and_get_vnb(void) {
     PASS();
 }
 
+TEST test_set_vnb_out_of_range(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+
+    int rc = drip_manifest_set_vnb(&manifest, UINT32_MAX);
+    ASSERT_EQ(DRIP_ERROR_OUT_OF_RANGE, rc);
+    ASSERT_EQ(0, drip_manifest_get_vnb(&manifest));
+    PASS();
+}
+
 TEST test_get_vna_null_ptr(void) {
     uint32_t result = drip_manifest_get_vna(NULL);
     ASSERT_EQ(0, result);
@@ -111,6 +121,16 @@ TEST test_set_and_get_vna(void) {
     int rc = drip_manifest_set_vna(&manifest, value);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_EQ(value, drip_manifest_get_vna(&manifest));
+    PASS();
+}
+
+TEST test_set_vna_out_of_range(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+
+    int rc = drip_manifest_set_vna(&manifest, UINT32_MAX);
+    ASSERT_EQ(DRIP_ERROR_OUT_OF_RANGE, rc);
+    ASSERT_EQ(0, drip_manifest_get_vna(&manifest));
     PASS();
 }
 
@@ -157,6 +177,24 @@ TEST test_set_and_get_vna_unixtime(void) {
     int rc = drip_manifest_set_vna_unixtime(&manifest, unixtime);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_EQ(unixtime, drip_manifest_get_vna_unixtime(&manifest));
+    PASS();
+}
+
+TEST test_set_vnb_unixtime_before_epoch(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+
+    int rc = drip_manifest_set_vnb_unixtime(&manifest, 1546300799);
+    ASSERT_EQ(DRIP_ERROR_OUT_OF_RANGE, rc);
+    PASS();
+}
+
+TEST test_set_vna_unixtime_before_epoch(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+
+    int rc = drip_manifest_set_vna_unixtime(&manifest, 1546300799);
+    ASSERT_EQ(DRIP_ERROR_OUT_OF_RANGE, rc);
     PASS();
 }
 
@@ -613,15 +651,19 @@ SUITE(manifest_suite) {
     RUN_TEST(test_get_vnb_null_ptr);
     RUN_TEST(test_set_vnb_null_ptr);
     RUN_TEST(test_set_and_get_vnb);
+    RUN_TEST(test_set_vnb_out_of_range);
     RUN_TEST(test_get_vna_null_ptr);
     RUN_TEST(test_set_vna_null_ptr);
     RUN_TEST(test_set_and_get_vna);
+    RUN_TEST(test_set_vna_out_of_range);
     RUN_TEST(test_set_vnb_unixtime_null_ptr);
     RUN_TEST(test_get_vnb_unixtime_null_ptr);
     RUN_TEST(test_set_and_get_vnb_unixtime);
     RUN_TEST(test_set_vna_unixtime_null_ptr);
     RUN_TEST(test_get_vna_unixtime_null_ptr);
     RUN_TEST(test_set_and_get_vna_unixtime);
+    RUN_TEST(test_set_vnb_unixtime_before_epoch);
+    RUN_TEST(test_set_vna_unixtime_before_epoch);
     RUN_TEST(test_get_previous_hash_null_manifest);
     RUN_TEST(test_set_previous_hash_null_ptr_manifest);
     RUN_TEST(test_set_previous_hash_null_ptr_hash);

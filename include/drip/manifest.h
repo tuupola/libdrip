@@ -82,16 +82,96 @@ typedef int (*drip_manifest_verify_cb_t)(
 
 int drip_manifest_init(drip_manifest_t *manifest);
 
-uint32_t drip_manifest_get_vnb(const drip_manifest_t *manifest);
+/**
+ * @brief Set the vnb timestamp.
+ *
+ * Stored internally as seconds since DRIP_TIMESTAMP_EPOCH.
+ *
+ * @param manifest Pointer to the manifest to modify.
+ * @param vnb Offset from DRIP_TIMESTAMP_EPOCH in seconds.
+ *
+ * @retval DRIP_SUCCESS if vnb was stored.
+ * @retval DRIP_ERROR_NULL_POINTER if manifest is NULL.
+ * @retval DRIP_ERROR_OUT_OF_RANGE if vnb > UINT32_MAX - DRIP_TIMESTAMP_EPOCH.
+ */
 int drip_manifest_set_vnb(drip_manifest_t *manifest, uint32_t vnb);
 
-uint32_t drip_manifest_get_vna(const drip_manifest_t *manifest);
+/**
+ * @brief Get the vnb timestamp.
+ *
+ * Returned as seconds since DRIP_TIMESTAMP_EPOCH.
+ *
+ * @param manifest Pointer to the manifest.
+ *
+ * @return The vnb timestamp or 0 if manifest is NULL.
+ */
+uint32_t drip_manifest_get_vnb(const drip_manifest_t *manifest);
+
+/**
+ * @brief Set the vna timestamp.
+ *
+ * Stored internally as seconds since DRIP_TIMESTAMP_EPOCH.
+ *
+ * @param manifest Pointer to the manifest to modify.
+ * @param vna Offset from DRIP_TIMESTAMP_EPOCH in seconds.
+ *
+ * @retval DRIP_SUCCESS if vna was stored.
+ * @retval DRIP_ERROR_NULL_POINTER if manifest is NULL.
+ * @retval DRIP_ERROR_OUT_OF_RANGE if vna > UINT32_MAX - DRIP_TIMESTAMP_EPOCH.
+ */
 int drip_manifest_set_vna(drip_manifest_t *manifest, uint32_t vna);
 
+/**
+ * @brief Get the vna timestamp.
+ *
+ * Returned as seconds since DRIP_TIMESTAMP_EPOCH.
+ *
+ * @param manifest Pointer to the manifest.
+ *
+ * @return The vna timestamp or 0 if manifest is NULL.
+ */
+uint32_t drip_manifest_get_vna(const drip_manifest_t *manifest);
+
+/**
+ * @brief Set the vna from unix timestamp.
+ *
+ * @param manifest Pointer to the manifest to modify.
+ * @param unixtime Unix timestamp in seconds.
+ *
+ * @retval DRIP_SUCCESS if vna was stored.
+ * @retval DRIP_ERROR_NULL_POINTER if manifest is NULL.
+ * @retval DRIP_ERROR_OUT_OF_RANGE if unixtime < DRIP_TIMESTAMP_EPOCH.
+ */
 int drip_manifest_set_vna_unixtime(drip_manifest_t *manifest, uint32_t unixtime);
+
+/**
+ * @brief Get the vna as a unix timestamp.
+ *
+ * @param manifest Pointer to the manifest.
+ *
+ * @return The vna as unix timestamp or 0 if manifest is NULL.
+ */
 uint32_t drip_manifest_get_vna_unixtime(const drip_manifest_t *manifest);
 
+/**
+ * @brief Set the vnb from unix timestamp.
+ *
+ * @param manifest Pointer to the manifest to modify.
+ * @param unixtime Unix timestamp in seconds.
+ *
+ * @retval DRIP_SUCCESS if vnb was stored.
+ * @retval DRIP_ERROR_NULL_POINTER if manifest is NULL.
+ * @retval DRIP_ERROR_OUT_OF_RANGE if unixtime < DRIP_TIMESTAMP_EPOCH.
+ */
 int drip_manifest_set_vnb_unixtime(drip_manifest_t *manifest, uint32_t unixtime);
+
+/**
+ * @brief Get the vnb as a unix timestamp.
+ *
+ * @param manifest Pointer to the manifest.
+ *
+ * @return The vnb as unix timestamp or 0 if manifest is NULL.
+ */
 uint32_t drip_manifest_get_vnb_unixtime(const drip_manifest_t *manifest);
 
 const drip_hash_t *drip_manifest_get_previous_hash(const drip_manifest_t *manifest);

@@ -95,6 +95,26 @@ TEST test_set_and_get_vnb(void) {
     PASS();
 }
 
+TEST test_set_vnb_out_of_range(void) {
+    drip_link_t link;
+    drip_link_init(&link);
+
+    int rc = drip_link_set_vnb(&link, UINT32_MAX);
+    ASSERT_EQ(DRIP_ERROR_OUT_OF_RANGE, rc);
+    ASSERT_EQ(0, drip_link_get_vnb(&link));
+    PASS();
+}
+
+TEST test_set_vnb_at_upper_bound(void) {
+    drip_link_t link;
+    drip_link_init(&link);
+
+    int rc = drip_link_set_vnb(&link, UINT32_MAX - DRIP_TIMESTAMP_EPOCH);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(UINT32_MAX, drip_link_get_vnb_unixtime(&link));
+    PASS();
+}
+
 TEST test_get_vna_null_ptr(void) {
     uint32_t result = drip_link_get_vna(NULL);
     ASSERT_EQ(0, result);
@@ -115,6 +135,16 @@ TEST test_set_and_get_vna(void) {
     int rc = drip_link_set_vna(&link, value);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_EQ(value, drip_link_get_vna(&link));
+    PASS();
+}
+
+TEST test_set_vna_out_of_range(void) {
+    drip_link_t link;
+    drip_link_init(&link);
+
+    int rc = drip_link_set_vna(&link, UINT32_MAX);
+    ASSERT_EQ(DRIP_ERROR_OUT_OF_RANGE, rc);
+    ASSERT_EQ(0, drip_link_get_vna(&link));
     PASS();
 }
 
@@ -686,9 +716,12 @@ SUITE(link_suite) {
     RUN_TEST(test_get_vnb_null_ptr);
     RUN_TEST(test_set_vnb_null_ptr);
     RUN_TEST(test_set_and_get_vnb);
+    RUN_TEST(test_set_vnb_out_of_range);
+    RUN_TEST(test_set_vnb_at_upper_bound);
     RUN_TEST(test_get_vna_null_ptr);
     RUN_TEST(test_set_vna_null_ptr);
     RUN_TEST(test_set_and_get_vna);
+    RUN_TEST(test_set_vna_out_of_range);
     RUN_TEST(test_set_vnb_unixtime_null_ptr);
     RUN_TEST(test_get_vnb_unixtime_null_ptr);
     RUN_TEST(test_set_and_get_vnb_unixtime);

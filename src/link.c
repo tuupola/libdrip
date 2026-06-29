@@ -27,6 +27,9 @@ int drip_link_set_vnb(drip_link_t *link, uint32_t vnb) {
     if (link == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
+    if (vnb > (UINT32_MAX - DRIP_TIMESTAMP_EPOCH)) {
+        return DRIP_ERROR_OUT_OF_RANGE;
+    }
     link->vnb = vnb;
     return DRIP_SUCCESS;
 }
@@ -41,6 +44,9 @@ uint32_t drip_link_get_vna(const drip_link_t *link) {
 int drip_link_set_vna(drip_link_t *link, uint32_t vna) {
     if (link == NULL) {
         return DRIP_ERROR_NULL_POINTER;
+    }
+    if (vna > (UINT32_MAX - DRIP_TIMESTAMP_EPOCH)) {
+        return DRIP_ERROR_OUT_OF_RANGE;
     }
     link->vna = vna;
     return DRIP_SUCCESS;

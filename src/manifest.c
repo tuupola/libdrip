@@ -26,6 +26,9 @@ int drip_manifest_set_vnb(drip_manifest_t *manifest, uint32_t vnb) {
     if (manifest == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
+    if (vnb > (UINT32_MAX - DRIP_TIMESTAMP_EPOCH)) {
+        return DRIP_ERROR_OUT_OF_RANGE;
+    }
     manifest->vnb = vnb;
     return DRIP_SUCCESS;
 }
@@ -33,6 +36,9 @@ int drip_manifest_set_vnb(drip_manifest_t *manifest, uint32_t vnb) {
 int drip_manifest_set_vnb_unixtime(drip_manifest_t *manifest, uint32_t unixtime) {
     if (manifest == NULL) {
         return DRIP_ERROR_NULL_POINTER;
+    }
+    if (unixtime < DRIP_TIMESTAMP_EPOCH) {
+        return DRIP_ERROR_OUT_OF_RANGE;
     }
 
     manifest->vnb = unixtime - DRIP_TIMESTAMP_EPOCH;
@@ -51,6 +57,9 @@ uint32_t drip_manifest_get_vnb_unixtime(const drip_manifest_t *manifest) {
 int drip_manifest_set_vna_unixtime(drip_manifest_t *manifest, uint32_t unixtime) {
     if (manifest == NULL) {
         return DRIP_ERROR_NULL_POINTER;
+    }
+    if (unixtime < DRIP_TIMESTAMP_EPOCH) {
+        return DRIP_ERROR_OUT_OF_RANGE;
     }
     manifest->vna = unixtime - DRIP_TIMESTAMP_EPOCH;
     return DRIP_SUCCESS;
@@ -73,6 +82,9 @@ uint32_t drip_manifest_get_vna(const drip_manifest_t *manifest) {
 int drip_manifest_set_vna(drip_manifest_t *manifest, uint32_t vna) {
     if (manifest == NULL) {
         return DRIP_ERROR_NULL_POINTER;
+    }
+    if (vna > (UINT32_MAX - DRIP_TIMESTAMP_EPOCH)) {
+        return DRIP_ERROR_OUT_OF_RANGE;
     }
     manifest->vna = vna;
     return DRIP_SUCCESS;
