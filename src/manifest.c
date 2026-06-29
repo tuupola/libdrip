@@ -415,7 +415,12 @@ int drip_manifest_decode(
     return DRIP_SUCCESS;
 }
 
-int drip_manifest_to_json(const drip_manifest_t *manifest, char *buffer, size_t buffer_size) {
+int drip_manifest_to_json(
+    const drip_manifest_t *manifest,
+    char *buffer,
+    size_t buffer_size,
+    size_t *json_length
+) {
     if (manifest == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -457,7 +462,7 @@ int drip_manifest_to_json(const drip_manifest_t *manifest, char *buffer, size_t 
     }
     strcat(evidence_json, "]");
 
-    return snprintf(
+    int needed = snprintf(
         buffer,
         buffer_size,
         "{"
@@ -483,4 +488,15 @@ int drip_manifest_to_json(const drip_manifest_t *manifest, char *buffer, size_t 
         det_hex,
         sig_hex
     );
+
+    if (json_length != NULL) {
+        /* If snprintf() fails 0 bytes needed */
+        *json_length = (needed < 0) ? 0 : (size_t) needed;
+    }
+
+    if ((size_t) needed >= buffer_size) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    return DRIP_SUCCESS;
 }

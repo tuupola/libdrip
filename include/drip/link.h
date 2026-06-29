@@ -85,10 +85,28 @@ int drip_link_verify(
     void *context
 );
 
+/**
+ * @brief Serialize a DRIP link to a JSON string.
+ *
+ * On success writes a NULL terminated JSON to @p buffer. When @p buffer_size is
+ * too small the output is truncated and DRIP_ERROR_BUFFER_TOO_SMALL is returned.
+ * The truncated buffer is still NULL terminated.
+ *
+ * @param link Pointer to the link to serialize.
+ * @param buffer Output buffer for the JSON representation.
+ * @param buffer_size Size of @p buffer in bytes.
+ * @param json_length Optional. Receives receives the number of characters
+ *                    for the full non truncated output. Ignored if NULL.
+ *
+ * @retval DRIP_SUCCESS on success.
+ * @retval DRIP_ERROR_NULL_POINTER if @p link or @p buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is too small.
+ */
 int drip_link_to_json(
     const drip_link_t *link,
     char *buffer,
-    size_t buffer_size
+    size_t buffer_size,
+    size_t *json_length
 );
 
 #endif /* DRIP_LINK_H */

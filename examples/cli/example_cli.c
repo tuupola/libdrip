@@ -57,7 +57,7 @@ static int decode_and_print(const char *hex_string, int force) {
         drip_link_t link;
         memcpy(&link, buffer, sizeof(link));
 
-        rc = drip_link_to_json(&link, json, sizeof(json));
+        rc = drip_link_to_json(&link, json, sizeof(json), NULL);
         if (rc < 0) {
             fprintf(stderr, "Error: %d\n", rc);
             return 1;
@@ -80,7 +80,7 @@ static int decode_and_print(const char *hex_string, int force) {
             return 1;
         }
 
-        rc = drip_manifest_to_json(&manifest, json, sizeof(json));
+        rc = drip_manifest_to_json(&manifest, json, sizeof(json), NULL);
         if (rc < 0) {
             fprintf(stderr, "Error: %d\n", rc);
             return 1;

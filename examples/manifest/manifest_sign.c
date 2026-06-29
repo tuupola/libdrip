@@ -68,7 +68,7 @@ int main(void) {
 
     char json[4096];
     printf("\n");
-    drip_manifest_to_json(&manifest, json, sizeof(json));
+    drip_manifest_to_json(&manifest, json, sizeof(json), NULL);
     printf("%s\n\n", json);
 
     printf("Verify with:\n");

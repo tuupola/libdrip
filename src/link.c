@@ -281,7 +281,8 @@ int drip_link_verify(
 int drip_link_to_json(
     const drip_link_t *link,
     char *buffer,
-    size_t buffer_size
+    size_t buffer_size,
+    size_t *json_length
 ) {
     if (link == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -309,7 +310,7 @@ int drip_link_to_json(
         sig_pos += snprintf(sig_hex + sig_pos, 3, "%02x", (*signature)[i]);
     }
 
-    return snprintf(
+    int needed = snprintf(
         buffer,
         buffer_size,
         "{"
@@ -329,4 +330,15 @@ int drip_link_to_json(
         parent_det_hex,
         sig_hex
     );
+
+    if (json_length != NULL) {
+        /* If snprintf() fails 0 bytes needed */
+        *json_length = (needed < 0) ? 0 : (size_t) needed;
+    }
+
+    if ((size_t) needed >= buffer_size) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    return DRIP_SUCCESS;
 }

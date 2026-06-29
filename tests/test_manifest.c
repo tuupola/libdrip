@@ -297,19 +297,19 @@ TEST test_set_and_get_det(void) {
 }
 
 TEST test_get_signature_null_manifest(void) {
-    const drip_signature_t *sig = drip_manifest_get_signature(NULL);
-    ASSERT_EQ(NULL, sig);
+    const drip_signature_t *signature = drip_manifest_get_signature(NULL);
+    ASSERT_EQ(NULL, signature);
     PASS();
 }
 
 TEST test_set_signature_null_ptr_manifest(void) {
-    drip_signature_t sig = {0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90};
-    int rc = drip_manifest_set_signature(NULL, &sig);
+    drip_signature_t signature = {0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90};
+    int rc = drip_manifest_set_signature(NULL, &signature);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_set_signature_null_ptr_sig(void) {
+TEST test_set_signature_null_ptr_signature(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
     int rc = drip_manifest_set_signature(&manifest, NULL);
@@ -319,14 +319,14 @@ TEST test_set_signature_null_ptr_sig(void) {
 
 TEST test_set_and_get_signature(void) {
     drip_manifest_t manifest;
-    drip_signature_t sig = {0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90};
+    drip_signature_t signature = {0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90};
 
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_signature(&manifest, &sig);
+    int rc = drip_manifest_set_signature(&manifest, &signature);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     const drip_signature_t *result = drip_manifest_get_signature(&manifest);
     ASSERT_NEQ(NULL, result);
-    ASSERT_MEM_EQ(sig, *result, sizeof(drip_signature_t));
+    ASSERT_MEM_EQ(signature, *result, sizeof(drip_signature_t));
     PASS();
 }
 
@@ -486,7 +486,7 @@ TEST test_encode_success(void) {
     drip_hash_t msg_hash1 = {0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04};
     drip_hash_t msg_hash2 = {0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05};
     drip_det_t det = {0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06};
-    drip_signature_t sig = {0x07};
+    drip_signature_t signature = {0x07};
 
     drip_manifest_init(&manifest);
     drip_manifest_set_vnb(&manifest, 100000000);
@@ -497,7 +497,7 @@ TEST test_encode_success(void) {
     drip_manifest_add_evidence(&manifest, &msg_hash1);
     drip_manifest_add_evidence(&manifest, &msg_hash2);
     drip_manifest_set_det(&manifest, &det);
-    drip_manifest_set_signature(&manifest, &sig);
+    drip_manifest_set_signature(&manifest, &signature);
 
     uint8_t buffer[256];
     size_t encoded_length = 0;
@@ -546,7 +546,7 @@ TEST test_decode_success(void) {
     drip_hash_t msg_hash1 = {0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04};
     drip_hash_t msg_hash2 = {0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05};
     drip_det_t det = {0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06};
-    drip_signature_t sig = {0x07};
+    drip_signature_t signature = {0x07};
 
     drip_manifest_init(&in);
     drip_manifest_set_vnb(&in, 100000000);
@@ -557,7 +557,7 @@ TEST test_decode_success(void) {
     drip_manifest_add_evidence(&in, &msg_hash1);
     drip_manifest_add_evidence(&in, &msg_hash2);
     drip_manifest_set_det(&in, &det);
-    drip_manifest_set_signature(&in, &sig);
+    drip_manifest_set_signature(&in, &signature);
 
     uint8_t buffer[256];
     size_t encoded_length = 0;
@@ -577,7 +577,33 @@ TEST test_decode_success(void) {
     ASSERT_MEM_EQ(msg_hash1, out.evidence[0], sizeof(drip_hash_t));
     ASSERT_MEM_EQ(msg_hash2, out.evidence[1], sizeof(drip_hash_t));
     ASSERT_MEM_EQ(det, out.det, sizeof(drip_det_t));
-    ASSERT_MEM_EQ(sig, out.signature, sizeof(drip_signature_t));
+    ASSERT_MEM_EQ(signature, out.signature, sizeof(drip_signature_t));
+    PASS();
+}
+
+TEST test_to_json_null_ptr_manifest(void) {
+    char buffer[256];
+    size_t json_length = 0;
+    int rc = drip_manifest_to_json(NULL, buffer, sizeof(buffer), &json_length);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_to_json_null_ptr_buffer(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+    size_t json_length = 0;
+    int rc = drip_manifest_to_json(&manifest, NULL, 256, &json_length);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_to_json_optional_json_length(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+    char buffer[512];
+    int rc = drip_manifest_to_json(&manifest, buffer, sizeof(buffer), NULL);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
     PASS();
 }
 
@@ -614,7 +640,7 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_and_get_det);
     RUN_TEST(test_get_signature_null_manifest);
     RUN_TEST(test_set_signature_null_ptr_manifest);
-    RUN_TEST(test_set_signature_null_ptr_sig);
+    RUN_TEST(test_set_signature_null_ptr_signature);
     RUN_TEST(test_set_and_get_signature);
     RUN_TEST(test_add_message_hash_null_ptr_manifest);
     RUN_TEST(test_add_message_hash_null_ptr_hash);
@@ -636,4 +662,7 @@ SUITE(manifest_suite) {
     RUN_TEST(test_decode_buffer_too_small);
     RUN_TEST(test_decode_invalid_length);
     RUN_TEST(test_decode_success);
+    RUN_TEST(test_to_json_null_ptr_manifest);
+    RUN_TEST(test_to_json_null_ptr_buffer);
+    RUN_TEST(test_to_json_optional_json_length);
 }

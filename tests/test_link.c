@@ -285,20 +285,20 @@ TEST test_set_and_get_parent_det(void) {
 }
 
 TEST test_get_signature_null_ptr(void) {
-    const drip_signature_t *sig = drip_link_get_signature(NULL);
-    ASSERT_EQ(NULL, sig);
+    const drip_signature_t *signature = drip_link_get_signature(NULL);
+    ASSERT_EQ(NULL, signature);
     PASS();
 }
 
 TEST test_set_signature_null_ptr_link(void) {
-    drip_signature_t sig;
-    memset(&sig, 0x33, sizeof(sig));
-    int rc = drip_link_set_signature(NULL, &sig);
+    drip_signature_t signature;
+    memset(&signature, 0x33, sizeof(signature));
+    int rc = drip_link_set_signature(NULL, &signature);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
-TEST test_set_signature_null_ptr_sig(void) {
+TEST test_set_signature_null_ptr_signature(void) {
     drip_link_t link;
     drip_link_init(&link);
     int rc = drip_link_set_signature(&link, NULL);
@@ -308,15 +308,15 @@ TEST test_set_signature_null_ptr_sig(void) {
 
 TEST test_set_and_get_signature(void) {
     drip_link_t link;
-    drip_signature_t sig;
-    memset(&sig, 0x33, sizeof(sig));
+    drip_signature_t signature;
+    memset(&signature, 0x33, sizeof(signature));
 
     drip_link_init(&link);
-    int rc = drip_link_set_signature(&link, &sig);
+    int rc = drip_link_set_signature(&link, &signature);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     const drip_signature_t *result = drip_link_get_signature(&link);
     ASSERT_NEQ(NULL, result);
-    ASSERT_MEM_EQ(sig, *result, sizeof(drip_signature_t));
+    ASSERT_MEM_EQ(signature, *result, sizeof(drip_signature_t));
     PASS();
 }
 
@@ -357,12 +357,12 @@ TEST test_decode_success(void) {
     drip_det_t child_det;
     drip_hi_t child_hi;
     drip_det_t parent_det;
-    drip_signature_t sig;
+    drip_signature_t signature;
 
     memset(&child_det, 0x11, sizeof(child_det));
     memset(&child_hi, 0x22, sizeof(child_hi));
     memset(&parent_det, 0x33, sizeof(parent_det));
-    memset(&sig, 0x44, sizeof(sig));
+    memset(&signature, 0x44, sizeof(signature));
 
     drip_link_init(&in);
     drip_link_set_vnb(&in, 100000000);
@@ -370,7 +370,7 @@ TEST test_decode_success(void) {
     drip_link_set_child_det(&in, &child_det);
     drip_link_set_child_hi(&in, &child_hi);
     drip_link_set_parent_det(&in, &parent_det);
-    drip_link_set_signature(&in, &sig);
+    drip_link_set_signature(&in, &signature);
 
     uint8_t buffer[DRIP_LINK_SIZE];
     size_t encoded_length = 0;
@@ -386,7 +386,7 @@ TEST test_decode_success(void) {
     ASSERT_MEM_EQ(child_det, out.child_det, sizeof(drip_det_t));
     ASSERT_MEM_EQ(child_hi, out.child_hi, sizeof(drip_hi_t));
     ASSERT_MEM_EQ(parent_det, out.parent_det, sizeof(drip_det_t));
-    ASSERT_MEM_EQ(sig, out.signature, sizeof(drip_signature_t));
+    ASSERT_MEM_EQ(signature, out.signature, sizeof(drip_signature_t));
     PASS();
 }
 
@@ -431,12 +431,12 @@ TEST test_encode_success(void) {
     drip_det_t child_det;
     drip_hi_t child_hi;
     drip_det_t parent_det;
-    drip_signature_t sig;
+    drip_signature_t signature;
 
     memset(&child_det, 0x11, sizeof(child_det));
     memset(&child_hi, 0x22, sizeof(child_hi));
     memset(&parent_det, 0x33, sizeof(parent_det));
-    memset(&sig, 0x44, sizeof(sig));
+    memset(&signature, 0x44, sizeof(signature));
 
     drip_link_init(&link);
     drip_link_set_vnb(&link, 100000000);
@@ -444,7 +444,7 @@ TEST test_encode_success(void) {
     drip_link_set_child_det(&link, &child_det);
     drip_link_set_child_hi(&link, &child_hi);
     drip_link_set_parent_det(&link, &parent_det);
-    drip_link_set_signature(&link, &sig);
+    drip_link_set_signature(&link, &signature);
 
     uint8_t buffer[DRIP_LINK_SIZE];
     size_t encoded_length = 0;
@@ -654,6 +654,32 @@ TEST test_validate_success(void) {
     PASS();
 }
 
+TEST test_to_json_null_ptr_link(void) {
+    char buffer[256];
+    size_t json_length = 0;
+    int rc = drip_link_to_json(NULL, buffer, sizeof(buffer), &json_length);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_to_json_null_ptr_buffer(void) {
+    drip_link_t link;
+    drip_link_init(&link);
+    size_t json_length = 0;
+    int rc = drip_link_to_json(&link, NULL, 256, &json_length);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_to_json_optional_json_length(void) {
+    drip_link_t link;
+    drip_link_init(&link);
+    char buffer[1024];
+    int rc = drip_link_to_json(&link, buffer, sizeof(buffer), NULL);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
 SUITE(link_suite) {
     RUN_TEST(test_init_null_ptr);
     RUN_TEST(test_init);
@@ -685,7 +711,7 @@ SUITE(link_suite) {
     RUN_TEST(test_set_and_get_parent_det);
     RUN_TEST(test_get_signature_null_ptr);
     RUN_TEST(test_set_signature_null_ptr_link);
-    RUN_TEST(test_set_signature_null_ptr_sig);
+    RUN_TEST(test_set_signature_null_ptr_signature);
     RUN_TEST(test_set_and_get_signature);
     RUN_TEST(test_decode_null_ptr_link);
     RUN_TEST(test_decode_null_ptr_buffer);
@@ -708,4 +734,7 @@ SUITE(link_suite) {
     RUN_TEST(test_validate_invalid_child_det);
     RUN_TEST(test_validate_invalid_parent_det);
     RUN_TEST(test_validate_success);
+    RUN_TEST(test_to_json_null_ptr_link);
+    RUN_TEST(test_to_json_null_ptr_buffer);
+    RUN_TEST(test_to_json_optional_json_length);
 }
