@@ -29,16 +29,16 @@ static int sign_ed25519(
     void *context,
     const uint8_t *input,
     size_t input_length,
-    uint8_t *signature,
-    size_t signature_size,
-    size_t *signature_length
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
 ) {
-    (void)signature_size;
+    (void)buffer_size;
     const uint8_t *key = (const uint8_t *)context;
     unsigned long long sig_len = 0;
-    int rc = crypto_sign_detached(signature, &sig_len, input, input_length, key);
+    int rc = crypto_sign_detached(buffer, &sig_len, input, input_length, key);
     if (0 == rc) {
-        *signature_length = (size_t)sig_len;
+        *output_length = (size_t)sig_len;
     }
     return rc;
 }

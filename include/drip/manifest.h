@@ -41,20 +41,20 @@ typedef struct drip_manifest {
  * @param context Opaque context passed to the callback.
  * @param input Pointer to the payload to sign.
  * @param input_length Length of the payload in bytes.
- * @param signature Output buffer for the signature.
- * @param signature_size Size of the signature buffer in bytes.
- * @param signature_length Output: actual signature length written.
+ * @param buffer Output buffer for the signature.
+ * @param buffer_size Size of the signature buffer in bytes.
+ * @param output_length Receives resulting manifest length written.
  *
  * @retval 0 on success.
  * @retval Non-zero on signing failure.
  */
-typedef int (*drid_manifest_sign_cb_t)(
+typedef int (*drip_manifest_sign_cb_t)(
     void *context,
     const uint8_t *input,
     size_t input_length,
-    uint8_t *signature,
-    size_t signature_size,
-    size_t *signature_length
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
 );
 
 /**
@@ -205,7 +205,7 @@ int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *has
  */
 int drip_manifest_sign(
     drip_manifest_t *manifest,
-    drid_manifest_sign_cb_t callback,
+    drip_manifest_sign_cb_t callback,
     void *context
 );
 

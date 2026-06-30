@@ -10,15 +10,45 @@
 
 #define DRIP_LINK_SIZE 137
 
+/**
+ * @brief Callback function type for producing link signatures.
+ *
+ * Called by drip_link_sign() to perform the actual signing of the payload.
+ *
+ * @param context Opaque context passed to the callback.
+ * @param input Pointer to the payload to sign.
+ * @param input_length Length of the payload in bytes.
+ * @param buffer Output buffer for the signature.
+ * @param buffer_size Size of the signature buffer in bytes.
+ * @param output_length Receives resulting link length written.
+ *
+ * @retval 0 on success.
+ * @retval Non-zero on signing failure.
+ */
 typedef int (*drip_link_sign_cb_t)(
     void *context,
     const uint8_t *input,
     size_t input_length,
-    uint8_t *signature,
-    size_t signature_size,
-    size_t *signature_length
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
 );
 
+/**
+ * @brief Callback function type for verifying link signatures.
+ *
+ * Called by drip_link_verify() to perform the actual verification of
+ * the signed payload.
+ *
+ * @param context Opaque context passed to the callback.
+ * @param input Pointer to the signed payload data.
+ * @param input_length Length of the signed payload in bytes.
+ * @param signature Pointer to the signature to verify against.
+ * @param signature_length Length of the signature in bytes.
+ *
+ * @retval 0 on success.
+ * @retval Non-zero on verification failure.
+ */
 typedef int (*drip_link_verify_cb_t)(
     void *context,
     const uint8_t *input,

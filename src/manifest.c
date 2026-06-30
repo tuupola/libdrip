@@ -144,9 +144,9 @@ int drip_manifest_update_current_hash(
         offset += DRIP_HASH_SIZE;
     }
 
-    size_t hash_length = 0;
+    size_t output_length = 0;
     int rc = callback(
-        context, buffer, offset, manifest->current_hash, DRIP_HASH_SIZE, &hash_length
+        context, buffer, offset, manifest->current_hash, DRIP_HASH_SIZE, &output_length
     );
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
@@ -224,7 +224,7 @@ const drip_hash_t *drip_manifest_get_evidence_at(const drip_manifest_t *manifest
 
 int drip_manifest_sign(
     drip_manifest_t *manifest,
-    drid_manifest_sign_cb_t callback,
+    drip_manifest_sign_cb_t callback,
     void *context
 ) {
     if (manifest == NULL || callback == NULL) {
@@ -262,8 +262,8 @@ int drip_manifest_sign(
     memcpy(payload + offset, manifest->det, sizeof(manifest->det));
     offset += sizeof(manifest->det);
 
-    size_t signature_length = 0;
-    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE, &signature_length);
+    size_t output_length = 0;
+    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE, &output_length);
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }

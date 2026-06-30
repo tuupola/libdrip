@@ -45,19 +45,19 @@ static int hex_to_bytes(const char *hex, uint8_t *bytes, size_t max_length) {
 }
 
 static int det_cshake128_cb(
-    void *context, const uint8_t *input, size_t input_length, uint8_t *hash,
-    size_t hash_size, size_t *hash_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 ) {
     (void)context;
     int rc = cSHAKE128(
-        input, input_length * 8, hash, hash_size * 8, NULL, 0, DRIP_DET_CONTEXT_ID,
+        input, input_length * 8, buffer, buffer_size * 8, NULL, 0, DRIP_DET_CONTEXT_ID,
         sizeof(DRIP_DET_CONTEXT_ID) * 8
     );
     if (rc != 0) {
         return rc;
     }
 
-    *hash_length = hash_size;
+    *output_length = buffer_size;
     return 0;
 }
 

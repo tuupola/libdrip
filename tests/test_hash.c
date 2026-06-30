@@ -9,15 +9,15 @@ static int pass_through_callback(
     void *context,
     const uint8_t *input,
     size_t input_length,
-    uint8_t *hash,
-    size_t hash_size,
-    size_t *hash_length
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
 ) {
     (void)context;
-    (void)hash_size;
+    (void)buffer_size;
     size_t len = input_length < DRIP_HASH_SIZE ? input_length : DRIP_HASH_SIZE;
-    memcpy(hash, input, len);
-    *hash_length = DRIP_HASH_SIZE;
+    memcpy(buffer, input, len);
+    *output_length = DRIP_HASH_SIZE;
     return 0;
 }
 
@@ -26,16 +26,16 @@ static int failing_callback(
     void *context,
     const uint8_t *input,
     size_t input_length,
-    uint8_t *hash,
-    size_t hash_size,
-    size_t *hash_length
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
 ) {
     (void)context;
     (void)input;
     (void)input_length;
-    (void)hash;
-    (void)hash_size;
-    (void)hash_length;
+    (void)buffer;
+    (void)buffer_size;
+    (void)output_length;
     return -1;
 }
 

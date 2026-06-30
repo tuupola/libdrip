@@ -14,8 +14,8 @@ int drip_hash(
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t hash_length = 0;
-    int rc = callback(context, input, input_length, (uint8_t *)hash, DRIP_HASH_SIZE, &hash_length);
+    size_t output_length = 0;
+    int rc = callback(context, input, input_length, (uint8_t *)hash, DRIP_HASH_SIZE, &output_length);
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }

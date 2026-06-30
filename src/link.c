@@ -236,12 +236,12 @@ int drip_link_sign(
     memcpy(payload + offset, link->parent_det, sizeof(link->parent_det));
     offset += sizeof(link->parent_det);
 
-    size_t signature_length = 0;
-    int rc = callback(context, payload, payload_length, link->signature, DRIP_SIGNATURE_SIZE, &signature_length);
+    size_t output_length = 0;
+    int rc = callback(context, payload, payload_length, link->signature, DRIP_SIGNATURE_SIZE, &output_length);
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }
-    if (signature_length != DRIP_SIGNATURE_SIZE) {
+    if (output_length != DRIP_SIGNATURE_SIZE) {
         return DRIP_ERROR_INVALID_LENGTH;
     }
 

@@ -28,16 +28,16 @@ static int sign_ed25519(
     void *context,
     const uint8_t *input,
     size_t input_length,
-    uint8_t *signature,
-    size_t signature_size,
-    size_t *signature_length
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
 ) {
-    (void)signature_size;
+    (void)buffer_size;
     const uint8_t *key = (const uint8_t *)context;
     unsigned long long sig_len = 0;
-    int rc = crypto_sign_detached(signature, &sig_len, input, input_length, key);
+    int rc = crypto_sign_detached(buffer, &sig_len, input, input_length, key);
     if (0 == rc) {
-        *signature_length = (size_t)sig_len;
+        *output_length = (size_t)sig_len;
     }
     return rc;
 }
@@ -527,20 +527,20 @@ static int sign_ed25519_wrong_length(
     void *context,
     const uint8_t *input,
     size_t input_length,
-    uint8_t *signature,
-    size_t signature_size,
-    size_t *signature_length
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
 ) {
     (void)context;
     (void)input;
     (void)input_length;
-    (void)signature;
-    (void)signature_size;
-    *signature_length = 32;
+    (void)buffer;
+    (void)buffer_size;
+    *output_length = 32;
     return 0;
 }
 
-TEST test_sign_invalid_signature_length(void) {
+TEST test_sign_invalid_output_length(void) {
     drip_link_t link;
     drip_det_t child_det;
     drip_hi_t child_hi;
@@ -759,7 +759,7 @@ SUITE(link_suite) {
     RUN_TEST(test_sign_null_ptr_link);
     RUN_TEST(test_sign_null_ptr_callback);
     RUN_TEST(test_sign_and_verify_success);
-    RUN_TEST(test_sign_invalid_signature_length);
+    RUN_TEST(test_sign_invalid_output_length);
     RUN_TEST(test_validate_null_pointer);
     RUN_TEST(test_validate_invalid_sam_type);
     RUN_TEST(test_validate_vnb_gt_vna);
