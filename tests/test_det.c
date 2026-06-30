@@ -495,6 +495,108 @@ TEST test_from_ipv6_string_round_trip(void) {
     PASS();
 }
 
+TEST test_encode_null_ptr_det(void) {
+    uint8_t buffer[DRIP_DET_SIZE];
+    int rc = drip_det_encode(NULL, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_encode_null_ptr_buffer(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+    int rc = drip_det_encode(&det, NULL, DRIP_DET_SIZE);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_encode_buffer_too_small(void) {
+    drip_det_t det;
+    uint8_t buffer[10];
+    drip_det_init(&det);
+    int rc = drip_det_encode(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    PASS();
+}
+
+TEST test_encode_success(void) {
+    drip_det_t det = {
+        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
+    };
+
+    uint8_t buffer[DRIP_DET_SIZE];
+    int rc = drip_det_encode(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_MEM_EQ(det, buffer, sizeof(drip_det_t));
+    PASS();
+}
+
+TEST test_decode_null_ptr_det(void) {
+    uint8_t buffer[DRIP_DET_SIZE] = {0};
+    int rc = drip_det_decode(NULL, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_decode_null_ptr_buffer(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+    int rc = drip_det_decode(&det, NULL, DRIP_DET_SIZE);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_decode_buffer_too_small(void) {
+    drip_det_t det;
+    uint8_t buffer[10] = {0};
+    int rc = drip_det_decode(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    PASS();
+}
+
+TEST test_decode_invalid_prefix(void) {
+    drip_det_t det;
+    uint8_t buffer[DRIP_DET_SIZE] = {0};
+    buffer[0] = 0xff;
+    int rc = drip_det_decode(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_INVALID_IPV6_PREFIX, rc);
+    PASS();
+}
+
+TEST test_decode_invalid_hhsi(void) {
+    drip_det_t det;
+    uint8_t buffer[DRIP_DET_SIZE] = {0};
+    buffer[0] = 0x20;
+    buffer[1] = 0x01;
+    buffer[2] = 0x00;
+    buffer[3] = 0x30;
+    buffer[7] = 16;
+    int rc = drip_det_decode(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
+    PASS();
+}
+
+TEST test_decode_success(void) {
+    drip_det_t det;
+    uint8_t buffer[DRIP_DET_SIZE] = {
+        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
+    };
+
+    int rc = drip_det_decode(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    ASSERT_EQ(10, drip_det_get_raa(&det));
+    ASSERT_EQ(20, drip_det_get_hda(&det));
+    ASSERT_EQ(5, drip_det_get_hhsi(&det));
+
+    const drip_hash_t *hash = drip_det_get_hash(&det);
+    uint8_t expected[] = {0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e};
+    ASSERT_MEM_EQ(expected, *hash, sizeof(drip_hash_t));
+    PASS();
+}
+
 SUITE(det_suite) {
     RUN_TEST(test_init_null_pointer);
     RUN_TEST(test_init);
@@ -542,4 +644,14 @@ SUITE(det_suite) {
     RUN_TEST(test_from_ipv6_string_wrong_prefix);
     RUN_TEST(test_from_ipv6_string_rfc_9374_example);
     RUN_TEST(test_from_ipv6_string_round_trip);
+    RUN_TEST(test_encode_null_ptr_det);
+    RUN_TEST(test_encode_null_ptr_buffer);
+    RUN_TEST(test_encode_buffer_too_small);
+    RUN_TEST(test_encode_success);
+    RUN_TEST(test_decode_null_ptr_det);
+    RUN_TEST(test_decode_null_ptr_buffer);
+    RUN_TEST(test_decode_buffer_too_small);
+    RUN_TEST(test_decode_invalid_prefix);
+    RUN_TEST(test_decode_invalid_hhsi);
+    RUN_TEST(test_decode_success);
 }

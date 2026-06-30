@@ -118,4 +118,40 @@ int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_s
  */
 int drip_det_from_ipv6_string(drip_det_t *det, const char *string);
 
+/**
+ * @brief Encode a DET to its 16-byte wire format.
+ *
+ * You could also just use `memcpy()` but using this future proofs your
+ * code in case the internal representation ever changes.
+ *
+ * @param det Pointer to the DET to encode.
+ * @param buffer Output buffer for the wire format bytes.
+ * @param buffer_size Size of @p buffer in bytes. Must be at least DRIP_DET_SIZE.
+ *
+ * @retval DRIP_SUCCESS on success.
+ * @retval DRIP_ERROR_NULL_POINTER if @p det or @p buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is less than DRIP_DET_SIZE.
+ */
+int drip_det_encode(const drip_det_t *det, uint8_t *buffer, size_t buffer_size);
+
+/**
+ * @brief Decode and validate a 16-byte buffer into a DET.
+ *
+ * You could also just use `memcpy()` but using this future proofs your
+ * code in case the internal representation ever changes.
+ *
+ * @param det Pointer to the DET that receives the decoded bytes.
+ * @param buffer Input buffer holding the wire format bytes.
+ * @param buffer_size Size of @p buffer in bytes. Must be at least DRIP_DET_SIZE.
+ *
+ * @retval DRIP_SUCCESS on success.
+ * @retval DRIP_ERROR_NULL_POINTER if @p det or @p buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is less than DRIP_DET_SIZE.
+ * @retval DRIP_ERROR_INVALID_IPV6_PREFIX if the decoded prefix is not 2001:30::/28.
+ * @retval DRIP_ERROR_INVALID_HHSI if the decoded HHSI is 0 or 16.
+ *
+ * @see drip_det_validate
+ */
+int drip_det_decode(drip_det_t *det, const uint8_t *buffer, size_t buffer_size);
+
 #endif /* DRIP_DET_H */

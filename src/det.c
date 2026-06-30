@@ -233,3 +233,31 @@ int drip_det_from_ipv6_string(drip_det_t *det, const char *string) {
 
     return drip_det_validate(det);
 }
+
+int drip_det_encode(const drip_det_t *det, uint8_t *buffer, size_t buffer_size) {
+    if (det == NULL || buffer == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (buffer_size < DRIP_DET_SIZE) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    memcpy(buffer, *det, DRIP_DET_SIZE);
+
+    return DRIP_SUCCESS;
+}
+
+int drip_det_decode(drip_det_t *det, const uint8_t *buffer, size_t buffer_size) {
+    if (det == NULL || buffer == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (buffer_size < DRIP_DET_SIZE) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    memcpy(*det, buffer, DRIP_DET_SIZE);
+
+    return drip_det_validate(det);
+}
