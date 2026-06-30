@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <string.h>
 
 #include "drip/det.h"
@@ -207,4 +208,28 @@ int drip_det_verify(
     }
 
     return DRIP_SUCCESS;
+}
+
+int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_size) {
+    if (det == NULL || buffer == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (inet_ntop(AF_INET6, det, buffer, (socklen_t)buffer_size) == NULL) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    return DRIP_SUCCESS;
+}
+
+int drip_det_from_ipv6_string(drip_det_t *det, const char *string) {
+    if (det == NULL || string == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (inet_pton(AF_INET6, string, det) != 1) {
+        return DRIP_ERROR_INVALID_IPV6_STRING;
+    }
+
+    return drip_det_validate(det);
 }

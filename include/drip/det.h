@@ -90,7 +90,32 @@ int drip_det_verify(
     const drip_det_t *det, const drip_hi_t *hi, drip_hash_cb_t callback, void *context
 );
 
-// int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_size);
-// int drip_det_from_ipv6_string(drip_det_t *det, const char *string);
+/**
+ * @brief Render a DET as a canonical IPv6 address string.
+ *
+ * @param det Pointer to the DET to render.
+ * @param buffer Output buffer for the NULL terminated ipv6 string.
+ * @param buffer_size Size of the output buffer.
+ *
+ * @retval DRIP_SUCCESS if the DET was rendered.
+ * @retval DRIP_ERROR_NULL_POINTER if det or buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is too small to
+ *         hold the rendered ipv6 string.
+ */
+int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_size);
+
+/**
+ * @brief Parse a canonical IPv6 address string into a DET.
+ *
+ * @param det Pointer to the DET that receives the parsed bytes.
+ * @param string NULL terminated ipv6 string.
+ *
+ * @retval DRIP_SUCCESS if the string parsed and is a structurally valid DET.
+ * @retval DRIP_ERROR_NULL_POINTER if det or string is NULL.
+ * @retval DRIP_ERROR_INVALID_IPV6_STRING if string is not a valid ipv6 address.
+ * @retval DRIP_ERROR_INVALID_IPV6_PREFIX if the prefix is outside 2001:30::/28.
+ * @retval DRIP_ERROR_INVALID_HHSI if the HHSI is 0 (RESERVED) or 16 (skipped)
+ */
+int drip_det_from_ipv6_string(drip_det_t *det, const char *string);
 
 #endif /* DRIP_DET_H */

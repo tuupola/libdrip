@@ -34,6 +34,7 @@ typedef enum {
     DRIP_ERROR_INVALID_CHILD_DET = -13,
     DRIP_ERROR_INVALID_PARENT_DET = -14,
     DRIP_ERROR_INVALID_HHSI = -15,
+    DRIP_ERROR_INVALID_IPV6_STRING = -16,
 } drip_status_t;
 
 typedef enum {

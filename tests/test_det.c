@@ -380,6 +380,121 @@ TEST test_validate_success(void) {
     PASS();
 }
 
+TEST test_to_ipv6_string_null_det(void) {
+    char buffer[DRIP_DET_IPV6_STRING_SIZE];
+    int rc = drip_det_to_ipv6_string(NULL, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_to_ipv6_string_null_buffer(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+
+    int rc = drip_det_to_ipv6_string(&det, NULL, 40);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_to_ipv6_string_rfc_9374_example(void) {
+    drip_det_t det = {
+        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
+    };
+
+    char buffer[DRIP_DET_IPV6_STRING_SIZE];
+    memset(buffer, 0xff, sizeof(buffer));
+
+    int rc = drip_det_to_ipv6_string(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_STR_EQ("2001:30:280:1405:a3ad:1952:ad0:a69e", buffer);
+    PASS();
+}
+
+TEST test_to_ipv6_string_buffer_too_small(void) {
+    drip_det_t det = {
+        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
+    };
+
+    char buffer[DRIP_DET_IPV6_STRING_SIZE];
+    int rc = drip_det_to_ipv6_string(&det, buffer, 1);
+    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    PASS();
+}
+
+TEST test_to_ipv6_string_round_trip(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+    drip_det_set_raa(&det, 10);
+    drip_det_set_hda(&det, 20);
+    drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
+
+    char buffer[DRIP_DET_IPV6_STRING_SIZE];
+    int rc = drip_det_to_ipv6_string(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    drip_det_t parsed;
+    rc = drip_det_from_ipv6_string(&parsed, buffer);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_MEM_EQ(det, parsed, sizeof(drip_det_t));
+    PASS();
+}
+
+TEST test_from_ipv6_string_null_det(void) {
+    int rc = drip_det_from_ipv6_string(NULL, "2001:30:280:1405:a3ad:1952:ad0:a69e");
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_from_ipv6_string_null_string(void) {
+    drip_det_t det;
+    int rc = drip_det_from_ipv6_string(&det, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_from_ipv6_string_invalid_format(void) {
+    drip_det_t det;
+    int rc = drip_det_from_ipv6_string(&det, "not-an-ip");
+    ASSERT_EQ(DRIP_ERROR_INVALID_IPV6_STRING, rc);
+    PASS();
+}
+
+TEST test_from_ipv6_string_wrong_prefix(void) {
+    drip_det_t det;
+    int rc = drip_det_from_ipv6_string(&det, "::1");
+    ASSERT_EQ(DRIP_ERROR_INVALID_IPV6_PREFIX, rc);
+    PASS();
+}
+
+TEST test_from_ipv6_string_rfc_9374_example(void) {
+    drip_det_t det;
+    int rc = drip_det_from_ipv6_string(&det, "2001:30:280:1405:a3ad:1952:ad0:a69e");
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    ASSERT_EQ(10, drip_det_get_raa(&det));
+    ASSERT_EQ(20, drip_det_get_hda(&det));
+    ASSERT_EQ(5, drip_det_get_hhsi(&det));
+
+    const drip_hash_t *hash = drip_det_get_hash(&det);
+    uint8_t expected[] = {0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e};
+    ASSERT_MEM_EQ(expected, *hash, sizeof(drip_hash_t));
+    PASS();
+}
+
+TEST test_from_ipv6_string_round_trip(void) {
+    drip_det_t det;
+    int rc = drip_det_from_ipv6_string(&det, "2001:30:280:1405:a3ad:1952:ad0:a69e");
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    char buffer[DRIP_DET_IPV6_STRING_SIZE];
+    rc = drip_det_to_ipv6_string(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_STR_EQ("2001:30:280:1405:a3ad:1952:ad0:a69e", buffer);
+    PASS();
+}
+
 SUITE(det_suite) {
     RUN_TEST(test_init_null_pointer);
     RUN_TEST(test_init);
@@ -416,4 +531,15 @@ SUITE(det_suite) {
     RUN_TEST(test_validate_hhsi_zero);
     RUN_TEST(test_validate_hhsi_16);
     RUN_TEST(test_validate_success);
+    RUN_TEST(test_to_ipv6_string_null_det);
+    RUN_TEST(test_to_ipv6_string_null_buffer);
+    RUN_TEST(test_to_ipv6_string_rfc_9374_example);
+    RUN_TEST(test_to_ipv6_string_buffer_too_small);
+    RUN_TEST(test_to_ipv6_string_round_trip);
+    RUN_TEST(test_from_ipv6_string_null_det);
+    RUN_TEST(test_from_ipv6_string_null_string);
+    RUN_TEST(test_from_ipv6_string_invalid_format);
+    RUN_TEST(test_from_ipv6_string_wrong_prefix);
+    RUN_TEST(test_from_ipv6_string_rfc_9374_example);
+    RUN_TEST(test_from_ipv6_string_round_trip);
 }
