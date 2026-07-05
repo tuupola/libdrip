@@ -314,6 +314,7 @@ TEST test_validate_null_pointer(void) {
 TEST test_validate_valid_det(void) {
     drip_det_t det;
     drip_det_init(&det);
+    drip_det_set_raa(&det, 10);
     drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
 
     int rc = drip_det_validate(&det);
@@ -349,6 +350,7 @@ TEST test_validate_invalid_prefix(void) {
 TEST test_validate_hhsi_zero(void) {
     drip_det_t det;
     drip_det_init(&det);
+    drip_det_set_raa(&det, 10);
 
     det[7] = 0;
     int rc = drip_det_validate(&det);
@@ -359,6 +361,7 @@ TEST test_validate_hhsi_zero(void) {
 TEST test_validate_hhsi_16(void) {
     drip_det_t det;
     drip_det_init(&det);
+    drip_det_set_raa(&det, 10);
 
     det[7] = 16;
     int rc = drip_det_validate(&det);
@@ -372,7 +375,84 @@ TEST test_validate_success(void) {
     for (size_t i = 0; i < sizeof(valid); i++) {
         drip_det_t det;
         drip_det_init(&det);
+        drip_det_set_raa(&det, 10);
         det[7] = valid[i];
+
+        int rc = drip_det_validate(&det);
+        ASSERT_EQ(DRIP_SUCCESS, rc);
+    }
+    PASS();
+}
+
+TEST test_validate_raa_reserved_low(void) {
+    uint16_t reserved[] = {0, 1, 2, 3};
+
+    for (size_t i = 0; i < 4; i++) {
+        drip_det_t det;
+        drip_det_init(&det);
+        drip_det_set_raa(&det, reserved[i]);
+        drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
+
+        int rc = drip_det_validate(&det);
+        ASSERT_EQ(DRIP_ERROR_INVALID_RAA, rc);
+    }
+    PASS();
+}
+
+TEST test_validate_raa_reserved_high(void) {
+    uint16_t reserved[] = {4000, 4001, 5000, 8190, 8191};
+
+    for (size_t i = 0; i < 5; i++) {
+        drip_det_t det;
+        drip_det_init(&det);
+        drip_det_set_raa(&det, reserved[i]);
+        drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
+
+        int rc = drip_det_validate(&det);
+        ASSERT_EQ(DRIP_ERROR_INVALID_RAA, rc);
+    }
+    PASS();
+}
+
+TEST test_validate_raa_unassigned_low(void) {
+    uint16_t valid[] = {4, 100, 3999};
+
+    for (size_t i = 0; i < 3; i++) {
+        drip_det_t det;
+        drip_det_init(&det);
+        drip_det_set_raa(&det, valid[i]);
+        drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
+
+        int rc = drip_det_validate(&det);
+        ASSERT_EQ(DRIP_SUCCESS, rc);
+    }
+    PASS();
+}
+
+TEST test_validate_raa_fcfs(void) {
+    /* 8192 = Bear Metal OÜ assigned in IANA RAA registry */
+    uint16_t valid[] = {8192, 10000, 15359};
+
+    for (size_t i = 0; i < 3; i++) {
+        drip_det_t det;
+        drip_det_init(&det);
+        drip_det_set_raa(&det, valid[i]);
+        drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
+
+        int rc = drip_det_validate(&det);
+        ASSERT_EQ(DRIP_SUCCESS, rc);
+    }
+    PASS();
+}
+
+TEST test_validate_raa_private_use(void) {
+    uint16_t valid[] = {15360, 16000, 16383};
+
+    for (size_t i = 0; i < 3; i++) {
+        drip_det_t det;
+        drip_det_init(&det);
+        drip_det_set_raa(&det, valid[i]);
+        drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
 
         int rc = drip_det_validate(&det);
         ASSERT_EQ(DRIP_SUCCESS, rc);
@@ -465,6 +545,15 @@ TEST test_from_ipv6_string_wrong_prefix(void) {
     drip_det_t det;
     int rc = drip_det_from_ipv6_string(&det, "::1");
     ASSERT_EQ(DRIP_ERROR_INVALID_IPV6_PREFIX, rc);
+    PASS();
+}
+
+TEST test_from_ipv6_string_invalid_raa(void) {
+    /* RAA = 2 (Reserved low range 0..3), HDA = 0, HHSI = 5
+     * Bytes 3-5 encode RAA=2: 0x30, 0x00, 0x80 → IPv6 word 0x0080 */
+    drip_det_t det;
+    int rc = drip_det_from_ipv6_string(&det, "2001:30:80::5");
+    ASSERT_EQ(DRIP_ERROR_INVALID_RAA, rc);
     PASS();
 }
 
@@ -571,9 +660,25 @@ TEST test_decode_invalid_hhsi(void) {
     buffer[1] = 0x01;
     buffer[2] = 0x00;
     buffer[3] = 0x30;
+    buffer[4] = 0x02; /* RAA = 10 */
+    buffer[5] = 0x80; /* RAA low bits + HDA = 0 */
     buffer[7] = 16;
     int rc = drip_det_decode(&det, buffer, sizeof(buffer));
     ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
+    PASS();
+}
+
+TEST test_decode_invalid_raa(void) {
+    drip_det_t det;
+    uint8_t buffer[DRIP_DET_SIZE] = {0};
+    buffer[0] = 0x20;
+    buffer[1] = 0x01;
+    buffer[2] = 0x00;
+    buffer[3] = 0x30;
+    /* RAA = 0 left as default ie. reserved */
+    buffer[7] = DRIP_HHSI_EDDSA_CSHAKE128;
+    int rc = drip_det_decode(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_INVALID_RAA, rc);
     PASS();
 }
 
@@ -633,6 +738,11 @@ SUITE(det_suite) {
     RUN_TEST(test_validate_hhsi_zero);
     RUN_TEST(test_validate_hhsi_16);
     RUN_TEST(test_validate_success);
+    RUN_TEST(test_validate_raa_reserved_low);
+    RUN_TEST(test_validate_raa_reserved_high);
+    RUN_TEST(test_validate_raa_unassigned_low);
+    RUN_TEST(test_validate_raa_fcfs);
+    RUN_TEST(test_validate_raa_private_use);
     RUN_TEST(test_to_ipv6_string_null_det);
     RUN_TEST(test_to_ipv6_string_null_buffer);
     RUN_TEST(test_to_ipv6_string_rfc_9374_example);
@@ -642,6 +752,7 @@ SUITE(det_suite) {
     RUN_TEST(test_from_ipv6_string_null_string);
     RUN_TEST(test_from_ipv6_string_invalid_format);
     RUN_TEST(test_from_ipv6_string_wrong_prefix);
+    RUN_TEST(test_from_ipv6_string_invalid_raa);
     RUN_TEST(test_from_ipv6_string_rfc_9374_example);
     RUN_TEST(test_from_ipv6_string_round_trip);
     RUN_TEST(test_encode_null_ptr_det);
@@ -653,5 +764,6 @@ SUITE(det_suite) {
     RUN_TEST(test_decode_buffer_too_small);
     RUN_TEST(test_decode_invalid_prefix);
     RUN_TEST(test_decode_invalid_hhsi);
+    RUN_TEST(test_decode_invalid_raa);
     RUN_TEST(test_decode_success);
 }

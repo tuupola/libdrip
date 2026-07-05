@@ -167,6 +167,8 @@ int drip_det_update_hash(
 }
 
 int drip_det_validate(const drip_det_t *det) {
+    uint16_t raa;
+
     if (det == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -175,7 +177,13 @@ int drip_det_validate(const drip_det_t *det) {
         return DRIP_ERROR_INVALID_IPV6_PREFIX;
     }
 
-    /* 16 is skipped per RFC 9374 §3.2 */
+    /* IANA RAA reserved ranges: 0..3 and 4000..8191. */
+    raa = drip_det_get_raa(det);
+    if (raa <= 3 || (raa >= 4000 && raa <= 8191)) {
+        return DRIP_ERROR_INVALID_RAA;
+    }
+
+    /* 7 is reserved and 16 is skipped per RFC 9374 §3.2 */
     if ((*det)[7] == DRIP_HHSI_RESERVED || (*det)[7] == 16) {
         return DRIP_ERROR_INVALID_HHSI;
     }
