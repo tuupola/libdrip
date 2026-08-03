@@ -148,8 +148,13 @@ int drip_manifest_update_current_hash(
     int rc = callback(
         context, buffer, offset, manifest->current_hash, DRIP_HASH_SIZE, &output_length
     );
+
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
+    }
+
+    if (output_length != DRIP_HASH_SIZE) {
+        return DRIP_ERROR_INVALID_LENGTH;
     }
 
     return DRIP_SUCCESS;

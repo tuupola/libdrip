@@ -266,6 +266,53 @@ TEST test_set_and_get_current_hash(void) {
     PASS();
 }
 
+static int hash_cb_short_write(
+    void *context,
+    const uint8_t *input,
+    size_t input_length,
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)buffer_size;
+    memset(buffer, 0xaa, 4);
+    *output_length = 4;
+    return 0;
+}
+
+static int hash_cb_zero_write(
+    void *context,
+    const uint8_t *input,
+    size_t input_length,
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)buffer;
+    (void)buffer_size;
+    *output_length = 0;
+    return 0;
+}
+
+TEST test_update_current_hash_invalid_length(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+
+    int rc = drip_manifest_update_current_hash(&manifest, hash_cb_short_write, NULL);
+    ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
+
+    rc = drip_manifest_update_current_hash(&manifest, hash_cb_zero_write, NULL);
+    ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
+
+    PASS();
+}
+
 TEST test_get_link_hash_null_manifest(void) {
     const drip_hash_t *hash = drip_manifest_get_link_hash(NULL);
     ASSERT_EQ(NULL, hash);
@@ -681,6 +728,7 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_current_hash_null_ptr_manifest);
     RUN_TEST(test_set_current_hash_null_ptr_hash);
     RUN_TEST(test_set_and_get_current_hash);
+    RUN_TEST(test_update_current_hash_invalid_length);
     RUN_TEST(test_get_link_hash_null_manifest);
     RUN_TEST(test_set_link_hash_null_ptr_manifest);
     RUN_TEST(test_set_link_hash_null_ptr_hash);
