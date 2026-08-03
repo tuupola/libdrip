@@ -336,12 +336,14 @@ int drip_manifest_encode(
     memcpy(buffer + offset, &manifest->sam_type, DRIP_SAM_TYPE_SIZE);
     offset += DRIP_SAM_TYPE_SIZE;
 
+    /* Add the timestamps. */
     memcpy(buffer + offset, &manifest->vnb, DRIP_TIMESTAMP_SIZE);
     offset += DRIP_TIMESTAMP_SIZE;
 
     memcpy(buffer + offset, &manifest->vna, DRIP_TIMESTAMP_SIZE);
     offset += DRIP_TIMESTAMP_SIZE;
 
+    /* Add the hashes. */
     memcpy(buffer + offset, manifest->previous_hash, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
@@ -351,11 +353,13 @@ int drip_manifest_encode(
     memcpy(buffer + offset, manifest->link_hash, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
+    /* Add the evidence. */
     for (uint8_t i = 0; i < manifest->evidence_count; i++) {
         memcpy(buffer + offset, manifest->evidence[i], DRIP_HASH_SIZE);
         offset += DRIP_HASH_SIZE;
     }
 
+    /* Add the det and signature. */
     memcpy(buffer + offset, manifest->det, DRIP_DET_SIZE);
     offset += DRIP_DET_SIZE;
 
@@ -376,15 +380,19 @@ int drip_manifest_decode(
         return DRIP_ERROR_NULL_POINTER;
     }
 
+    /* Not enough data for manifest with 0 bytes of evidence. */
     if (buffer_size < DRIP_MANIFEST_MIN_SIZE) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
 
+    /* Evidence must be multiples of 8 bytes. */
     size_t evidence_size = buffer_size - DRIP_MANIFEST_MIN_SIZE;
     if (evidence_size % DRIP_HASH_SIZE != 0) {
         return DRIP_ERROR_INVALID_LENGTH;
     }
 
+    /* There can be maximum 11 evidence. */
+    /* TODO: Maybe just check DRIP_MANIFEST_MAX_SIZE? */
     uint8_t evidence_count = (uint8_t)(evidence_size / DRIP_HASH_SIZE);
     if (evidence_count > DRIP_MANIFEST_EVIDENCE_MAX) {
         return DRIP_ERROR_ARRAY_FULL;
@@ -397,12 +405,18 @@ int drip_manifest_decode(
     memcpy(&manifest->sam_type, buffer + offset, DRIP_SAM_TYPE_SIZE);
     offset += DRIP_SAM_TYPE_SIZE;
 
+    if (manifest->sam_type != DRIP_SAM_TYPE_MANIFEST) {
+        return DRIP_ERROR_INVALID_SAM_TYPE;
+    }
+
+    /* Add the timestamps. */
     memcpy(&manifest->vnb, buffer + offset, DRIP_TIMESTAMP_SIZE);
     offset += DRIP_TIMESTAMP_SIZE;
 
     memcpy(&manifest->vna, buffer + offset, DRIP_TIMESTAMP_SIZE);
     offset += DRIP_TIMESTAMP_SIZE;
 
+    /* Add the hashes. */
     memcpy(manifest->previous_hash, buffer + offset, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
@@ -412,12 +426,14 @@ int drip_manifest_decode(
     memcpy(manifest->link_hash, buffer + offset, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
 
+    /* Add the evidence. */
     for (uint8_t i = 0; i < evidence_count; i++) {
         memcpy(manifest->evidence[i], buffer + offset, DRIP_HASH_SIZE);
         offset += DRIP_HASH_SIZE;
     }
     manifest->evidence_count = evidence_count;
 
+    /* Add the det and signature. */
     memcpy(manifest->det, buffer + offset, DRIP_DET_SIZE);
     offset += DRIP_DET_SIZE;
 

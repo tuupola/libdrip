@@ -222,6 +222,22 @@ int drip_manifest_encode(
     size_t *encoded_length
 );
 
+/**
+ * @brief Decode a manifest from its wire format.
+ *
+ * The @p buffer must contain only the bytes for the manifest and nothing else.
+ *
+ * @param manifest Pointer to the manifest that receives the decoded data.
+ * @param buffer Input buffer holding the wire format bytes.
+ * @param buffer_size Size of @p buffer in bytes.
+ *
+ * @retval DRIP_SUCCESS on success.
+ * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is less than DRIP_MANIFEST_MIN_SIZE.
+ * @retval DRIP_ERROR_INVALID_LENGTH if the evidence payload length is not a multiple of DRIP_HASH_SIZE.
+ * @retval DRIP_ERROR_ARRAY_FULL if the evidence count would exceed DRIP_MANIFEST_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if the decoded SAM type is not DRIP_SAM_TYPE_MANIFEST.
+ */
 int drip_manifest_decode(
     drip_manifest_t *manifest,
     const uint8_t *buffer,

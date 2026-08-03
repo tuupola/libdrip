@@ -645,6 +645,15 @@ TEST test_to_json_optional_json_length(void) {
     PASS();
 }
 
+TEST test_decode_invalid_sam_type(void) {
+    drip_manifest_t manifest;
+    uint8_t buffer[DRIP_MANIFEST_MIN_SIZE] = {0};
+    buffer[0] = DRIP_SAM_TYPE_WRAPPER;
+    int rc = drip_manifest_decode(&manifest, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, rc);
+    PASS();
+}
+
 SUITE(manifest_suite) {
     RUN_TEST(test_init_null_pointer);
     RUN_TEST(test_init);
@@ -703,6 +712,7 @@ SUITE(manifest_suite) {
     RUN_TEST(test_decode_null_ptr_buffer);
     RUN_TEST(test_decode_buffer_too_small);
     RUN_TEST(test_decode_invalid_length);
+    RUN_TEST(test_decode_invalid_sam_type);
     RUN_TEST(test_decode_success);
     RUN_TEST(test_to_json_null_ptr_manifest);
     RUN_TEST(test_to_json_null_ptr_buffer);
