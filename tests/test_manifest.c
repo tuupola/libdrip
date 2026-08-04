@@ -413,7 +413,7 @@ TEST test_add_evidence_full(void) {
         ASSERT_EQ(DRIP_SUCCESS, rc);
     }
     rc = drip_manifest_add_evidence(&manifest, &hash);
-    ASSERT_EQ(DRIP_ERROR_ARRAY_FULL, rc);
+    ASSERT_EQ(DRIP_ERROR_ARRAY_OVERFLOW, rc);
     PASS();
 }
 

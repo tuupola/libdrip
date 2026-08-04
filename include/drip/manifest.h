@@ -238,7 +238,7 @@ int drip_manifest_encode(
  * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p buffer is NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is less than DRIP_MANIFEST_MIN_SIZE.
  * @retval DRIP_ERROR_INVALID_LENGTH if the evidence payload length is not a multiple of DRIP_HASH_SIZE.
- * @retval DRIP_ERROR_ARRAY_FULL if the evidence count would exceed DRIP_MANIFEST_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if the evidence count would exceed DRIP_MANIFEST_EVIDENCE_MAX.
  * @retval DRIP_ERROR_INVALID_SAM_TYPE if the decoded SAM type is not DRIP_SAM_TYPE_MANIFEST.
  */
 int drip_manifest_decode(

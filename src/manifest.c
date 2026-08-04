@@ -202,7 +202,7 @@ int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *has
         return DRIP_ERROR_NULL_POINTER;
     }
     if (manifest->evidence_count >= DRIP_MANIFEST_EVIDENCE_MAX) {
-        return DRIP_ERROR_ARRAY_FULL;
+        return DRIP_ERROR_ARRAY_OVERFLOW;
     }
     memcpy(manifest->evidence[manifest->evidence_count], hash, sizeof(drip_hash_t));
     manifest->evidence_count++;
@@ -392,7 +392,7 @@ int drip_manifest_decode(
     /* TODO: Maybe just check DRIP_MANIFEST_MAX_SIZE? */
     uint8_t evidence_count = (uint8_t)(evidence_size / DRIP_HASH_SIZE);
     if (evidence_count > DRIP_MANIFEST_EVIDENCE_MAX) {
-        return DRIP_ERROR_ARRAY_FULL;
+        return DRIP_ERROR_ARRAY_OVERFLOW;
     }
 
     drip_manifest_init(manifest);
