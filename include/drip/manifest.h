@@ -177,7 +177,6 @@ uint32_t drip_manifest_get_vnb_unixtime(const drip_manifest_t *manifest);
 const drip_hash_t *drip_manifest_get_previous_hash(const drip_manifest_t *manifest);
 int drip_manifest_set_previous_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 const drip_hash_t *drip_manifest_get_current_hash(const drip_manifest_t *manifest);
-int drip_manifest_set_current_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 int drip_manifest_update_current_hash(
     drip_manifest_t *manifest,
     drip_hash_cb_t callback,
@@ -194,14 +193,18 @@ const drip_hash_t *drip_manifest_get_evidence_at(const drip_manifest_t *manifest
 int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *hash);
 
 /**
- * @brief Sign a DRIP manifest with caller supplied callback.
+ * @brief Sign a manifest with caller supplied callback.
  *
- * @param auth Pointer to the DRIP Manifest to be signed.
- * @param callback Callback function used to produce the signature.
+ * @param manifest Pointer to the manifest to be signed.
+ * @param callback Callback function used to generate the signature.
  * @param context Opaque context passed to the callback.
  *
+ * @pre You must call drip_manifest_update_current_hash() atleast once
+ *      before calling this function.
+ *
  * @retval DRIP_SUCCESS if signing succeeded.
- * @retval DRIP_ERROR_NULL_POINTER if auth, message, or callback is NULL.
+ * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p callback is NULL.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if @p callback returned non-zero.
  */
 int drip_manifest_sign(
     drip_manifest_t *manifest,

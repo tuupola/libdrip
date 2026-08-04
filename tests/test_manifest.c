@@ -238,34 +238,6 @@ TEST test_get_current_hash_null_manifest(void) {
     PASS();
 }
 
-TEST test_set_current_hash_null_ptr_manifest(void) {
-    drip_hash_t hash = {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
-    int rc = drip_manifest_set_current_hash(NULL, &hash);
-    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
-    PASS();
-}
-
-TEST test_set_current_hash_null_ptr_hash(void) {
-    drip_manifest_t manifest;
-    drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_current_hash(&manifest, NULL);
-    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
-    PASS();
-}
-
-TEST test_set_and_get_current_hash(void) {
-    drip_manifest_t manifest;
-    drip_hash_t hash = {0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
-
-    drip_manifest_init(&manifest);
-    int rc = drip_manifest_set_current_hash(&manifest, &hash);
-    ASSERT_EQ(DRIP_SUCCESS, rc);
-    const drip_hash_t *result = drip_manifest_get_current_hash(&manifest);
-    ASSERT_NEQ(NULL, result);
-    ASSERT_MEM_EQ(hash, *result, sizeof(drip_hash_t));
-    PASS();
-}
-
 static int hash_cb_short_write(
     void *context,
     const uint8_t *input,
@@ -577,7 +549,7 @@ TEST test_encode_success(void) {
     drip_manifest_set_vnb(&manifest, 100000000);
     drip_manifest_set_vna(&manifest, 100000120);
     drip_manifest_set_previous_hash(&manifest, &previous_hash);
-    drip_manifest_set_current_hash(&manifest, &current_hash);
+    memcpy(manifest.current_hash, &current_hash, sizeof(drip_hash_t));
     drip_manifest_set_link_hash(&manifest, &link_hash);
     drip_manifest_add_evidence(&manifest, &msg_hash1);
     drip_manifest_add_evidence(&manifest, &msg_hash2);
@@ -637,7 +609,7 @@ TEST test_decode_success(void) {
     drip_manifest_set_vnb(&in, 100000000);
     drip_manifest_set_vna(&in, 100000120);
     drip_manifest_set_previous_hash(&in, &previous_hash);
-    drip_manifest_set_current_hash(&in, &current_hash);
+    memcpy(in.current_hash, &current_hash, sizeof(drip_hash_t));
     drip_manifest_set_link_hash(&in, &link_hash);
     drip_manifest_add_evidence(&in, &msg_hash1);
     drip_manifest_add_evidence(&in, &msg_hash2);
@@ -725,9 +697,6 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_previous_hash_null_ptr_hash);
     RUN_TEST(test_set_and_get_previous_hash);
     RUN_TEST(test_get_current_hash_null_manifest);
-    RUN_TEST(test_set_current_hash_null_ptr_manifest);
-    RUN_TEST(test_set_current_hash_null_ptr_hash);
-    RUN_TEST(test_set_and_get_current_hash);
     RUN_TEST(test_update_current_hash_invalid_length);
     RUN_TEST(test_get_link_hash_null_manifest);
     RUN_TEST(test_set_link_hash_null_ptr_manifest);

@@ -112,14 +112,6 @@ const drip_hash_t *drip_manifest_get_current_hash(const drip_manifest_t *manifes
     return &manifest->current_hash;
 }
 
-int drip_manifest_set_current_hash(drip_manifest_t *manifest, const drip_hash_t *hash) {
-    if (manifest == NULL || hash == NULL) {
-        return DRIP_ERROR_NULL_POINTER;
-    }
-    memcpy(manifest->current_hash, hash, sizeof(drip_hash_t));
-    return DRIP_SUCCESS;
-}
-
 int drip_manifest_update_current_hash(
     drip_manifest_t *manifest,
     drip_hash_cb_t callback,
