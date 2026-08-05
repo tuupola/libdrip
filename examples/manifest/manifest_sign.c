@@ -49,15 +49,29 @@ static int sign_ed25519(
 
 int main(void) {
     drip_manifest_t manifest;
+    drip_hash_t hash = {0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD, 0xBE, 0xEF};
+    /* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e */
+    drip_det_t det = {
+        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
+    };
+
     uint8_t encoded[DRIP_MANIFEST_MAX_SIZE];
+
     size_t encoded_length;
+    int rc;
 
     drip_manifest_init(&manifest);
-    drip_manifest_set_vna_unixtime(&manifest, (uint32_t)time(NULL));
-    drip_manifest_set_vnb_unixtime(&manifest, (uint32_t)time(NULL) + 120);
-
-    drip_hash_t hash = {0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD, 0xBE, 0xEF};
+    drip_manifest_set_vnb_unixtime(&manifest, (uint32_t)time(NULL));
+    drip_manifest_set_vna_unixtime(&manifest, (uint32_t)time(NULL) + 120);
+    drip_manifest_set_det(&manifest, &det);
     drip_manifest_add_evidence(&manifest, &hash);
+
+    rc = drip_manifest_validate(&manifest);
+    if (rc != DRIP_SUCCESS) {
+        fprintf(stderr, "Error: Manifest validation failed (%d)\n", rc);
+        return 1;
+    }
 
     drip_manifest_sign(&manifest, sign_ed25519, (void *)secret_key);
     drip_manifest_encode(&manifest, encoded, sizeof(encoded), &encoded_length);

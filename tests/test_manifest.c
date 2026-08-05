@@ -353,6 +353,59 @@ TEST test_set_and_get_det(void) {
     PASS();
 }
 
+TEST test_validate_null_pointer(void) {
+    int rc = drip_manifest_validate(NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_validate_invalid_sam_type(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+    manifest.sam_type = DRIP_SAM_TYPE_LINK;
+    ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, drip_manifest_validate(&manifest));
+    PASS();
+}
+
+TEST test_validate_vnb_after_vna(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+    manifest.vnb = 100;
+    manifest.vna = 50;
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, drip_manifest_validate(&manifest));
+    PASS();
+}
+
+TEST test_validate_evidence_overflow(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+    manifest.evidence_count = DRIP_MANIFEST_EVIDENCE_MAX + 1;
+    ASSERT_EQ(DRIP_ERROR_ARRAY_OVERFLOW, drip_manifest_validate(&manifest));
+    manifest.evidence_count = 255;
+    ASSERT_EQ(DRIP_ERROR_ARRAY_OVERFLOW, drip_manifest_validate(&manifest));
+    PASS();
+}
+
+TEST test_validate_invalid_det(void) {
+    drip_manifest_t manifest;
+    drip_manifest_init(&manifest);
+    ASSERT_EQ(DRIP_ERROR_INVALID_DET, drip_manifest_validate(&manifest));
+    PASS();
+}
+
+TEST test_validate_success(void) {
+    drip_manifest_t manifest;
+    /* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e */
+    drip_det_t valid_det = {
+        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
+    };
+    drip_manifest_init(&manifest);
+    drip_manifest_set_det(&manifest, &valid_det);
+    ASSERT_EQ(DRIP_SUCCESS, drip_manifest_validate(&manifest));
+    PASS();
+}
+
 TEST test_get_signature_null_manifest(void) {
     const drip_signature_t *signature = drip_manifest_get_signature(NULL);
     ASSERT_EQ(NULL, signature);
@@ -706,6 +759,12 @@ SUITE(manifest_suite) {
     RUN_TEST(test_set_det_null_ptr_manifest);
     RUN_TEST(test_set_det_null_ptr_det);
     RUN_TEST(test_set_and_get_det);
+    RUN_TEST(test_validate_null_pointer);
+    RUN_TEST(test_validate_invalid_sam_type);
+    RUN_TEST(test_validate_vnb_after_vna);
+    RUN_TEST(test_validate_evidence_overflow);
+    RUN_TEST(test_validate_invalid_det);
+    RUN_TEST(test_validate_success);
     RUN_TEST(test_get_signature_null_manifest);
     RUN_TEST(test_set_signature_null_ptr_manifest);
     RUN_TEST(test_set_signature_null_ptr_signature);

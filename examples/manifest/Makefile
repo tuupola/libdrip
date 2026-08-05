@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -std=c11 -I../../include -I../../../librid/include
 LDFLAGS = -lsodium
 
 SRC_DIR = ../../src
-SRC = $(SRC_DIR)/hash.c $(SRC_DIR)/manifest.c
+SRC = $(SRC_DIR)/hash.c $(SRC_DIR)/manifest.c $(SRC_DIR)/det.c
 
 TARGETS = manifest_sign manifest_verify
 

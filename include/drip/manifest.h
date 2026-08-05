@@ -189,6 +189,24 @@ const drip_det_t *drip_manifest_get_det(const drip_manifest_t *manifest);
 int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det);
 const drip_signature_t *drip_manifest_get_signature(const drip_manifest_t *manifest);
 int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_signature_t *signature);
+
+/**
+ * @brief Validate the structural state of a manifest.
+ *
+ * Performs structural checks only. Does not verify the signature.
+ *
+ * @param manifest Pointer to the manifest to validate.
+ *
+ * @retval DRIP_SUCCESS if @p manifest is structurally valid.
+ * @retval DRIP_ERROR_NULL_POINTER if @p manifest is NULL.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if @p sam_type is not
+ *         DRIP_SAM_TYPE_MANIFEST.
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if @p vnb > @p vna.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if @p evidence_count exceeds
+ *         DRIP_MANIFEST_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_INVALID_DET if @p det fails drip_det_validate().
+ */
+int drip_manifest_validate(const drip_manifest_t *manifest);
 const drip_hash_t *drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index);
 int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *hash);
 

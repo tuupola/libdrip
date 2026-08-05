@@ -197,6 +197,25 @@ int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_signature_
     return DRIP_SUCCESS;
 }
 
+int drip_manifest_validate(const drip_manifest_t *manifest) {
+    if (manifest == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    if (manifest->sam_type != DRIP_SAM_TYPE_MANIFEST) {
+        return DRIP_ERROR_INVALID_SAM_TYPE;
+    }
+    if (manifest->vnb > manifest->vna) {
+        return DRIP_ERROR_INVALID_TIMESTAMP;
+    }
+    if (manifest->evidence_count > DRIP_MANIFEST_EVIDENCE_MAX) {
+        return DRIP_ERROR_ARRAY_OVERFLOW;
+    }
+    if (drip_det_validate(&manifest->det) != DRIP_SUCCESS) {
+        return DRIP_ERROR_INVALID_DET;
+    }
+    return DRIP_SUCCESS;
+}
+
 int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;

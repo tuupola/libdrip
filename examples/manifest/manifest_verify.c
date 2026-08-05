@@ -67,6 +67,12 @@ int main(int argc, char *argv[]) {
          return 1;
     }
 
+    rc = drip_manifest_validate(&manifest);
+    if (rc != DRIP_SUCCESS) {
+        fprintf(stderr, "Error: Manifest validation failed (%d)\n", rc);
+        return 1;
+    }
+
     rc = drip_manifest_verify(&manifest, verify_ed25519, (void *)public_key);
 
     if (0 == rc) {
