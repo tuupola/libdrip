@@ -149,15 +149,25 @@ int drip_det_update_hash(
     drip_det_t *det, const drip_hi_t *hi, drip_hash_cb_t callback, void *context
 ) {
     int rc;
-    uint8_t input[8 + sizeof(drip_hi_t)]; /* Not VLA */
+    uint8_t input[8 + 4 + sizeof(drip_hi_t)]; /* Not VLA */
     drip_hash_t hash;
 
     if (det == NULL || hi == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    memcpy(&input[0], &(*det)[0], 8); /* Prefix|HID|HHSI */
-    memcpy(&input[8], hi, sizeof(drip_hi_t)); /* HOST_ID */
+    /* Prefix|HID|HHSI */
+    memcpy(&input[0], &(*det)[0], 8);
+
+    /* HOST_ID ie Curve|NULL|HI */
+    /* EdDSA Curve */
+    input[8] = 0x00;
+    input[9] = (uint8_t)DRIP_EDDSA_CURVE_EDDSA25519;
+    /* NULL */
+    input[10] = 0x00;
+    input[11] = 0x00;
+    /* HI ie public key */
+    memcpy(&input[12], hi, sizeof(drip_hi_t));
 
     rc = drip_hash(input, sizeof(input), &hash, callback, context);
     if (rc != DRIP_SUCCESS) {
@@ -194,7 +204,7 @@ int drip_det_verify(
     const drip_det_t *det, const drip_hi_t *hi, drip_hash_cb_t callback, void *context
 ) {
     int rc;
-    uint8_t input[8 + sizeof(drip_hi_t)]; /* Not VLA */
+    uint8_t input[8 + 4 + sizeof(drip_hi_t)]; /* Not VLA */
     drip_hash_t hash;
     const drip_hash_t *current;
 
@@ -202,8 +212,18 @@ int drip_det_verify(
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    memcpy(&input[0], &(*det)[0], 8); /* Prefix|HID|HHSI */
-    memcpy(&input[8], hi, sizeof(drip_hi_t)); /* HOST_ID */
+    /* Prefix|HID|HHSI */
+    memcpy(&input[0], &(*det)[0], 8);
+
+    /* HOST_ID ie Curve|NULL|HI */
+    /* EdDSA Curve */
+    input[8] = 0x00;
+    input[9] = (uint8_t)DRIP_EDDSA_CURVE_EDDSA25519;
+    /* NULL */
+    input[10] = 0x00;
+    input[11] = 0x00;
+    /* HI ie public key */
+    memcpy(&input[12], hi, sizeof(drip_hi_t));
 
     rc = drip_hash(input, sizeof(input), &hash, callback, context);
     if (rc != DRIP_SUCCESS) {

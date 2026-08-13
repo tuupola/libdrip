@@ -35,6 +35,25 @@ typedef enum {
     DRIP_HHSI_HDA_PRIVATE_USE_2 = 255,
 } drip_hhsi_t;
 
+/**
+ * @brief EdDSA curve labels per RFC 9374.
+ *
+ * 16-bit curve identifier used in the HIP HOST_ID parameter when the
+ * HI algorithm is EdDSA (13). Values 5-65535 are unassigned.
+ *
+ * DRIP_EDDSA_CURVE_EDDSA25519 is recommended and currently hardcoded
+ * in the code.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.4.1.1
+ */
+typedef enum {
+    DRIP_EDDSA_CURVE_RESERVED = 0,
+    DRIP_EDDSA_CURVE_EDDSA25519 = 1,
+    DRIP_EDDSA_CURVE_EDDSA25519PH = 2,
+    DRIP_EDDSA_CURVE_EDDSA448 = 3,
+    DRIP_EDDSA_CURVE_EDDSA448PH = 4,
+} drip_eddsa_curve_t;
+
 int drip_det_init(drip_det_t *det);
 
 int drip_det_set_raa(drip_det_t *det, uint16_t raa);
