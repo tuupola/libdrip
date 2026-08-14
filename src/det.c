@@ -162,7 +162,7 @@ int drip_det_update_hash(
     /* HOST_ID ie Curve|NULL|HI */
     /* EdDSA Curve */
     input[8] = 0x00;
-    input[9] = (uint8_t)DRIP_EDDSA_CURVE_EDDSA25519;
+    input[9] = (uint8_t)DRIP_EDDSA_CURVE_ED25519;
     /* NULL */
     input[10] = 0x00;
     input[11] = 0x00;
@@ -218,7 +218,7 @@ int drip_det_verify(
     /* HOST_ID ie Curve|NULL|HI */
     /* EdDSA Curve */
     input[8] = 0x00;
-    input[9] = (uint8_t)DRIP_EDDSA_CURVE_EDDSA25519;
+    input[9] = (uint8_t)DRIP_EDDSA_CURVE_ED25519;
     /* NULL */
     input[10] = 0x00;
     input[11] = 0x00;
