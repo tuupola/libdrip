@@ -187,6 +187,34 @@ int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *contex
 int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *context);
 
 /**
+ * @brief Verify a chain of Links from a trusted root.
+ *
+ * @param link_array Array of Links.
+ * @param link_count Number of Links in link_array.
+ * @param root_det Trusted root DET.
+ * @param root_hi Trusted root Host Identity.
+ * @param unixtime Unix time in seconds or 0 to skip the VNB/VNA check.
+ * @param hash_cb Callback used to verify each child DET hash.
+ * @param verify_cb Callback used to verify each Link signature.
+ *
+ * @retval DRIP_SUCCESS if the chain verifies.
+ * @retval DRIP_ERROR_NULL_POINTER if link_array, root_det, root_hi, hash_cb,
+ *         or verify_cb is NULL.
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if unixtime is outside a hop VNB/VNA window.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if a callback returned am error.
+ * @retval DRIP_ERROR_VERIFICATION_FAILED if a hop DET hash or signature
+ *         does not match or the chain is broken.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-3.1.2
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
+int drip_link_verify_chain(
+    const drip_link_t *link_array, size_t link_count, const drip_det_t *root_det,
+    const drip_hi_t *root_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
+    drip_link_verify_cb_t verify_cb
+);
+
+/**
  * @brief Serialize a DRIP link to a JSON string.
  *
  * On success writes a NULL terminated JSON to @p buffer. When @p buffer_size is
