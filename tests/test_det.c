@@ -292,6 +292,29 @@ TEST test_set_and_get_hash(void) {
     PASS();
 }
 
+#define HASH_INPUT_SIZE (8 + 4 + DRIP_HI_SIZE)
+
+typedef struct {
+    uint8_t input[HASH_INPUT_SIZE];
+    size_t input_length;
+} hash_capture_t;
+
+static int capture_hash_callback(
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
+) {
+    hash_capture_t *capture = context;
+
+    (void)buffer_size;
+    capture->input_length = input_length;
+    if (input_length <= sizeof(capture->input)) {
+        memcpy(capture->input, input, input_length);
+    }
+    memcpy(buffer, &input[input_length - DRIP_HASH_SIZE], DRIP_HASH_SIZE);
+    *output_length = DRIP_HASH_SIZE;
+    return 0;
+}
+
 /* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e has ORCHID hash = a3ad19520ad0a69e */
 TEST test_get_hash_rfc_9374_example(void) {
     drip_det_t det = {
@@ -302,6 +325,127 @@ TEST test_get_hash_rfc_9374_example(void) {
     const drip_hash_t *hash = drip_det_get_hash(&det);
     uint8_t expected[] = {0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e};
     ASSERT_MEM_EQ(expected, *hash, sizeof(drip_hash_t));
+    PASS();
+}
+
+TEST test_update_hash_null_det(void) {
+    drip_hi_t hi = {0};
+    hash_capture_t capture = {0};
+
+    int rc = drip_det_update_hash(NULL, &hi, capture_hash_callback, &capture);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_update_hash_null_hi(void) {
+    drip_det_t det;
+    hash_capture_t capture = {0};
+
+    drip_det_init(&det);
+    int rc = drip_det_update_hash(&det, NULL, capture_hash_callback, &capture);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_update_hash_null_callback(void) {
+    drip_det_t det;
+    drip_hi_t hi = {0};
+
+    drip_det_init(&det);
+    int rc = drip_det_update_hash(&det, &hi, NULL, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_verify_null_det(void) {
+    drip_hi_t hi = {0};
+    hash_capture_t capture = {0};
+
+    int rc = drip_det_verify(NULL, &hi, capture_hash_callback, &capture);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_verify_null_hi(void) {
+    drip_det_t det;
+    hash_capture_t capture = {0};
+
+    drip_det_init(&det);
+    int rc = drip_det_verify(&det, NULL, capture_hash_callback, &capture);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_verify_null_callback(void) {
+    drip_det_t det;
+    drip_hi_t hi = {0};
+
+    drip_det_init(&det);
+    int rc = drip_det_verify(&det, &hi, NULL, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_update_hash_host_id_includes_curve(void) {
+    drip_det_t det;
+    drip_hi_t hi;
+    hash_capture_t capture = {0};
+
+    memset(hi, 0xAB, sizeof(hi));
+    drip_det_init(&det);
+    drip_det_set_raa(&det, 10);
+    drip_det_set_hda(&det, 20);
+    drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
+
+    int rc = drip_det_update_hash(&det, &hi, capture_hash_callback, &capture);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(HASH_INPUT_SIZE, capture.input_length);
+    ASSERT_MEM_EQ(det, capture.input, 8);
+    ASSERT_EQ(0x00, capture.input[8]);
+    ASSERT_EQ(DRIP_EDDSA_CURVE_ED25519, capture.input[9]);
+    ASSERT_EQ(0x00, capture.input[10]);
+    ASSERT_EQ(0x00, capture.input[11]);
+    ASSERT_MEM_EQ(hi, &capture.input[12], sizeof(drip_hi_t));
+    PASS();
+}
+
+TEST test_update_hash_and_verify_success(void) {
+    drip_det_t det;
+    drip_hi_t hi;
+    hash_capture_t capture = {0};
+
+    memset(hi, 0xCD, sizeof(hi));
+    drip_det_init(&det);
+    drip_det_set_raa(&det, 10);
+    drip_det_set_hda(&det, 20);
+    drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
+
+    int rc = drip_det_update_hash(&det, &hi, capture_hash_callback, &capture);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_det_verify(&det, &hi, capture_hash_callback, &capture);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_verify_failure(void) {
+    drip_det_t det;
+    drip_hi_t hi;
+    drip_hi_t other_hi;
+    hash_capture_t capture = {0};
+
+    memset(hi, 0xCD, sizeof(hi));
+    memset(other_hi, 0xEF, sizeof(other_hi));
+    drip_det_init(&det);
+    drip_det_set_raa(&det, 10);
+    drip_det_set_hda(&det, 20);
+    drip_det_set_hhsi(&det, DRIP_HHSI_EDDSA_CSHAKE128);
+
+    int rc = drip_det_update_hash(&det, &hi, capture_hash_callback, &capture);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_det_verify(&det, &other_hi, capture_hash_callback, &capture);
+    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
     PASS();
 }
 
@@ -732,6 +876,15 @@ SUITE(det_suite) {
     RUN_TEST(test_get_hash_null_pointer);
     RUN_TEST(test_set_and_get_hash);
     RUN_TEST(test_get_hash_rfc_9374_example);
+    RUN_TEST(test_update_hash_null_det);
+    RUN_TEST(test_update_hash_null_hi);
+    RUN_TEST(test_update_hash_null_callback);
+    RUN_TEST(test_verify_null_det);
+    RUN_TEST(test_verify_null_hi);
+    RUN_TEST(test_verify_null_callback);
+    RUN_TEST(test_update_hash_host_id_includes_curve);
+    RUN_TEST(test_update_hash_and_verify_success);
+    RUN_TEST(test_verify_failure);
     RUN_TEST(test_validate_null_pointer);
     RUN_TEST(test_validate_valid_det);
     RUN_TEST(test_validate_invalid_prefix);
