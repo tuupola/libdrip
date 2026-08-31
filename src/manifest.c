@@ -113,9 +113,7 @@ const drip_hash_t *drip_manifest_get_current_hash(const drip_manifest_t *manifes
 }
 
 int drip_manifest_update_current_hash(
-    drip_manifest_t *manifest,
-    drip_hash_cb_t callback,
-    void *context
+    drip_manifest_t *manifest, drip_hash_cb_t callback, void *context
 ) {
     if (manifest == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -189,7 +187,9 @@ const drip_signature_t *drip_manifest_get_signature(const drip_manifest_t *manif
     return &manifest->signature;
 }
 
-int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_signature_t *signature) {
+int drip_manifest_set_signature(
+    drip_manifest_t *manifest, const drip_signature_t *signature
+) {
     if (manifest == NULL || signature == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -228,7 +228,8 @@ int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *has
     return DRIP_SUCCESS;
 }
 
-const drip_hash_t *drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index) {
+const drip_hash_t *
+drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index) {
     if (manifest == NULL) {
         return NULL;
     }
@@ -239,9 +240,7 @@ const drip_hash_t *drip_manifest_get_evidence_at(const drip_manifest_t *manifest
 }
 
 int drip_manifest_sign(
-    drip_manifest_t *manifest,
-    drip_manifest_sign_cb_t callback,
-    void *context
+    drip_manifest_t *manifest, drip_manifest_sign_cb_t callback, void *context
 ) {
     if (manifest == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -279,7 +278,10 @@ int drip_manifest_sign(
     offset += sizeof(manifest->det);
 
     size_t output_length = 0;
-    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE, &output_length);
+    int rc = callback(
+        context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE,
+        &output_length
+    );
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }
@@ -288,9 +290,7 @@ int drip_manifest_sign(
 }
 
 int drip_manifest_verify(
-    drip_manifest_t *manifest,
-    drip_manifest_verify_cb_t callback,
-    void *context
+    drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
 ) {
     if (manifest == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -322,7 +322,9 @@ int drip_manifest_verify(
 
     memcpy(payload + offset, manifest->det, sizeof(manifest->det));
 
-    int rc = callback(context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE);
+    int rc = callback(
+        context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE
+    );
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }
@@ -331,17 +333,15 @@ int drip_manifest_verify(
 }
 
 int drip_manifest_encode(
-    const drip_manifest_t *manifest,
-    uint8_t *buffer,
-    size_t buffer_size,
+    const drip_manifest_t *manifest, uint8_t *buffer, size_t buffer_size,
     size_t *encoded_length
 ) {
     if (manifest == NULL || buffer == NULL || encoded_length == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t required_length = DRIP_MANIFEST_MIN_SIZE +
-        manifest->evidence_count * DRIP_HASH_SIZE;
+    size_t required_length =
+        DRIP_MANIFEST_MIN_SIZE + manifest->evidence_count * DRIP_HASH_SIZE;
 
     if (buffer_size < required_length) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
@@ -388,9 +388,7 @@ int drip_manifest_encode(
 }
 
 int drip_manifest_decode(
-    drip_manifest_t *manifest,
-    const uint8_t *buffer,
-    size_t buffer_size
+    drip_manifest_t *manifest, const uint8_t *buffer, size_t buffer_size
 ) {
     if (manifest == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -460,10 +458,7 @@ int drip_manifest_decode(
 }
 
 int drip_manifest_to_json(
-    const drip_manifest_t *manifest,
-    char *buffer,
-    size_t buffer_size,
-    size_t *json_length
+    const drip_manifest_t *manifest, char *buffer, size_t buffer_size, size_t *json_length
 ) {
     if (manifest == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -507,8 +502,7 @@ int drip_manifest_to_json(
     strcat(evidence_json, "]");
 
     int needed = snprintf(
-        buffer,
-        buffer_size,
+        buffer, buffer_size,
         "{"
         "\"sam_type\": %u, "
         "\"vnb\": %u, "
@@ -521,24 +515,16 @@ int drip_manifest_to_json(
         "\"det\": \"%s\", "
         "\"signature\": \"%s\""
         "}",
-        manifest->sam_type,
-        manifest->vnb,
-        manifest->vna,
-        previous_hex,
-        current_hex,
-        link_hex,
-        manifest->evidence_count,
-        evidence_json,
-        det_hex,
-        sig_hex
+        manifest->sam_type, manifest->vnb, manifest->vna, previous_hex, current_hex,
+        link_hex, manifest->evidence_count, evidence_json, det_hex, sig_hex
     );
 
     if (json_length != NULL) {
         /* If snprintf() fails 0 bytes needed */
-        *json_length = (needed < 0) ? 0 : (size_t) needed;
+        *json_length = (needed < 0) ? 0 : (size_t)needed;
     }
 
-    if ((size_t) needed >= buffer_size) {
+    if ((size_t)needed >= buffer_size) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
 

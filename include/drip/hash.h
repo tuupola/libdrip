@@ -29,19 +29,12 @@ static_assert(sizeof(drip_hash_t) == DRIP_HASH_SIZE, "drip_hash_t size mismatch"
  * @retval Non-zero on hashing failure.
  */
 typedef int (*drip_hash_cb_t)(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 );
 
 int drip_hash(
-    const uint8_t *input,
-    size_t input_length,
-    drip_hash_t *hash,
-    drip_hash_cb_t callback,
+    const uint8_t *input, size_t input_length, drip_hash_t *hash, drip_hash_cb_t callback,
     void *context
 );
 

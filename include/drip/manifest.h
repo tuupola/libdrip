@@ -49,12 +49,8 @@ typedef struct drip_manifest {
  * @retval Non-zero on signing failure.
  */
 typedef int (*drip_manifest_sign_cb_t)(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 );
 
 /**
@@ -73,10 +69,7 @@ typedef int (*drip_manifest_sign_cb_t)(
  * @retval Non-zero on verification failure.
  */
 typedef int (*drip_manifest_verify_cb_t)(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    const uint8_t *signature,
+    void *context, const uint8_t *input, size_t input_length, const uint8_t *signature,
     size_t signature_length
 );
 
@@ -178,9 +171,7 @@ const drip_hash_t *drip_manifest_get_previous_hash(const drip_manifest_t *manife
 int drip_manifest_set_previous_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 const drip_hash_t *drip_manifest_get_current_hash(const drip_manifest_t *manifest);
 int drip_manifest_update_current_hash(
-    drip_manifest_t *manifest,
-    drip_hash_cb_t callback,
-    void *context
+    drip_manifest_t *manifest, drip_hash_cb_t callback, void *context
 );
 
 const drip_hash_t *drip_manifest_get_link_hash(const drip_manifest_t *manifest);
@@ -188,7 +179,9 @@ int drip_manifest_set_link_hash(drip_manifest_t *manifest, const drip_hash_t *ha
 const drip_det_t *drip_manifest_get_det(const drip_manifest_t *manifest);
 int drip_manifest_set_det(drip_manifest_t *manifest, const drip_det_t *det);
 const drip_signature_t *drip_manifest_get_signature(const drip_manifest_t *manifest);
-int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_signature_t *signature);
+int drip_manifest_set_signature(
+    drip_manifest_t *manifest, const drip_signature_t *signature
+);
 
 /**
  * @brief Validate the structural state of a manifest.
@@ -207,7 +200,8 @@ int drip_manifest_set_signature(drip_manifest_t *manifest, const drip_signature_
  * @retval DRIP_ERROR_INVALID_DET if @p det fails drip_det_validate().
  */
 int drip_manifest_validate(const drip_manifest_t *manifest);
-const drip_hash_t *drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index);
+const drip_hash_t *
+drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index);
 int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *hash);
 
 /**
@@ -225,21 +219,15 @@ int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *has
  * @retval DRIP_ERROR_CALLBACK_FAILED if @p callback returned non-zero.
  */
 int drip_manifest_sign(
-    drip_manifest_t *manifest,
-    drip_manifest_sign_cb_t callback,
-    void *context
+    drip_manifest_t *manifest, drip_manifest_sign_cb_t callback, void *context
 );
 
 int drip_manifest_verify(
-    drip_manifest_t *manifest,
-    drip_manifest_verify_cb_t callback,
-    void *context
+    drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
 );
 
 int drip_manifest_encode(
-    const drip_manifest_t *manifest,
-    uint8_t *buffer,
-    size_t buffer_size,
+    const drip_manifest_t *manifest, uint8_t *buffer, size_t buffer_size,
     size_t *encoded_length
 );
 
@@ -260,9 +248,7 @@ int drip_manifest_encode(
  * @retval DRIP_ERROR_INVALID_SAM_TYPE if the decoded SAM type is not DRIP_SAM_TYPE_MANIFEST.
  */
 int drip_manifest_decode(
-    drip_manifest_t *manifest,
-    const uint8_t *buffer,
-    size_t buffer_size
+    drip_manifest_t *manifest, const uint8_t *buffer, size_t buffer_size
 );
 
 /**
@@ -283,10 +269,7 @@ int drip_manifest_decode(
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is too small.
  */
 int drip_manifest_to_json(
-    const drip_manifest_t *manifest,
-    char *buffer,
-    size_t buffer_size,
-    size_t *json_length
+    const drip_manifest_t *manifest, char *buffer, size_t buffer_size, size_t *json_length
 );
 
 #endif

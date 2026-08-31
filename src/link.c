@@ -189,10 +189,7 @@ int drip_link_decode(drip_link_t *link, const uint8_t *buffer, size_t buffer_siz
 }
 
 int drip_link_encode(
-    const drip_link_t *link,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *encoded_length
+    const drip_link_t *link, uint8_t *buffer, size_t buffer_size, size_t *encoded_length
 ) {
     if (link == NULL || buffer == NULL || encoded_length == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -208,11 +205,7 @@ int drip_link_encode(
     return DRIP_SUCCESS;
 }
 
-int drip_link_sign(
-    drip_link_t *link,
-    drip_link_sign_cb_t callback,
-    void *context
-) {
+int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *context) {
     if (link == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -237,7 +230,10 @@ int drip_link_sign(
     offset += sizeof(link->parent_det);
 
     size_t output_length = 0;
-    int rc = callback(context, payload, payload_length, link->signature, DRIP_SIGNATURE_SIZE, &output_length);
+    int rc = callback(
+        context, payload, payload_length, link->signature, DRIP_SIGNATURE_SIZE,
+        &output_length
+    );
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }
@@ -248,11 +244,7 @@ int drip_link_sign(
     return DRIP_SUCCESS;
 }
 
-int drip_link_verify(
-    drip_link_t *link,
-    drip_link_verify_cb_t callback,
-    void *context
-) {
+int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *context) {
     if (link == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -276,7 +268,8 @@ int drip_link_verify(
     memcpy(payload + offset, link->parent_det, sizeof(link->parent_det));
     offset += sizeof(link->parent_det);
 
-    int rc = callback(context, payload, payload_length, link->signature, DRIP_SIGNATURE_SIZE);
+    int rc =
+        callback(context, payload, payload_length, link->signature, DRIP_SIGNATURE_SIZE);
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }
@@ -285,10 +278,7 @@ int drip_link_verify(
 }
 
 int drip_link_to_json(
-    const drip_link_t *link,
-    char *buffer,
-    size_t buffer_size,
-    size_t *json_length
+    const drip_link_t *link, char *buffer, size_t buffer_size, size_t *json_length
 ) {
     if (link == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -317,8 +307,7 @@ int drip_link_to_json(
     }
 
     int needed = snprintf(
-        buffer,
-        buffer_size,
+        buffer, buffer_size,
         "{"
         "\"sam_type\": %u, "
         "\"vnb\": %u, "
@@ -328,21 +317,16 @@ int drip_link_to_json(
         "\"parent_det\": \"%s\", "
         "\"signature\": \"%s\""
         "}",
-        link->sam_type,
-        link->vnb,
-        link->vna,
-        child_det_hex,
-        child_hi_hex,
-        parent_det_hex,
+        link->sam_type, link->vnb, link->vna, child_det_hex, child_hi_hex, parent_det_hex,
         sig_hex
     );
 
     if (json_length != NULL) {
         /* If snprintf() fails 0 bytes needed */
-        *json_length = (needed < 0) ? 0 : (size_t) needed;
+        *json_length = (needed < 0) ? 0 : (size_t)needed;
     }
 
-    if ((size_t) needed >= buffer_size) {
+    if ((size_t)needed >= buffer_size) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
 

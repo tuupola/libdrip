@@ -15,7 +15,9 @@ typedef uint8_t drip_hi_t[DRIP_HI_SIZE];
 typedef uint8_t drip_signature_t[DRIP_SIGNATURE_SIZE];
 
 static_assert(sizeof(drip_hi_t) == DRIP_HI_SIZE, "drip_hi_t size mismatch");
-static_assert(sizeof(drip_signature_t) == DRIP_SIGNATURE_SIZE, "drip_signature_t size mismatch");
+static_assert(
+    sizeof(drip_signature_t) == DRIP_SIGNATURE_SIZE, "drip_signature_t size mismatch"
+);
 
 typedef enum {
     DRIP_SUCCESS = 0,

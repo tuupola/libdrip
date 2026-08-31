@@ -26,12 +26,8 @@
  * @retval Non-zero on signing failure.
  */
 typedef int (*drip_link_sign_cb_t)(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 );
 
 /**
@@ -50,10 +46,7 @@ typedef int (*drip_link_sign_cb_t)(
  * @retval Non-zero on verification failure.
  */
 typedef int (*drip_link_verify_cb_t)(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    const uint8_t *signature,
+    void *context, const uint8_t *input, size_t input_length, const uint8_t *signature,
     size_t signature_length
 );
 
@@ -185,19 +178,13 @@ int drip_link_set_signature(drip_link_t *link, const drip_signature_t *signature
 int drip_link_validate(const drip_link_t *link);
 
 int drip_link_decode(drip_link_t *link, const uint8_t *buffer, size_t buffer_size);
-int drip_link_encode(const drip_link_t *link, uint8_t *buffer, size_t buffer_size, size_t *encoded_length);
-
-int drip_link_sign(
-    drip_link_t *link,
-    drip_link_sign_cb_t callback,
-    void *context
+int drip_link_encode(
+    const drip_link_t *link, uint8_t *buffer, size_t buffer_size, size_t *encoded_length
 );
 
-int drip_link_verify(
-    drip_link_t *link,
-    drip_link_verify_cb_t callback,
-    void *context
-);
+int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *context);
+
+int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *context);
 
 /**
  * @brief Serialize a DRIP link to a JSON string.
@@ -217,10 +204,7 @@ int drip_link_verify(
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is too small.
  */
 int drip_link_to_json(
-    const drip_link_t *link,
-    char *buffer,
-    size_t buffer_size,
-    size_t *json_length
+    const drip_link_t *link, char *buffer, size_t buffer_size, size_t *json_length
 );
 
 #endif /* DRIP_LINK_H */
