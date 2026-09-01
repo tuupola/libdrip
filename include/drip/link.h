@@ -184,6 +184,27 @@ int drip_link_encode(
 
 int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *context);
 
+/**
+ * @brief Verify the signature of a Link.
+ *
+ * Verifies the signature using the provided callback and parent HI. Parent HI
+ * is the public key, pass it in the context.
+ *
+ * @code
+ * const drip_hi_t *parent_hi = drip_link_get_child_hi(&parent_link);
+ * int rc = drip_link_verify(&child_link, verify_ed25519, (void *)parent_hi);
+ * @endcode
+ *
+ * @param link Pointer to the Link to verify.
+ * @param callback Callback function used to verify the signature.
+ * @param context Opaque context passed to the callback.
+ *
+ * @retval DRIP_SUCCESS if the signature verifies.
+ * @retval DRIP_ERROR_NULL_POINTER if link or callback is NULL.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned an error.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
 int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *context);
 
 /**
