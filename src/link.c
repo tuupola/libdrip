@@ -244,7 +244,7 @@ int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *contex
     return DRIP_SUCCESS;
 }
 
-int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *context) {
+int drip_link_verify(const drip_link_t *link, drip_link_verify_cb_t callback, void *context) {
     if (link == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -283,7 +283,7 @@ int drip_link_verify_chain(
     drip_link_verify_cb_t verify_cb
 ) {
     const drip_det_t *expected_det, *parent_det;
-    const drip_hi_t *child_hi;
+    const drip_hi_t *child_hi, *parent_hi;
     uint32_t vnb, vna;
     size_t i;
     int rc;
@@ -299,6 +299,7 @@ int drip_link_verify_chain(
 
     /* First expected det is the root, which is often the APEX. */
     expected_det = root_det;
+    parent_hi = root_hi;
 
     /* Make sure next link's parent is the previous links's child. */
     for (i = 0; i < link_count; i++) {
@@ -323,6 +324,13 @@ int drip_link_verify_chain(
         if (rc != DRIP_SUCCESS) {
             return rc;
         }
+
+        /* Make sure each Link is signed by the parent HI. */
+        rc = drip_link_verify(&link_array[i], verify_cb, (void *)parent_hi);
+        if (rc != DRIP_SUCCESS) {
+            return rc;
+        }
+        parent_hi = child_hi;
     }
 
     return DRIP_SUCCESS;

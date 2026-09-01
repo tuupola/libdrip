@@ -226,7 +226,7 @@ int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *contex
  *
  * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
  */
-int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *context);
+int drip_link_verify(const drip_link_t *link, drip_link_verify_cb_t callback, void *context);
 
 /**
  * @brief Verify a chain of Links from a trusted root.
