@@ -287,7 +287,10 @@ int drip_link_verify_chain(
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    (void)link_count;
+    if (link_count == 0) {
+        return DRIP_ERROR_VERIFICATION_FAILED;
+    }
+
     (void)unixtime;
 
     return DRIP_SUCCESS;

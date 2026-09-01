@@ -755,6 +755,19 @@ TEST test_verify_chain_null_ptr(void) {
     PASS();
 }
 
+TEST test_verify_chain_empty(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    drip_link_init(&link);
+
+    int rc = drip_link_verify_chain(
+        &link, 0, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
+    PASS();
+}
+
 SUITE(link_suite) {
     RUN_TEST(test_init_null_ptr);
     RUN_TEST(test_init);
@@ -816,4 +829,5 @@ SUITE(link_suite) {
     RUN_TEST(test_to_json_null_ptr_buffer);
     RUN_TEST(test_to_json_optional_json_length);
     RUN_TEST(test_verify_chain_null_ptr);
+    RUN_TEST(test_verify_chain_empty);
 }
