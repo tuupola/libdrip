@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -std=c11 -I../../include -I../../../librid/include
 LDFLAGS = -lsodium
 
 SRC_DIR = ../../src
-SRC = $(SRC_DIR)/hash.c $(SRC_DIR)/link.c
+SRC = $(SRC_DIR)/hash.c $(SRC_DIR)/link.c $(SRC_DIR)/det.c
 
 TARGET = link_verify
 

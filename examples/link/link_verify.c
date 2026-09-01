@@ -51,6 +51,7 @@ int main(int argc, char *argv[]) {
     }
 
     drip_link_t parent_link, child_link;
+    const drip_hi_t *parent_hi;
 
     const char *parent_hex = argv[1];
     const char *child_hex = argv[2];
@@ -61,14 +62,20 @@ int main(int argc, char *argv[]) {
     uint8_t buffer[DRIP_LINK_SIZE];
 
     length = hex_to_bytes(parent_hex, buffer, sizeof(buffer));
-    if (length < 0) {
-        fprintf(stderr, "Error: Invalid parent hex string\n");
+    if (length != DRIP_LINK_SIZE) {
+        fprintf(stderr, "Error: Link hex must be %d bytes\n", DRIP_LINK_SIZE);
         return 1;
     }
 
     rc = drip_link_decode(&parent_link, buffer, (size_t)length);
     if (rc != 0) {
         fprintf(stderr, "Error: Failed to decode parent link\n");
+        return 1;
+    }
+
+    rc = drip_link_validate(&parent_link);
+    if (rc != DRIP_SUCCESS) {
+        fprintf(stderr, "Error: Parent link validation failed: %d\n", rc);
         return 1;
     }
 
@@ -84,22 +91,47 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    rc = drip_link_validate(&child_link);
+    if (rc != DRIP_SUCCESS) {
+        fprintf(stderr, "Error: Child link validation failed: %d\n", rc);
+        return 1;
+    }
+
+    /* TODO: This should be somewhere else. */
+    if (memcmp(parent_link.child_det, child_link.parent_det, DRIP_DET_SIZE) != 0) {
+        fprintf(stderr, "Error: Parent / Child DET mismatch\n");
+        return 1;
+    }
+
+    /* TODO: This should be somewhere else. */
     now = (uint32_t)time(NULL);
     vnb = drip_link_get_vnb_unixtime(&child_link);
     vna = drip_link_get_vna_unixtime(&child_link);
     if (now < vnb || now > vna) {
-        fprintf(stderr, "Error: Timestamp now=%u vnb=%u vna=%u\n", now, vnb, vna);
+        fprintf(
+            stderr, "Error: Child link timestamp now=%u vnb=%u vna=%u\n", now, vnb, vna
+        );
         return 1;
     }
 
-    const drip_hi_t *child_hi = drip_link_get_child_hi(&parent_link);
+    /* TODO: This should be somewhere else. */
+    vnb = drip_link_get_vnb_unixtime(&parent_link);
+    vna = drip_link_get_vna_unixtime(&parent_link);
+    if (now < vnb || now > vna) {
+        fprintf(
+            stderr, "Error: Child link timestamp now=%u vnb=%u vna=%u\n", now, vnb, vna
+        );
+        return 1;
+    }
 
-    rc = drip_link_verify(&child_link, verify_ed25519, (void *)child_hi);
+    parent_hi = drip_link_get_child_hi(&parent_link);
+    rc = drip_link_verify(&child_link, verify_ed25519, (void *)parent_hi);
 
     if (0 == rc) {
         printf("\nSignature verified.\n\n");
     } else {
         printf("\nSignature verification failed.\n\n");
+        return 1;
     }
 
     return 0;
