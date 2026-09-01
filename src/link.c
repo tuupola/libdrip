@@ -283,6 +283,7 @@ int drip_link_verify_chain(
     drip_link_verify_cb_t verify_cb
 ) {
     const drip_det_t *expected_det, *parent_det;
+    uint32_t vnb, vna;
     size_t i;
 
     if (link_array == NULL || root_det == NULL || root_hi == NULL || hash_cb == NULL ||
@@ -304,9 +305,16 @@ int drip_link_verify_chain(
             return DRIP_ERROR_VERIFICATION_FAILED;
         }
         expected_det = drip_link_get_child_det(&link_array[i]);
-    }
 
-    (void)unixtime;
+        /* If current unixtime is given make sure each link is still valid. */
+        if (unixtime != 0) {
+            vnb = drip_link_get_vnb_unixtime(&link_array[i]);
+            vna = drip_link_get_vna_unixtime(&link_array[i]);
+            if (unixtime < vnb || unixtime > vna) {
+                return DRIP_ERROR_INVALID_TIMESTAMP;
+            }
+        }
+    }
 
     return DRIP_SUCCESS;
 }

@@ -850,6 +850,105 @@ TEST test_verify_chain_two_hop_mismatch(void) {
     PASS();
 }
 
+TEST test_verify_chain_unixtime_skipped(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    uint32_t now = 1600000000;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_vnb_unixtime(&link, now - 20);
+    drip_link_set_vna_unixtime(&link, now - 10);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_verify_chain_unixtime_success(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    uint32_t now = 1600000000;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_vnb_unixtime(&link, now - 10);
+    drip_link_set_vna_unixtime(&link, now + 10);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now - 10, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now + 10, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_verify_chain_unixtime_expired(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    uint32_t now = 1600000000;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_vnb_unixtime(&link, now - 10);
+    drip_link_set_vna_unixtime(&link, now + 10);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now - 11, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+
+    rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now + 11, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+    PASS();
+}
+
+TEST test_verify_chain_two_hop_unixtime_expired(void) {
+    drip_link_t links[2];
+    drip_det_t root_det, child_det;
+    drip_hi_t root_hi;
+    uint32_t now = 1600000000;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+
+    drip_link_init(&links[0]);
+    drip_link_set_parent_det(&links[0], &root_det);
+    drip_link_set_child_det(&links[0], &child_det);
+    drip_link_set_vnb_unixtime(&links[0], now - 10);
+    drip_link_set_vna_unixtime(&links[0], now + 10);
+
+    drip_link_init(&links[1]);
+    drip_link_set_parent_det(&links[1], &child_det);
+    drip_link_set_vnb_unixtime(&links[1], now - 30);
+    drip_link_set_vna_unixtime(&links[1], now - 20);
+
+    int rc = drip_link_verify_chain(
+        links, 2, &root_det, &root_hi, now, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+    PASS();
+}
+
 SUITE(link_suite) {
     RUN_TEST(test_init_null_ptr);
     RUN_TEST(test_init);
@@ -916,4 +1015,8 @@ SUITE(link_suite) {
     RUN_TEST(test_verify_chain_parent_det_mismatch);
     RUN_TEST(test_verify_chain_two_hop_match);
     RUN_TEST(test_verify_chain_two_hop_mismatch);
+    RUN_TEST(test_verify_chain_unixtime_skipped);
+    RUN_TEST(test_verify_chain_unixtime_success);
+    RUN_TEST(test_verify_chain_unixtime_expired);
+    RUN_TEST(test_verify_chain_two_hop_unixtime_expired);
 }
