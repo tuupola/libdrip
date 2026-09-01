@@ -182,6 +182,27 @@ int drip_link_encode(
     const drip_link_t *link, uint8_t *buffer, size_t buffer_size, size_t *encoded_length
 );
 
+/**
+ * @brief Sign a Link.
+ *
+ * Signs the Link using the provided callback and parent private key. Pass
+ * the private key in the context.
+ *
+ * @code
+ * int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
+ * @endcode
+ *
+ * @param link Pointer to the Link to sign.
+ * @param callback Callback function used to generate the signature.
+ * @param context Opaque context passed to the callback.
+ *
+ * @retval DRIP_SUCCESS if the Link was signed.
+ * @retval DRIP_ERROR_NULL_POINTER if link or callback is NULL.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned an error.
+ * @retval DRIP_ERROR_INVALID_LENGTH if the signature is not DRIP_SIGNATURE_SIZE.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
 int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *context);
 
 /**
