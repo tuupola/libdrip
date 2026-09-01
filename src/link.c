@@ -283,8 +283,10 @@ int drip_link_verify_chain(
     drip_link_verify_cb_t verify_cb
 ) {
     const drip_det_t *expected_det, *parent_det;
+    const drip_hi_t *child_hi;
     uint32_t vnb, vna;
     size_t i;
+    int rc;
 
     if (link_array == NULL || root_det == NULL || root_hi == NULL || hash_cb == NULL ||
         verify_cb == NULL) {
@@ -298,7 +300,7 @@ int drip_link_verify_chain(
     /* First expected det is the root, which is often the APEX. */
     expected_det = root_det;
 
-    /* Make sure next link's parent is the previous links’s child. */
+    /* Make sure next link's parent is the previous links's child. */
     for (i = 0; i < link_count; i++) {
         parent_det = drip_link_get_parent_det(&link_array[i]);
         if (memcmp(parent_det, expected_det, DRIP_DET_SIZE) != 0) {
@@ -313,6 +315,13 @@ int drip_link_verify_chain(
             if (unixtime < vnb || unixtime > vna) {
                 return DRIP_ERROR_INVALID_TIMESTAMP;
             }
+        }
+
+        /* Make sure child DET's hash matches its child HI. */
+        child_hi = drip_link_get_child_hi(&link_array[i]);
+        rc = drip_det_verify(expected_det, child_hi, hash_cb, NULL);
+        if (rc != DRIP_SUCCESS) {
+            return rc;
         }
     }
 
