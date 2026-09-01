@@ -51,6 +51,23 @@ static int verify_ed25519(
     return crypto_sign_verify_detached(signature, message, message_len, key);
 }
 
+static int dummy_hash_cb(
+    void *context,
+    const uint8_t *input,
+    size_t input_length,
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *output_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)buffer;
+    (void)buffer_size;
+    (void)output_length;
+    return 0;
+}
+
 TEST test_init_null_ptr(void) {
     int rc = drip_link_init(NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
@@ -715,6 +732,35 @@ TEST test_to_json_optional_json_length(void) {
     PASS();
 }
 
+TEST test_verify_chain_null_ptr(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    drip_link_init(&link);
+
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(NULL, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(&link, 1, NULL, &root_hi, 0, dummy_hash_cb, verify_ed25519)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(&link, 1, &root_det, NULL, 0, dummy_hash_cb, verify_ed25519)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(&link, 1, &root_det, &root_hi, 0, NULL, verify_ed25519)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(&link, 1, &root_det, &root_hi, 0, dummy_hash_cb, NULL)
+    );
+    PASS();
+}
+
 SUITE(link_suite) {
     RUN_TEST(test_init_null_ptr);
     RUN_TEST(test_init);
@@ -775,4 +821,5 @@ SUITE(link_suite) {
     RUN_TEST(test_to_json_null_ptr_link);
     RUN_TEST(test_to_json_null_ptr_buffer);
     RUN_TEST(test_to_json_optional_json_length);
+    RUN_TEST(test_verify_chain_null_ptr);
 }

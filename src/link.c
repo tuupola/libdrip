@@ -277,6 +277,22 @@ int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *co
     return DRIP_SUCCESS;
 }
 
+int drip_link_verify_chain(
+    const drip_link_t *link_array, size_t link_count, const drip_det_t *root_det,
+    const drip_hi_t *root_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
+    drip_link_verify_cb_t verify_cb
+) {
+    if (link_array == NULL || root_det == NULL || root_hi == NULL || hash_cb == NULL ||
+        verify_cb == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    (void)link_count;
+    (void)unixtime;
+
+    return DRIP_SUCCESS;
+}
+
 int drip_link_to_json(
     const drip_link_t *link, char *buffer, size_t buffer_size, size_t *json_length
 ) {
