@@ -6,6 +6,7 @@
 #include "drip/link.h"
 #include "unit.h"
 
+/* clang-format off */
 static const uint8_t public_key[32] = {
     0x6d, 0x92, 0x2c, 0x09, 0x2e, 0x55, 0x40, 0x86,
     0x49, 0x9f, 0x5d, 0x44, 0xf2, 0x02, 0xd4, 0x0a,
@@ -23,14 +24,11 @@ static const uint8_t secret_key[64] = {
     0xde, 0x8e, 0x51, 0xb2, 0xcf, 0x0b, 0xb3, 0x44,
     0x5e, 0xa8, 0xaa, 0x4b, 0x15, 0xfb, 0x2e, 0x5e
 };
+/* clang-format on */
 
 static int sign_ed25519(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 ) {
     (void)buffer_size;
     const uint8_t *key = (const uint8_t *)context;
@@ -43,8 +41,8 @@ static int sign_ed25519(
 }
 
 static int verify_ed25519(
-    void *context, const uint8_t *message, size_t message_len,
-    const uint8_t *signature, size_t signature_length
+    void *context, const uint8_t *message, size_t message_len, const uint8_t *signature,
+    size_t signature_length
 ) {
     (void)signature_length;
     const uint8_t *key = (const uint8_t *)context;
@@ -52,12 +50,8 @@ static int verify_ed25519(
 }
 
 static int dummy_hash_cb(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 ) {
     (void)context;
     (void)input;
@@ -541,12 +535,8 @@ TEST test_sign_and_verify_success(void) {
 }
 
 static int sign_ed25519_wrong_length(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 ) {
     (void)context;
     (void)input;
@@ -740,7 +730,9 @@ TEST test_verify_chain_null_ptr(void) {
 
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
-        drip_link_verify_chain(NULL, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519)
+        drip_link_verify_chain(
+            NULL, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+        )
     );
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
@@ -748,7 +740,9 @@ TEST test_verify_chain_null_ptr(void) {
     );
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
-        drip_link_verify_chain(&link, 1, &root_det, NULL, 0, dummy_hash_cb, verify_ed25519)
+        drip_link_verify_chain(
+            &link, 1, &root_det, NULL, 0, dummy_hash_cb, verify_ed25519
+        )
     );
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
