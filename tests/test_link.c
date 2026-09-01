@@ -768,6 +768,88 @@ TEST test_verify_chain_empty(void) {
     PASS();
 }
 
+/* TODO: checks only DET, does not do any crypto. */
+TEST test_verify_chain_parent_det_match(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+/* TODO: checks only DET, does not do any crypto. */
+TEST test_verify_chain_parent_det_mismatch(void) {
+    drip_link_t link;
+    drip_det_t root_det, parent_det;
+    drip_hi_t root_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&parent_det, 0x22, sizeof(parent_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &parent_det);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
+    PASS();
+}
+
+/* TODO: checks only DET, does not do any crypto. */
+TEST test_verify_chain_two_hop_match(void) {
+    drip_link_t links[2];
+    drip_det_t root_det, child_det;
+    drip_hi_t root_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+
+    drip_link_init(&links[0]);
+    drip_link_set_parent_det(&links[0], &root_det);
+    drip_link_set_child_det(&links[0], &child_det);
+
+    drip_link_init(&links[1]);
+    drip_link_set_parent_det(&links[1], &child_det);
+
+    int rc = drip_link_verify_chain(
+        links, 2, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+/* TODO: checks only DET, does not do any crypto. */
+TEST test_verify_chain_two_hop_mismatch(void) {
+    drip_link_t links[2];
+    drip_det_t root_det, child_det, other_det;
+    drip_hi_t root_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+    memset(&other_det, 0x33, sizeof(other_det));
+
+    drip_link_init(&links[0]);
+    drip_link_set_parent_det(&links[0], &root_det);
+    drip_link_set_child_det(&links[0], &child_det);
+
+    drip_link_init(&links[1]);
+    drip_link_set_parent_det(&links[1], &other_det);
+
+    int rc = drip_link_verify_chain(
+        links, 2, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
+    PASS();
+}
+
 SUITE(link_suite) {
     RUN_TEST(test_init_null_ptr);
     RUN_TEST(test_init);
@@ -830,4 +912,8 @@ SUITE(link_suite) {
     RUN_TEST(test_to_json_optional_json_length);
     RUN_TEST(test_verify_chain_null_ptr);
     RUN_TEST(test_verify_chain_empty);
+    RUN_TEST(test_verify_chain_parent_det_match);
+    RUN_TEST(test_verify_chain_parent_det_mismatch);
+    RUN_TEST(test_verify_chain_two_hop_match);
+    RUN_TEST(test_verify_chain_two_hop_mismatch);
 }

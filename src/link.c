@@ -282,6 +282,9 @@ int drip_link_verify_chain(
     const drip_hi_t *root_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
     drip_link_verify_cb_t verify_cb
 ) {
+    const drip_det_t *expected_det, *parent_det;
+    size_t i;
+
     if (link_array == NULL || root_det == NULL || root_hi == NULL || hash_cb == NULL ||
         verify_cb == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -289,6 +292,18 @@ int drip_link_verify_chain(
 
     if (link_count == 0) {
         return DRIP_ERROR_VERIFICATION_FAILED;
+    }
+
+    /* First expected det is the root, which is often the APEX. */
+    expected_det = root_det;
+
+    /* Make sure next link's parent is the previous links’s child. */
+    for (i = 0; i < link_count; i++) {
+        parent_det = drip_link_get_parent_det(&link_array[i]);
+        if (memcmp(parent_det, expected_det, DRIP_DET_SIZE) != 0) {
+            return DRIP_ERROR_VERIFICATION_FAILED;
+        }
+        expected_det = drip_link_get_child_det(&link_array[i]);
     }
 
     (void)unixtime;
