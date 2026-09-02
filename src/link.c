@@ -244,7 +244,7 @@ int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *contex
     return DRIP_SUCCESS;
 }
 
-int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *context) {
+int drip_link_verify(const drip_link_t *link, drip_link_verify_cb_t callback, void *context) {
     if (link == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -272,6 +272,65 @@ int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *co
         callback(context, payload, payload_length, link->signature, DRIP_SIGNATURE_SIZE);
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
+    }
+
+    return DRIP_SUCCESS;
+}
+
+int drip_link_verify_chain(
+    const drip_link_t *link_array, size_t link_count, const drip_det_t *root_det,
+    const drip_hi_t *root_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
+    drip_link_verify_cb_t verify_cb
+) {
+    const drip_det_t *expected_det, *parent_det;
+    const drip_hi_t *child_hi, *parent_hi;
+    uint32_t vnb, vna;
+    size_t i;
+    int rc;
+
+    if (link_array == NULL || root_det == NULL || root_hi == NULL || hash_cb == NULL ||
+        verify_cb == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (link_count == 0) {
+        return DRIP_ERROR_VERIFICATION_FAILED;
+    }
+
+    /* First expected det is the root, which is often the APEX. */
+    expected_det = root_det;
+    parent_hi = root_hi;
+
+    /* Make sure next link's parent is the previous links's child. */
+    for (i = 0; i < link_count; i++) {
+        parent_det = drip_link_get_parent_det(&link_array[i]);
+        if (memcmp(parent_det, expected_det, DRIP_DET_SIZE) != 0) {
+            return DRIP_ERROR_VERIFICATION_FAILED;
+        }
+        expected_det = drip_link_get_child_det(&link_array[i]);
+
+        /* If current unixtime is given make sure each link is still valid. */
+        if (unixtime != 0) {
+            vnb = drip_link_get_vnb_unixtime(&link_array[i]);
+            vna = drip_link_get_vna_unixtime(&link_array[i]);
+            if (unixtime < vnb || unixtime > vna) {
+                return DRIP_ERROR_INVALID_TIMESTAMP;
+            }
+        }
+
+        /* Make sure child DET's hash matches its child HI. */
+        child_hi = drip_link_get_child_hi(&link_array[i]);
+        rc = drip_det_verify(expected_det, child_hi, hash_cb, NULL);
+        if (rc != DRIP_SUCCESS) {
+            return rc;
+        }
+
+        /* Make sure each Link is signed by the parent HI. */
+        rc = drip_link_verify(&link_array[i], verify_cb, (void *)parent_hi);
+        if (rc != DRIP_SUCCESS) {
+            return rc;
+        }
+        parent_hi = child_hi;
     }
 
     return DRIP_SUCCESS;

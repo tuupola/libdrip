@@ -182,9 +182,79 @@ int drip_link_encode(
     const drip_link_t *link, uint8_t *buffer, size_t buffer_size, size_t *encoded_length
 );
 
+/**
+ * @brief Sign a Link.
+ *
+ * Signs the Link using the provided callback and parent private key. Pass
+ * the private key in the context.
+ *
+ * @code
+ * int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
+ * @endcode
+ *
+ * @param link Pointer to the Link to sign.
+ * @param callback Callback function used to generate the signature.
+ * @param context Opaque context passed to the callback.
+ *
+ * @retval DRIP_SUCCESS if the Link was signed.
+ * @retval DRIP_ERROR_NULL_POINTER if link or callback is NULL.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned an error.
+ * @retval DRIP_ERROR_INVALID_LENGTH if the signature is not DRIP_SIGNATURE_SIZE.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
 int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *context);
 
-int drip_link_verify(drip_link_t *link, drip_link_verify_cb_t callback, void *context);
+/**
+ * @brief Verify the signature of a Link.
+ *
+ * Verifies the signature using the provided callback and parent HI. Parent HI
+ * is the public key, pass it in the context.
+ *
+ * @code
+ * const drip_hi_t *parent_hi = drip_link_get_child_hi(&parent_link);
+ * int rc = drip_link_verify(&child_link, verify_ed25519, (void *)parent_hi);
+ * @endcode
+ *
+ * @param link Pointer to the Link to verify.
+ * @param callback Callback function used to verify the signature.
+ * @param context Opaque context passed to the callback.
+ *
+ * @retval DRIP_SUCCESS if the signature verifies.
+ * @retval DRIP_ERROR_NULL_POINTER if link or callback is NULL.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned an error.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
+int drip_link_verify(const drip_link_t *link, drip_link_verify_cb_t callback, void *context);
+
+/**
+ * @brief Verify a chain of Links from a trusted root.
+ *
+ * @param link_array Array of Links.
+ * @param link_count Number of Links in link_array.
+ * @param root_det Trusted root DET.
+ * @param root_hi Trusted root Host Identity.
+ * @param unixtime Unix time in seconds or 0 to skip the VNB/VNA check.
+ * @param hash_cb Callback used to verify each child DET hash.
+ * @param verify_cb Callback used to verify each Link signature.
+ *
+ * @retval DRIP_SUCCESS if the chain verifies.
+ * @retval DRIP_ERROR_NULL_POINTER if link_array, root_det, root_hi, hash_cb,
+ *         or verify_cb is NULL.
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if unixtime is outside a hop VNB/VNA window.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if a callback returned am error.
+ * @retval DRIP_ERROR_VERIFICATION_FAILED if a hop DET hash or signature
+ *         does not match or the chain is broken.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-3.1.2
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
+int drip_link_verify_chain(
+    const drip_link_t *link_array, size_t link_count, const drip_det_t *root_det,
+    const drip_hi_t *root_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
+    drip_link_verify_cb_t verify_cb
+);
 
 /**
  * @brief Serialize a DRIP link to a JSON string.

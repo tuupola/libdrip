@@ -6,6 +6,7 @@
 #include "drip/link.h"
 #include "unit.h"
 
+/* clang-format off */
 static const uint8_t public_key[32] = {
     0x6d, 0x92, 0x2c, 0x09, 0x2e, 0x55, 0x40, 0x86,
     0x49, 0x9f, 0x5d, 0x44, 0xf2, 0x02, 0xd4, 0x0a,
@@ -23,14 +24,11 @@ static const uint8_t secret_key[64] = {
     0xde, 0x8e, 0x51, 0xb2, 0xcf, 0x0b, 0xb3, 0x44,
     0x5e, 0xa8, 0xaa, 0x4b, 0x15, 0xfb, 0x2e, 0x5e
 };
+/* clang-format on */
 
 static int sign_ed25519(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 ) {
     (void)buffer_size;
     const uint8_t *key = (const uint8_t *)context;
@@ -43,12 +41,49 @@ static int sign_ed25519(
 }
 
 static int verify_ed25519(
-    void *context, const uint8_t *message, size_t message_len,
-    const uint8_t *signature, size_t signature_length
+    void *context, const uint8_t *message, size_t message_len, const uint8_t *signature,
+    size_t signature_length
 ) {
     (void)signature_length;
     const uint8_t *key = (const uint8_t *)context;
     return crypto_sign_verify_detached(signature, message, message_len, key);
+}
+
+static int dummy_hash_cb(
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
+) {
+    (void)context;
+    (void)buffer_size;
+    size_t len = input_length < DRIP_HASH_SIZE ? input_length : DRIP_HASH_SIZE;
+    memcpy(buffer, input, len);
+    *output_length = DRIP_HASH_SIZE;
+    return 0;
+}
+
+static int failing_hash_cb(
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)buffer;
+    (void)buffer_size;
+    (void)output_length;
+    return -1;
+}
+
+static int dummy_verify_cb(
+    void *context, const uint8_t *message, size_t message_len, const uint8_t *signature,
+    size_t signature_length
+) {
+    (void)context;
+    (void)message;
+    (void)message_len;
+    (void)signature;
+    (void)signature_length;
+    return 0;
 }
 
 TEST test_init_null_ptr(void) {
@@ -524,12 +559,8 @@ TEST test_sign_and_verify_success(void) {
 }
 
 static int sign_ed25519_wrong_length(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 ) {
     (void)context;
     (void)input;
@@ -715,6 +746,406 @@ TEST test_to_json_optional_json_length(void) {
     PASS();
 }
 
+TEST test_verify_chain_null_ptr(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    drip_link_init(&link);
+
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(
+            NULL, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+        )
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(&link, 1, NULL, &root_hi, 0, dummy_hash_cb, dummy_verify_cb)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(
+            &link, 1, &root_det, NULL, 0, dummy_hash_cb, dummy_verify_cb
+        )
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(&link, 1, &root_det, &root_hi, 0, NULL, verify_ed25519)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_verify_chain(&link, 1, &root_det, &root_hi, 0, dummy_hash_cb, NULL)
+    );
+    PASS();
+}
+
+TEST test_verify_chain_empty(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    drip_link_init(&link);
+
+    int rc = drip_link_verify_chain(
+        &link, 0, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
+    PASS();
+}
+
+/* TODO: checks only DET, does not do any crypto. */
+TEST test_verify_chain_parent_det_match(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+/* TODO: checks only DET, does not do any crypto. */
+TEST test_verify_chain_parent_det_mismatch(void) {
+    drip_link_t link;
+    drip_det_t root_det, parent_det;
+    drip_hi_t root_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&parent_det, 0x22, sizeof(parent_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &parent_det);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
+    PASS();
+}
+
+/* TODO: checks only DET, does not do any crypto. */
+TEST test_verify_chain_two_hop_match(void) {
+    drip_link_t links[2];
+    drip_det_t root_det, child_det;
+    drip_hi_t root_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+
+    drip_link_init(&links[0]);
+    drip_link_set_parent_det(&links[0], &root_det);
+    drip_link_set_child_det(&links[0], &child_det);
+
+    drip_link_init(&links[1]);
+    drip_link_set_parent_det(&links[1], &child_det);
+
+    int rc = drip_link_verify_chain(
+        links, 2, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+/* TODO: checks only DET, does not do any crypto. */
+TEST test_verify_chain_two_hop_mismatch(void) {
+    drip_link_t links[2];
+    drip_det_t root_det, child_det, other_det;
+    drip_hi_t root_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+    memset(&other_det, 0x33, sizeof(other_det));
+
+    drip_link_init(&links[0]);
+    drip_link_set_parent_det(&links[0], &root_det);
+    drip_link_set_child_det(&links[0], &child_det);
+
+    drip_link_init(&links[1]);
+    drip_link_set_parent_det(&links[1], &other_det);
+
+    int rc = drip_link_verify_chain(
+        links, 2, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
+    PASS();
+}
+
+TEST test_verify_chain_unixtime_skipped(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    uint32_t now = 1600000000;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_vnb_unixtime(&link, now - 20);
+    drip_link_set_vna_unixtime(&link, now - 10);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_verify_chain_unixtime_success(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    uint32_t now = 1600000000;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_vnb_unixtime(&link, now - 10);
+    drip_link_set_vna_unixtime(&link, now + 10);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now - 10, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now + 10, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_verify_chain_unixtime_expired(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+    uint32_t now = 1600000000;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_vnb_unixtime(&link, now - 10);
+    drip_link_set_vna_unixtime(&link, now + 10);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now - 11, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+
+    rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, now + 11, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+    PASS();
+}
+
+TEST test_verify_chain_two_hop_unixtime_expired(void) {
+    drip_link_t links[2];
+    drip_det_t root_det, child_det;
+    drip_hi_t root_hi;
+    uint32_t now = 1600000000;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+
+    drip_link_init(&links[0]);
+    drip_link_set_parent_det(&links[0], &root_det);
+    drip_link_set_child_det(&links[0], &child_det);
+    drip_link_set_vnb_unixtime(&links[0], now - 10);
+    drip_link_set_vna_unixtime(&links[0], now + 10);
+
+    drip_link_init(&links[1]);
+    drip_link_set_parent_det(&links[1], &child_det);
+    drip_link_set_vnb_unixtime(&links[1], now - 30);
+    drip_link_set_vna_unixtime(&links[1], now - 20);
+
+    int rc = drip_link_verify_chain(
+        links, 2, &root_det, &root_hi, now, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+    PASS();
+}
+
+TEST test_verify_chain_child_hash_mismatch(void) {
+    drip_link_t link;
+    drip_det_t root_det, child_det;
+    drip_hi_t root_hi;
+    drip_hash_t bad_hash;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x11, sizeof(child_det));
+    memset(&bad_hash, 0xFF, sizeof(bad_hash));
+    drip_det_set_hash(&child_det, &bad_hash);
+
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_child_det(&link, &child_det);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
+    PASS();
+}
+
+TEST test_verify_chain_hash_cb_failed(void) {
+    drip_link_t link;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+
+    int rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, failing_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
+    PASS();
+}
+
+TEST test_verify_chain_two_hop_child_hash_mismatch(void) {
+    drip_link_t links[2];
+    drip_det_t root_det, child_det, leaf_det;
+    drip_hi_t root_hi;
+    drip_hash_t bad_hash;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+    memset(&leaf_det, 0x33, sizeof(leaf_det));
+    memset(&bad_hash, 0xFF, sizeof(bad_hash));
+    drip_det_set_hash(&leaf_det, &bad_hash);
+
+    drip_link_init(&links[0]);
+    drip_link_set_parent_det(&links[0], &root_det);
+    drip_link_set_child_det(&links[0], &child_det);
+
+    drip_link_init(&links[1]);
+    drip_link_set_parent_det(&links[1], &child_det);
+    drip_link_set_child_det(&links[1], &leaf_det);
+
+    int rc = drip_link_verify_chain(
+        links, 2, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+    );
+    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
+    PASS();
+}
+
+TEST test_verify_chain_signature_success(void) {
+    drip_link_t link;
+    drip_det_t root_det, child_det;
+    drip_hi_t root_hi, child_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+    memcpy(root_hi, public_key, sizeof(root_hi));
+    memset(&child_hi, 0x33, sizeof(child_hi));
+
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_child_det(&link, &child_det);
+    drip_link_set_child_hi(&link, &child_hi);
+    int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_verify_chain_signature_failed(void) {
+    drip_link_t link;
+    drip_det_t root_det, child_det;
+    drip_hi_t root_hi, child_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+    memcpy(root_hi, public_key, sizeof(root_hi));
+    memset(&child_hi, 0x33, sizeof(child_hi));
+
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_child_det(&link, &child_det);
+    drip_link_set_child_hi(&link, &child_hi);
+    int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    link.signature[0] ^= 0xFF;
+
+    rc = drip_link_verify_chain(
+        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
+    PASS();
+}
+
+TEST test_verify_chain_wrong_root_hi(void) {
+    drip_link_t link;
+    drip_det_t root_det, child_det;
+    drip_hi_t child_hi, wrong_hi;
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&child_det, 0x22, sizeof(child_det));
+    memset(&child_hi, 0x33, sizeof(child_hi));
+    memset(&wrong_hi, 0xAA, sizeof(wrong_hi));
+
+    drip_link_init(&link);
+    drip_link_set_parent_det(&link, &root_det);
+    drip_link_set_child_det(&link, &child_det);
+    drip_link_set_child_hi(&link, &child_hi);
+    int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_verify_chain(
+        &link, 1, &root_det, &wrong_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
+    PASS();
+}
+
+TEST test_verify_chain_two_hop_signature_success(void) {
+    drip_link_t links[2];
+    drip_det_t root_det, raa_det, ua_det;
+    drip_hi_t root_hi, raa_hi, ua_hi;
+    uint8_t root_sk[64], raa_sk[64];
+
+    memset(&root_det, 0x11, sizeof(root_det));
+    memset(&raa_det, 0x22, sizeof(raa_det));
+    memset(&ua_det, 0x33, sizeof(ua_det));
+    memset(&ua_hi, 0x44, sizeof(ua_hi));
+
+    crypto_sign_keypair(root_hi, root_sk);
+    crypto_sign_keypair(raa_hi, raa_sk);
+
+    drip_link_init(&links[0]);
+    drip_link_set_parent_det(&links[0], &root_det);
+    drip_link_set_child_det(&links[0], &raa_det);
+    drip_link_set_child_hi(&links[0], &raa_hi);
+    int rc = drip_link_sign(&links[0], sign_ed25519, (void *)root_sk);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    drip_link_init(&links[1]);
+    drip_link_set_parent_det(&links[1], &raa_det);
+    drip_link_set_child_det(&links[1], &ua_det);
+    drip_link_set_child_hi(&links[1], &ua_hi);
+    rc = drip_link_sign(&links[1], sign_ed25519, (void *)raa_sk);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_verify_chain(
+        links, 2, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
 SUITE(link_suite) {
     RUN_TEST(test_init_null_ptr);
     RUN_TEST(test_init);
@@ -775,4 +1206,21 @@ SUITE(link_suite) {
     RUN_TEST(test_to_json_null_ptr_link);
     RUN_TEST(test_to_json_null_ptr_buffer);
     RUN_TEST(test_to_json_optional_json_length);
+    RUN_TEST(test_verify_chain_null_ptr);
+    RUN_TEST(test_verify_chain_empty);
+    RUN_TEST(test_verify_chain_parent_det_match);
+    RUN_TEST(test_verify_chain_parent_det_mismatch);
+    RUN_TEST(test_verify_chain_two_hop_match);
+    RUN_TEST(test_verify_chain_two_hop_mismatch);
+    RUN_TEST(test_verify_chain_unixtime_skipped);
+    RUN_TEST(test_verify_chain_unixtime_success);
+    RUN_TEST(test_verify_chain_unixtime_expired);
+    RUN_TEST(test_verify_chain_two_hop_unixtime_expired);
+    RUN_TEST(test_verify_chain_child_hash_mismatch);
+    RUN_TEST(test_verify_chain_hash_cb_failed);
+    RUN_TEST(test_verify_chain_two_hop_child_hash_mismatch);
+    RUN_TEST(test_verify_chain_signature_success);
+    RUN_TEST(test_verify_chain_signature_failed);
+    RUN_TEST(test_verify_chain_wrong_root_hi);
+    RUN_TEST(test_verify_chain_two_hop_signature_success);
 }
