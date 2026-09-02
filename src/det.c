@@ -109,11 +109,6 @@ int drip_det_set_hhsi(drip_det_t *det, drip_hhsi_t hhsi) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    /* 16 is skipped per RFC 9374 §3.2 */
-    if (hhsi == DRIP_HHSI_RESERVED || hhsi == 16) {
-        return DRIP_ERROR_INVALID_HHSI;
-    }
-
     (*det)[7] = hhsi;
 
     return DRIP_SUCCESS;
@@ -175,10 +170,6 @@ int drip_det_validate(const drip_det_t *det) {
         return DRIP_ERROR_INVALID_IPV6_PREFIX;
     }
 
-    /* 0 is reserved and 16 is skipped per RFC 9374 §3.2 */
-    if ((*det)[7] == DRIP_HHSI_RESERVED || (*det)[7] == 16) {
-        return DRIP_ERROR_INVALID_HHSI;
-    }
     return DRIP_SUCCESS;
 }
 

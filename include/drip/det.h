@@ -30,7 +30,6 @@ static_assert(sizeof(drip_det_t) == DRIP_DET_SIZE, "drip_det_t size mismatch");
  * @brief HHIT Suite ID (HHSI) values per RFC 9374.
  *
  * Identifies the hash and signature algorithms used by a DET.
- * Values 0 (RESERVED) and 16 (skipped) must not be used.
  *
  * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.2
  */
@@ -142,14 +141,11 @@ uint32_t drip_det_get_hid(const drip_det_t *det);
 /**
  * @brief Set the HHIT Suite ID (HHSI) of a DET.
  *
- * Values 0 (RESERVED) and 16 are invalid per RFC 9374 §3.2.
- *
  * @param det Pointer to the DET to modify.
  * @param hhsi HHIT Suite ID to store.
  *
  * @retval DRIP_SUCCESS if the HHSI was stored.
  * @retval DRIP_ERROR_NULL_POINTER if det is NULL.
- * @retval DRIP_ERROR_INVALID_HHSI if hhsi is 0 (RESERVED) or 16.
  *
  * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.2
  */
@@ -216,9 +212,8 @@ int drip_det_update_hash(
 /**
  * @brief Validate the structural integrity of a DET.
  *
- * Checks the IPv6 prefix and the HHIT Suite ID (HHSI). Does not verify the
- * ORCHID hash, use drip_det_verify() for that. Reserved values are considered
- * valid.
+ * Checks the IPv6 prefix. Does not verify the ORCHID hash, use
+ * drip_det_verify() for that. Reserved values are considered valid.
  *
  * @param det Pointer to the DET to validate.
  *
@@ -226,7 +221,6 @@ int drip_det_update_hash(
  * @retval DRIP_ERROR_NULL_POINTER if det is NULL.
  * @retval DRIP_ERROR_INVALID_IPV6_PREFIX if bytes 0-3 do not match the
  *         2001:30::/28 prefix.
- * @retval DRIP_ERROR_INVALID_HHSI if HHSI is 0 (RESERVED) or 16.
  *
  * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.1
  * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.2
@@ -281,7 +275,6 @@ int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_s
  * @retval DRIP_ERROR_NULL_POINTER if det or string is NULL.
  * @retval DRIP_ERROR_INVALID_IPV6_STRING if string is not a valid ipv6 address.
  * @retval DRIP_ERROR_INVALID_IPV6_PREFIX if the prefix is outside 2001:30::/28.
- * @retval DRIP_ERROR_INVALID_HHSI if the HHSI is 0 (RESERVED) or 16 (skipped)
  */
 int drip_det_from_ipv6_string(drip_det_t *det, const char *string);
 
@@ -315,7 +308,6 @@ int drip_det_encode(const drip_det_t *det, uint8_t *buffer, size_t buffer_size);
  * @retval DRIP_ERROR_NULL_POINTER if det or buffer is NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is less than DRIP_DET_SIZE.
  * @retval DRIP_ERROR_INVALID_IPV6_PREFIX if the decoded prefix is not 2001:30::/28.
- * @retval DRIP_ERROR_INVALID_HHSI if the decoded HHSI is 0 or 16.
  *
  * @see drip_det_validate
  */

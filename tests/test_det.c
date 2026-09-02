@@ -223,28 +223,6 @@ TEST test_set_and_get_hhsi(void) {
     PASS();
 }
 
-TEST test_set_hhsi_zero(void) {
-    drip_det_t det;
-    drip_det_init(&det);
-
-    det[7] = DRIP_HHSI_EDDSA_CSHAKE128;
-    int rc = drip_det_set_hhsi(&det, DRIP_HHSI_RESERVED);
-    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
-    ASSERT_EQ(DRIP_HHSI_EDDSA_CSHAKE128, drip_det_get_hhsi(&det));
-    PASS();
-}
-
-TEST test_set_hhsi_16(void) {
-    drip_det_t det;
-    drip_det_init(&det);
-
-    det[7] = DRIP_HHSI_EDDSA_CSHAKE128;
-    int rc = drip_det_set_hhsi(&det, 16);
-    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
-    ASSERT_EQ(DRIP_HHSI_EDDSA_CSHAKE128, drip_det_get_hhsi(&det));
-    PASS();
-}
-
 /* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e has HHSI = 5 */
 TEST test_get_hhsi_rfc_9374_example(void) {
     drip_det_t det = {
@@ -344,28 +322,6 @@ TEST test_validate_invalid_prefix(void) {
     det[3] = 0xFF;
     rc = drip_det_validate(&det);
     ASSERT_EQ(DRIP_ERROR_INVALID_IPV6_PREFIX, rc);
-    PASS();
-}
-
-TEST test_validate_hhsi_zero(void) {
-    drip_det_t det;
-    drip_det_init(&det);
-    drip_det_set_raa(&det, 10);
-
-    det[7] = 0;
-    int rc = drip_det_validate(&det);
-    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
-    PASS();
-}
-
-TEST test_validate_hhsi_16(void) {
-    drip_det_t det;
-    drip_det_init(&det);
-    drip_det_set_raa(&det, 10);
-
-    det[7] = 16;
-    int rc = drip_det_validate(&det);
-    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
     PASS();
 }
 
@@ -614,21 +570,6 @@ TEST test_decode_invalid_prefix(void) {
     PASS();
 }
 
-TEST test_decode_invalid_hhsi(void) {
-    drip_det_t det;
-    uint8_t buffer[DRIP_DET_SIZE] = {0};
-    buffer[0] = 0x20;
-    buffer[1] = 0x01;
-    buffer[2] = 0x00;
-    buffer[3] = 0x30;
-    buffer[4] = 0x02; /* RAA = 10 */
-    buffer[5] = 0x80; /* RAA low bits + HDA = 0 */
-    buffer[7] = 16;
-    int rc = drip_det_decode(&det, buffer, sizeof(buffer));
-    ASSERT_EQ(DRIP_ERROR_INVALID_HHSI, rc);
-    PASS();
-}
-
 TEST test_decode_success(void) {
     drip_det_t det;
     uint8_t buffer[DRIP_DET_SIZE] = {
@@ -671,8 +612,6 @@ SUITE(det_suite) {
     RUN_TEST(test_set_hhsi_null_pointer);
     RUN_TEST(test_get_hhsi_null_pointer);
     RUN_TEST(test_set_and_get_hhsi);
-    RUN_TEST(test_set_hhsi_zero);
-    RUN_TEST(test_set_hhsi_16);
     RUN_TEST(test_get_hhsi_rfc_9374_example);
     RUN_TEST(test_set_hash_null_pointer);
     RUN_TEST(test_set_hash_null_hash);
@@ -682,8 +621,6 @@ SUITE(det_suite) {
     RUN_TEST(test_validate_null_pointer);
     RUN_TEST(test_validate_valid_det);
     RUN_TEST(test_validate_invalid_prefix);
-    RUN_TEST(test_validate_hhsi_zero);
-    RUN_TEST(test_validate_hhsi_16);
     RUN_TEST(test_validate_success);
     RUN_TEST(test_validate_raa_unassigned_low);
     RUN_TEST(test_validate_raa_fcfs);
@@ -707,6 +644,5 @@ SUITE(det_suite) {
     RUN_TEST(test_decode_null_ptr_buffer);
     RUN_TEST(test_decode_buffer_too_small);
     RUN_TEST(test_decode_invalid_prefix);
-    RUN_TEST(test_decode_invalid_hhsi);
     RUN_TEST(test_decode_success);
 }
