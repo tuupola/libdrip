@@ -216,9 +216,9 @@ int drip_det_update_hash(
 /**
  * @brief Validate the structural integrity of a DET.
  *
- * Checks the IPv6 prefix, the RAA against the IANA reserved ranges
- * (0..3 and 4000..8191) and the HHIT Suite ID (HHSI). Does not verify the
- * ORCHID hash, use drip_det_verify() for that.
+ * Checks the IPv6 prefix and the HHIT Suite ID (HHSI). Does not verify the
+ * ORCHID hash, use drip_det_verify() for that. Reserved values are considered
+ * valid.
  *
  * @param det Pointer to the DET to validate.
  *
@@ -226,8 +226,6 @@ int drip_det_update_hash(
  * @retval DRIP_ERROR_NULL_POINTER if det is NULL.
  * @retval DRIP_ERROR_INVALID_IPV6_PREFIX if bytes 0-3 do not match the
  *         2001:30::/28 prefix.
- * @retval DRIP_ERROR_INVALID_RAA if RAA is in an IANA reserved range
- *         (0..3 or 4000..8191).
  * @retval DRIP_ERROR_INVALID_HHSI if HHSI is 0 (RESERVED) or 16.
  *
  * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.1
@@ -283,8 +281,6 @@ int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_s
  * @retval DRIP_ERROR_NULL_POINTER if det or string is NULL.
  * @retval DRIP_ERROR_INVALID_IPV6_STRING if string is not a valid ipv6 address.
  * @retval DRIP_ERROR_INVALID_IPV6_PREFIX if the prefix is outside 2001:30::/28.
- * @retval DRIP_ERROR_INVALID_RAA if the parsed RAA is in an IANA Reserved range
- *         (0..3 or 4000..8191).
  * @retval DRIP_ERROR_INVALID_HHSI if the HHSI is 0 (RESERVED) or 16 (skipped)
  */
 int drip_det_from_ipv6_string(drip_det_t *det, const char *string);
@@ -319,8 +315,6 @@ int drip_det_encode(const drip_det_t *det, uint8_t *buffer, size_t buffer_size);
  * @retval DRIP_ERROR_NULL_POINTER if det or buffer is NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is less than DRIP_DET_SIZE.
  * @retval DRIP_ERROR_INVALID_IPV6_PREFIX if the decoded prefix is not 2001:30::/28.
- * @retval DRIP_ERROR_INVALID_RAA if the decoded RAA is in an IANA Reserved range
- *         (0..3 or 4000..8191).
  * @retval DRIP_ERROR_INVALID_HHSI if the decoded HHSI is 0 or 16.
  *
  * @see drip_det_validate
