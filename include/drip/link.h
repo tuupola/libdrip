@@ -175,6 +175,23 @@ int drip_link_set_parent_det(drip_link_t *link, const drip_det_t *det);
 const drip_signature_t *drip_link_get_signature(const drip_link_t *link);
 int drip_link_set_signature(drip_link_t *link, const drip_signature_t *signature);
 
+/**
+ * @brief Validate the structural state of a DRIP Link.
+ *
+ * Performs structural checks only. Does not verify the signature or DET hashes.
+ * Use drip_link_verify() or drip_link_verify_chain() for that.
+ *
+ * @param link Pointer to the DRIP Link to validate.
+ *
+ * @retval DRIP_SUCCESS if link is structurally valid.
+ * @retval DRIP_ERROR_NULL_POINTER if link is NULL.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not DRIP_SAM_TYPE_LINK.
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if vnb > vna.
+ * @retval DRIP_ERROR_INVALID_CHILD_DET if child_det fails validation.
+ * @retval DRIP_ERROR_INVALID_PARENT_DET if parent_det fails validation.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
 int drip_link_validate(const drip_link_t *link);
 
 int drip_link_decode(drip_link_t *link, const uint8_t *buffer, size_t buffer_size);
@@ -183,20 +200,20 @@ int drip_link_encode(
 );
 
 /**
- * @brief Sign a Link.
+ * @brief Sign a DRIP Link.
  *
- * Signs the Link using the provided callback and parent private key. Pass
+ * Signs the DRIP Link using the provided callback and parent private key. Pass
  * the private key in the context.
  *
  * @code
  * int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
  * @endcode
  *
- * @param link Pointer to the Link to sign.
+ * @param link Pointer to the DRIP Link to sign.
  * @param callback Callback function used to generate the signature.
  * @param context Opaque context passed to the callback.
  *
- * @retval DRIP_SUCCESS if the Link was signed.
+ * @retval DRIP_SUCCESS if link was signed.
  * @retval DRIP_ERROR_NULL_POINTER if link or callback is NULL.
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned an error.
  * @retval DRIP_ERROR_INVALID_LENGTH if the signature is not DRIP_SIGNATURE_SIZE.
@@ -206,7 +223,7 @@ int drip_link_encode(
 int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *context);
 
 /**
- * @brief Verify the signature of a Link.
+ * @brief Verify the signature of a DRIP Link.
  *
  * Verifies the signature using the provided callback and parent HI. Parent HI
  * is the public key, pass it in the context.
@@ -216,7 +233,7 @@ int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *contex
  * int rc = drip_link_verify(&child_link, verify_ed25519, (void *)parent_hi);
  * @endcode
  *
- * @param link Pointer to the Link to verify.
+ * @param link Pointer to the DRIP Link to verify.
  * @param callback Callback function used to verify the signature.
  * @param context Opaque context passed to the callback.
  *
@@ -226,18 +243,20 @@ int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *contex
  *
  * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
  */
-int drip_link_verify(const drip_link_t *link, drip_link_verify_cb_t callback, void *context);
+int drip_link_verify(
+    const drip_link_t *link, drip_link_verify_cb_t callback, void *context
+);
 
 /**
- * @brief Verify a chain of Links from a trusted root.
+ * @brief Verify a chain of DRIP Links from a trusted root.
  *
- * @param link_array Array of Links.
- * @param link_count Number of Links in link_array.
+ * @param link_array Array of DRIP Links.
+ * @param link_count Number of DRIP Links in link_array.
  * @param root_det Trusted root DET.
  * @param root_hi Trusted root Host Identity.
- * @param unixtime Unix time in seconds or 0 to skip the VNB/VNA check.
+ * @param unixtime Unix time in seconds or 0 ignore.
  * @param hash_cb Callback used to verify each child DET hash.
- * @param verify_cb Callback used to verify each Link signature.
+ * @param verify_cb Callback used to verify each DRIP Link signature.
  *
  * @retval DRIP_SUCCESS if the chain verifies.
  * @retval DRIP_ERROR_NULL_POINTER if link_array, root_det, root_hi, hash_cb,
@@ -259,19 +278,19 @@ int drip_link_verify_chain(
 /**
  * @brief Serialize a DRIP link to a JSON string.
  *
- * On success writes a NULL terminated JSON to @p buffer. When @p buffer_size is
+ * On success writes a NULL terminated JSON to buffer. When buffer_size is
  * too small the output is truncated and DRIP_ERROR_BUFFER_TOO_SMALL is returned.
  * The truncated buffer is still NULL terminated.
  *
  * @param link Pointer to the link to serialize.
  * @param buffer Output buffer for the JSON representation.
- * @param buffer_size Size of @p buffer in bytes.
+ * @param buffer_size Size of buffer in bytes.
  * @param json_length Optional. Receives receives the number of characters
  *                    for the full non truncated output. Ignored if NULL.
  *
  * @retval DRIP_SUCCESS on success.
- * @retval DRIP_ERROR_NULL_POINTER if @p link or @p buffer is NULL.
- * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is too small.
+ * @retval DRIP_ERROR_NULL_POINTER if link or buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is too small.
  */
 int drip_link_to_json(
     const drip_link_t *link, char *buffer, size_t buffer_size, size_t *json_length
