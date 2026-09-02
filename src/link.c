@@ -244,7 +244,9 @@ int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *contex
     return DRIP_SUCCESS;
 }
 
-int drip_link_verify(const drip_link_t *link, drip_link_verify_cb_t callback, void *context) {
+int drip_link_verify(
+    const drip_link_t *link, drip_link_verify_cb_t callback, void *context
+) {
     if (link == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -301,8 +303,8 @@ int drip_link_verify_chain(
     expected_det = root_det;
     parent_hi = root_hi;
 
-    /* Make sure next link's parent is the previous links's child. */
     for (i = 0; i < link_count; i++) {
+        /* Make sure next link's parent is the previous links's child. */
         parent_det = drip_link_get_parent_det(&link_array[i]);
         if (memcmp(parent_det, expected_det, DRIP_DET_SIZE) != 0) {
             return DRIP_ERROR_VERIFICATION_FAILED;
