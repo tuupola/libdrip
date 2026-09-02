@@ -177,6 +177,13 @@ static int det_cshake128_cb(
     return 0;
 }
 
+static void init_full_chain(drip_link_t *root, drip_link_t links[3]) {
+    drip_link_decode(root, raa16376, sizeof(raa16376));
+    drip_link_decode(&links[0], hda16376_16376a, sizeof(hda16376_16376a));
+    drip_link_decode(&links[1], hda16376_16376i, sizeof(hda16376_16376i));
+    drip_link_decode(&links[2], ua1_16376_16376, sizeof(ua1_16376_16376));
+}
+
 TEST test_init_null_ptr(void) {
     int rc = drip_link_init(NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
@@ -885,320 +892,195 @@ TEST test_verify_chain_empty(void) {
     PASS();
 }
 
-/* TODO: checks only DET, does not do any crypto. */
-TEST test_verify_chain_parent_det_match(void) {
-    drip_link_t link;
-    drip_det_t root_det;
-    drip_hi_t root_hi;
-
-    memset(&root_det, 0x11, sizeof(root_det));
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &root_det);
-
-    int rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
-    );
-    ASSERT_EQ(DRIP_SUCCESS, rc);
-    PASS();
-}
-
-/* TODO: checks only DET, does not do any crypto. */
 TEST test_verify_chain_parent_det_mismatch(void) {
-    drip_link_t link;
-    drip_det_t root_det, parent_det;
-    drip_hi_t root_hi;
+    drip_link_t root, links[3];
+    drip_det_t wrong_det;
 
-    memset(&root_det, 0x11, sizeof(root_det));
-    memset(&parent_det, 0x22, sizeof(parent_det));
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &parent_det);
+    init_full_chain(&root, links);
+    drip_det_init(&wrong_det);
+    drip_link_set_parent_det(&links[2], &wrong_det);
 
     int rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
-    );
-    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
-    PASS();
-}
-
-/* TODO: checks only DET, does not do any crypto. */
-TEST test_verify_chain_two_hop_match(void) {
-    drip_link_t links[2];
-    drip_det_t root_det, child_det;
-    drip_hi_t root_hi;
-
-    memset(&root_det, 0x11, sizeof(root_det));
-    memset(&child_det, 0x22, sizeof(child_det));
-
-    drip_link_init(&links[0]);
-    drip_link_set_parent_det(&links[0], &root_det);
-    drip_link_set_child_det(&links[0], &child_det);
-
-    drip_link_init(&links[1]);
-    drip_link_set_parent_det(&links[1], &child_det);
-
-    int rc = drip_link_verify_chain(
-        links, 2, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
-    );
-    ASSERT_EQ(DRIP_SUCCESS, rc);
-    PASS();
-}
-
-/* TODO: checks only DET, does not do any crypto. */
-TEST test_verify_chain_two_hop_mismatch(void) {
-    drip_link_t links[2];
-    drip_det_t root_det, child_det, other_det;
-    drip_hi_t root_hi;
-
-    memset(&root_det, 0x11, sizeof(root_det));
-    memset(&child_det, 0x22, sizeof(child_det));
-    memset(&other_det, 0x33, sizeof(other_det));
-
-    drip_link_init(&links[0]);
-    drip_link_set_parent_det(&links[0], &root_det);
-    drip_link_set_child_det(&links[0], &child_det);
-
-    drip_link_init(&links[1]);
-    drip_link_set_parent_det(&links[1], &other_det);
-
-    int rc = drip_link_verify_chain(
-        links, 2, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
     PASS();
 }
 
 TEST test_verify_chain_unixtime_skipped(void) {
-    drip_link_t link;
-    drip_det_t root_det;
-    drip_hi_t root_hi;
+    drip_link_t root, links[3];
     uint32_t now = 1600000000;
 
-    memset(&root_det, 0x11, sizeof(root_det));
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &root_det);
-    drip_link_set_vnb_unixtime(&link, now - 20);
-    drip_link_set_vna_unixtime(&link, now - 10);
+    init_full_chain(&root, links);
+    /* Make last hop expired. */
+    drip_link_set_vnb_unixtime(&links[2], now - 20);
+    drip_link_set_vna_unixtime(&links[2], now - 10);
 
+    /* Pass 0 to ignore timestamps. */
     int rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, dummy_verify_cb
     );
     ASSERT_EQ(DRIP_SUCCESS, rc);
     PASS();
 }
 
 TEST test_verify_chain_unixtime_success(void) {
-    drip_link_t link;
-    drip_det_t root_det;
-    drip_hi_t root_hi;
-    uint32_t now = 1600000000;
+    drip_link_t root, links[3];
+    uint32_t vnb, vna, hop_vnb, hop_vna;
+    size_t i;
 
-    memset(&root_det, 0x11, sizeof(root_det));
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &root_det);
-    drip_link_set_vnb_unixtime(&link, now - 10);
-    drip_link_set_vna_unixtime(&link, now + 10);
+    init_full_chain(&root, links);
+    /* Find out max vnb and min vna. */
+    vnb = drip_link_get_vnb_unixtime(&links[0]);
+    vna = drip_link_get_vna_unixtime(&links[0]);
+    for (i = 1; i < 3; i++) {
+        hop_vnb = drip_link_get_vnb_unixtime(&links[i]);
+        hop_vna = drip_link_get_vna_unixtime(&links[i]);
+        if (hop_vnb > vnb) {
+            vnb = hop_vnb;
+        }
+        if (hop_vna < vna) {
+            vna = hop_vna;
+        }
+    }
 
+    /* Test exactly when vnb is valid. */
     int rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, now, dummy_hash_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vnb,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
+    /* Test in middle of vnb and vna. */
     rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, now - 10, dummy_hash_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root),
+        vnb + (vna - vnb) / 2, det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
+    /* Test when vna ends. */
     rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, now + 10, dummy_hash_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vna,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_SUCCESS, rc);
     PASS();
 }
 
 TEST test_verify_chain_unixtime_expired(void) {
-    drip_link_t link;
-    drip_det_t root_det;
-    drip_hi_t root_hi;
-    uint32_t now = 1600000000;
+    drip_link_t root, links[3];
+    uint32_t vnb, vna, hop_vnb, hop_vna;
+    size_t i;
+    int rc;
 
-    memset(&root_det, 0x11, sizeof(root_det));
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &root_det);
-    drip_link_set_vnb_unixtime(&link, now - 10);
-    drip_link_set_vna_unixtime(&link, now + 10);
+    init_full_chain(&root, links);
+    /* Find out max vnb and min vna. */
+    vnb = drip_link_get_vnb_unixtime(&links[0]);
+    vna = drip_link_get_vna_unixtime(&links[0]);
+    for (i = 1; i < 3; i++) {
+        hop_vnb = drip_link_get_vnb_unixtime(&links[i]);
+        hop_vna = drip_link_get_vna_unixtime(&links[i]);
+        if (hop_vnb > vnb) {
+            vnb = hop_vnb;
+        }
+        if (hop_vna < vna) {
+            vna = hop_vna;
+        }
+    }
 
-    int rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, now - 11, dummy_hash_cb, dummy_verify_cb
+    /* Test one second before vnb is valid. */
+    rc = drip_link_verify_chain(
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vnb - 1,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
 
+    /* Test one second after vna expired. */
     rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, now + 11, dummy_hash_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vna + 1,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
     PASS();
 }
 
-TEST test_verify_chain_two_hop_unixtime_expired(void) {
-    drip_link_t links[2];
-    drip_det_t root_det, child_det;
-    drip_hi_t root_hi;
-    uint32_t now = 1600000000;
+TEST test_verify_chain_last_hop_unixtime_expired(void) {
+    drip_link_t root, links[3];
+    uint32_t vnb;
 
-    memset(&root_det, 0x11, sizeof(root_det));
-    memset(&child_det, 0x22, sizeof(child_det));
-
-    drip_link_init(&links[0]);
-    drip_link_set_parent_det(&links[0], &root_det);
-    drip_link_set_child_det(&links[0], &child_det);
-    drip_link_set_vnb_unixtime(&links[0], now - 10);
-    drip_link_set_vna_unixtime(&links[0], now + 10);
-
-    drip_link_init(&links[1]);
-    drip_link_set_parent_det(&links[1], &child_det);
-    drip_link_set_vnb_unixtime(&links[1], now - 30);
-    drip_link_set_vna_unixtime(&links[1], now - 20);
+    init_full_chain(&root, links);
+    /* Make last hop expired 20 seconds before hop 0. */
+    vnb = drip_link_get_vnb_unixtime(&links[0]);
+    drip_link_set_vnb_unixtime(&links[2], vnb - 30);
+    drip_link_set_vna_unixtime(&links[2], vnb - 20);
 
     int rc = drip_link_verify_chain(
-        links, 2, &root_det, &root_hi, now, dummy_hash_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vnb,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
     PASS();
 }
 
 TEST test_verify_chain_child_hash_mismatch(void) {
-    drip_link_t link;
-    drip_det_t root_det, child_det;
-    drip_hi_t root_hi;
+    drip_link_t root, links[3];
+    drip_det_t child_det;
     drip_hash_t bad_hash;
 
-    memset(&root_det, 0x11, sizeof(root_det));
-    memset(&child_det, 0x11, sizeof(child_det));
+    init_full_chain(&root, links);
+    /* Break the last hops child det hash. */
+    memcpy(&child_det, drip_link_get_child_det(&links[2]), sizeof(child_det));
     memset(&bad_hash, 0xFF, sizeof(bad_hash));
     drip_det_set_hash(&child_det, &bad_hash);
-
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &root_det);
-    drip_link_set_child_det(&link, &child_det);
+    drip_link_set_child_det(&links[2], &child_det);
 
     int rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
     PASS();
 }
 
+/* Check if the callback itself fails, even if hashes are valid. */
 TEST test_verify_chain_hash_cb_failed(void) {
-    drip_link_t link;
-    drip_det_t root_det;
-    drip_hi_t root_hi;
+    drip_link_t root, links[3];
 
-    memset(&root_det, 0x11, sizeof(root_det));
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &root_det);
+    init_full_chain(&root, links);
 
     int rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, 0, failing_hash_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        failing_hash_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
 }
 
-TEST test_verify_chain_two_hop_child_hash_mismatch(void) {
-    drip_link_t links[2];
-    drip_det_t root_det, child_det, leaf_det;
-    drip_hi_t root_hi;
-    drip_hash_t bad_hash;
+TEST test_verify_chain_signature_failed(void) {
+    drip_link_t root, links[3];
 
-    memset(&root_det, 0x11, sizeof(root_det));
-    memset(&child_det, 0x22, sizeof(child_det));
-    memset(&leaf_det, 0x33, sizeof(leaf_det));
-    memset(&bad_hash, 0xFF, sizeof(bad_hash));
-    drip_det_set_hash(&leaf_det, &bad_hash);
-
-    drip_link_init(&links[0]);
-    drip_link_set_parent_det(&links[0], &root_det);
-    drip_link_set_child_det(&links[0], &child_det);
-
-    drip_link_init(&links[1]);
-    drip_link_set_parent_det(&links[1], &child_det);
-    drip_link_set_child_det(&links[1], &leaf_det);
+    init_full_chain(&root, links);
+    /* Break the last hop signature. */
+    links[2].signature[0] ^= 0xFF;
 
     int rc = drip_link_verify_chain(
-        links, 2, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
-    );
-    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
-    PASS();
-}
-
-TEST test_verify_chain_signature_success(void) {
-    drip_link_t link;
-    drip_det_t root_det, child_det;
-    drip_hi_t root_hi, child_hi;
-
-    memset(&root_det, 0x11, sizeof(root_det));
-    memset(&child_det, 0x22, sizeof(child_det));
-    memcpy(root_hi, public_key, sizeof(root_hi));
-    memset(&child_hi, 0x33, sizeof(child_hi));
-
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &root_det);
-    drip_link_set_child_det(&link, &child_det);
-    drip_link_set_child_hi(&link, &child_hi);
-    int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
-    ASSERT_EQ(DRIP_SUCCESS, rc);
-
-    rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
-    );
-    ASSERT_EQ(DRIP_SUCCESS, rc);
-    PASS();
-}
-
-TEST test_verify_chain_signature_failed(void) {
-    drip_link_t link;
-    drip_det_t root_det, child_det;
-    drip_hi_t root_hi, child_hi;
-
-    memset(&root_det, 0x11, sizeof(root_det));
-    memset(&child_det, 0x22, sizeof(child_det));
-    memcpy(root_hi, public_key, sizeof(root_hi));
-    memset(&child_hi, 0x33, sizeof(child_hi));
-
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &root_det);
-    drip_link_set_child_det(&link, &child_det);
-    drip_link_set_child_hi(&link, &child_hi);
-    int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
-    ASSERT_EQ(DRIP_SUCCESS, rc);
-    link.signature[0] ^= 0xFF;
-
-    rc = drip_link_verify_chain(
-        &link, 1, &root_det, &root_hi, 0, dummy_hash_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
 }
 
 TEST test_verify_chain_wrong_root_hi(void) {
-    drip_link_t link;
-    drip_det_t root_det, child_det;
-    drip_hi_t child_hi, wrong_hi;
+    drip_link_t root, links[3];
 
-    memset(&root_det, 0x11, sizeof(root_det));
-    memset(&child_det, 0x22, sizeof(child_det));
-    memset(&child_hi, 0x33, sizeof(child_hi));
-    memset(&wrong_hi, 0xAA, sizeof(wrong_hi));
+    init_full_chain(&root, links);
 
-    drip_link_init(&link);
-    drip_link_set_parent_det(&link, &root_det);
-    drip_link_set_child_det(&link, &child_det);
-    drip_link_set_child_hi(&link, &child_hi);
-    int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
-    ASSERT_EQ(DRIP_SUCCESS, rc);
-
-    rc = drip_link_verify_chain(
-        &link, 1, &root_det, &wrong_hi, 0, dummy_hash_cb, verify_ed25519
+    int rc = drip_link_verify_chain(
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&links[2]), 0,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
@@ -1207,19 +1089,7 @@ TEST test_verify_chain_wrong_root_hi(void) {
 TEST test_verify_chain_fixture_full_chain(void) {
     drip_link_t root, links[3];
 
-    ASSERT_EQ(DRIP_SUCCESS, drip_link_decode(&root, raa16376, sizeof(raa16376)));
-    ASSERT_EQ(
-        DRIP_SUCCESS,
-        drip_link_decode(&links[0], hda16376_16376a, sizeof(hda16376_16376a))
-    );
-    ASSERT_EQ(
-        DRIP_SUCCESS,
-        drip_link_decode(&links[1], hda16376_16376i, sizeof(hda16376_16376i))
-    );
-    ASSERT_EQ(
-        DRIP_SUCCESS,
-        drip_link_decode(&links[2], ua1_16376_16376, sizeof(ua1_16376_16376))
-    );
+    init_full_chain(&root, links);
 
     int rc = drip_link_verify_chain(
         links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
@@ -1291,18 +1161,13 @@ SUITE(link_suite) {
     RUN_TEST(test_to_json_optional_json_length);
     RUN_TEST(test_verify_chain_null_ptr);
     RUN_TEST(test_verify_chain_empty);
-    RUN_TEST(test_verify_chain_parent_det_match);
     RUN_TEST(test_verify_chain_parent_det_mismatch);
-    RUN_TEST(test_verify_chain_two_hop_match);
-    RUN_TEST(test_verify_chain_two_hop_mismatch);
     RUN_TEST(test_verify_chain_unixtime_skipped);
     RUN_TEST(test_verify_chain_unixtime_success);
     RUN_TEST(test_verify_chain_unixtime_expired);
-    RUN_TEST(test_verify_chain_two_hop_unixtime_expired);
+    RUN_TEST(test_verify_chain_last_hop_unixtime_expired);
     RUN_TEST(test_verify_chain_child_hash_mismatch);
     RUN_TEST(test_verify_chain_hash_cb_failed);
-    RUN_TEST(test_verify_chain_two_hop_child_hash_mismatch);
-    RUN_TEST(test_verify_chain_signature_success);
     RUN_TEST(test_verify_chain_signature_failed);
     RUN_TEST(test_verify_chain_wrong_root_hi);
     RUN_TEST(test_verify_chain_fixture_full_chain);
