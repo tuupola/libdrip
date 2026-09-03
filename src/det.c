@@ -78,6 +78,26 @@ uint16_t drip_det_get_hda(const drip_det_t *det) {
     return ((uint16_t)((*det)[5] & 0x3F) << 8) | (uint16_t)(*det)[6];
 }
 
+#define HDA_RAA_RESERVED(h) ((h) == 0 || (h) == 4096 || (h) == 8192 || (h) == 12288)
+
+drip_det_role_t drip_det_role(const drip_det_t *det) {
+    uint16_t raa, hda;
+
+    if (det == NULL) {
+        return DRIP_DET_ROLE_UNKNOWN;
+    }
+
+    raa = drip_det_get_raa(det);
+    hda = drip_det_get_hda(det);
+    if (raa <= 3 && HDA_RAA_RESERVED(hda)) {
+        return DRIP_DET_ROLE_APEX;
+    }
+    if (HDA_RAA_RESERVED(hda)) {
+        return DRIP_DET_ROLE_RAA;
+    }
+    return DRIP_DET_ROLE_HDA;
+}
+
 int drip_det_set_hid(drip_det_t *det, uint32_t hid) {
     if (det == NULL) {
         return DRIP_ERROR_NULL_POINTER;

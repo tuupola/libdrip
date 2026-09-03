@@ -70,10 +70,12 @@ TEST test_set_and_get_raa(void) {
 /* https://www.rfc-editor.org/info/rfc9374/#name-det-encoding-example */
 /* https://www.rfc-editor.org/info/rfc9374/#HHIT_DNS */
 TEST test_get_raa_rfc_9374_example(void) {
+    /* clang-format off */
     drip_det_t det = {
         0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
         0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
     };
+    /* clang-format on */
 
     ASSERT_EQ(10, drip_det_get_raa(&det));
     PASS();
@@ -120,12 +122,56 @@ TEST test_set_and_get_hda(void) {
 
 /* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e has HDA = 20 */
 TEST test_get_hda_rfc_9374_example(void) {
+    /* clang-format off */
     drip_det_t det = {
         0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
         0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
     };
+    /* clang-format on */
 
     ASSERT_EQ(20, drip_det_get_hda(&det));
+    PASS();
+}
+
+TEST test_role_null_pointer(void) {
+    ASSERT_EQ(DRIP_DET_ROLE_UNKNOWN, drip_det_role(NULL));
+    PASS();
+}
+
+TEST test_role_apex(void) {
+    drip_det_t det;
+
+    drip_det_init(&det);
+    drip_det_set_raa(&det, 0);
+    drip_det_set_hda(&det, 0);
+    ASSERT_EQ(DRIP_DET_ROLE_APEX, drip_det_role(&det));
+
+    drip_det_set_raa(&det, 3);
+    drip_det_set_hda(&det, 12288);
+    ASSERT_EQ(DRIP_DET_ROLE_APEX, drip_det_role(&det));
+    PASS();
+}
+
+TEST test_role_raa(void) {
+    drip_det_t det;
+
+    drip_det_init(&det);
+    drip_det_set_raa(&det, 10);
+    drip_det_set_hda(&det, 0);
+    ASSERT_EQ(DRIP_DET_ROLE_RAA, drip_det_role(&det));
+    PASS();
+}
+
+/* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e is HDA. */
+TEST test_role_hda(void) {
+    /* clang-format off */
+    drip_det_t det = {
+        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
+    };
+    /* clang-format on */
+
+    ASSERT_EQ(DRIP_DET_ROLE_HDA, drip_det_role(&det));
     PASS();
 }
 
@@ -170,10 +216,12 @@ TEST test_set_and_get_hid(void) {
 
 /* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e has HID = 163860 */
 TEST test_get_hid_rfc_9374_example(void) {
+    /* clang-format off */
     drip_det_t det = {
         0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
         0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
     };
+    /* clang-format on */
 
     ASSERT_EQ(163860, drip_det_get_hid(&det));
     PASS();
@@ -225,10 +273,12 @@ TEST test_set_and_get_hhsi(void) {
 
 /* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e has HHSI = 5 */
 TEST test_get_hhsi_rfc_9374_example(void) {
+    /* clang-format off */
     drip_det_t det = {
         0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
         0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
     };
+    /* clang-format on */
 
     ASSERT_EQ(5, drip_det_get_hhsi(&det));
     PASS();
@@ -272,10 +322,12 @@ TEST test_set_and_get_hash(void) {
 
 /* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e has ORCHID hash = a3ad19520ad0a69e */
 TEST test_get_hash_rfc_9374_example(void) {
+    /* clang-format off */
     drip_det_t det = {
         0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
         0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
     };
+    /* clang-format on */
 
     const drip_hash_t *hash = drip_det_get_hash(&det);
     uint8_t expected[] = {0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e};
@@ -403,10 +455,12 @@ TEST test_to_ipv6_string_null_buffer(void) {
 }
 
 TEST test_to_ipv6_string_rfc_9374_example(void) {
+    /* clang-format off */
     drip_det_t det = {
         0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
         0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
     };
+    /* clang-format on */
 
     char buffer[DRIP_DET_IPV6_STRING_SIZE];
     memset(buffer, 0xff, sizeof(buffer));
@@ -418,10 +472,12 @@ TEST test_to_ipv6_string_rfc_9374_example(void) {
 }
 
 TEST test_to_ipv6_string_buffer_too_small(void) {
+    /* clang-format off */
     drip_det_t det = {
         0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
         0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
     };
+    /* clang-format on */
 
     char buffer[DRIP_DET_IPV6_STRING_SIZE];
     int rc = drip_det_to_ipv6_string(&det, buffer, 1);
@@ -526,10 +582,12 @@ TEST test_encode_buffer_too_small(void) {
 }
 
 TEST test_encode_success(void) {
+    /* clang-format off */
     drip_det_t det = {
         0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
         0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
     };
+    /* clang-format on */
 
     uint8_t buffer[DRIP_DET_SIZE];
     int rc = drip_det_encode(&det, buffer, sizeof(buffer));
@@ -572,10 +630,12 @@ TEST test_decode_invalid_prefix(void) {
 
 TEST test_decode_success(void) {
     drip_det_t det;
+    /* clang-format off */
     uint8_t buffer[DRIP_DET_SIZE] = {
         0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
         0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
     };
+    /* clang-format on */
 
     int rc = drip_det_decode(&det, buffer, sizeof(buffer));
     ASSERT_EQ(DRIP_SUCCESS, rc);
@@ -603,6 +663,10 @@ SUITE(det_suite) {
     RUN_TEST(test_set_hda_out_of_range);
     RUN_TEST(test_set_and_get_hda);
     RUN_TEST(test_get_hda_rfc_9374_example);
+    RUN_TEST(test_role_null_pointer);
+    RUN_TEST(test_role_apex);
+    RUN_TEST(test_role_raa);
+    RUN_TEST(test_role_hda);
     RUN_TEST(test_set_hid_null_pointer);
     RUN_TEST(test_get_hid_null_pointer);
     RUN_TEST(test_set_hid_out_of_range);

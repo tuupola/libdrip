@@ -44,6 +44,20 @@ typedef enum {
 } drip_hhsi_t;
 
 /**
+ * @brief DET role determined from an HID.
+ *
+ * HID cannot distinguish HDA from UA so both map to DRIP_DET_ROLE_HDA.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9886.html#section-3
+ */
+typedef enum {
+    DRIP_DET_ROLE_UNKNOWN = 0,
+    DRIP_DET_ROLE_APEX = 1,
+    DRIP_DET_ROLE_RAA = 2,
+    DRIP_DET_ROLE_HDA = 3,
+} drip_det_role_t;
+
+/**
  * @brief Initialize a DET.
  *
  * Zeroes the DET and sets the IPv6 prefix to 2001:30::/28.
@@ -110,6 +124,20 @@ int drip_det_set_hda(drip_det_t *det, uint16_t hda);
  * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.3.2
  */
 uint16_t drip_det_get_hda(const drip_det_t *det);
+
+/**
+ * @brief Get the role of a DET from its HID.
+ *
+ * Apex is an RAA 0-3 with a reserved HDA (0, 4096, 8192 or 12288). Any other
+ * reserved HDA is an RAA. Any other HID is either HDA or UA.
+ *
+ * @param det Pointer to the DET.
+ *
+ * @return The determined role or DRIP_DET_ROLE_UNKNOWN if det is NULL.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9886.html#section-3
+ */
+drip_det_role_t drip_det_role(const drip_det_t *det);
 
 /**
  * @brief Set the Hierarchy ID (HID) of a DET.
