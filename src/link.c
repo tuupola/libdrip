@@ -298,7 +298,6 @@ int drip_link_verify_chain(
 ) {
     const drip_det_t *expected_det, *parent_det;
     const drip_hi_t *child_hi, *parent_hi;
-    uint32_t vnb, vna;
     size_t i;
     int rc;
 
@@ -329,15 +328,6 @@ int drip_link_verify_chain(
         }
         expected_det = drip_link_get_child_det(&link_array[i]);
 
-        /* If current unixtime is given make sure each link is still valid. */
-        if (unixtime != 0) {
-            vnb = drip_link_get_vnb_unixtime(&link_array[i]);
-            vna = drip_link_get_vna_unixtime(&link_array[i]);
-            if (unixtime < vnb || unixtime > vna) {
-                return DRIP_ERROR_INVALID_TIMESTAMP;
-            }
-        }
-
         /* Make sure child DET's hash matches its child HI. */
         child_hi = drip_link_get_child_hi(&link_array[i]);
         rc = drip_det_verify(expected_det, child_hi, hash_cb, NULL);
@@ -346,7 +336,7 @@ int drip_link_verify_chain(
         }
 
         /* Make sure each Link is signed by the parent HI. */
-        rc = drip_link_verify(&link_array[i], 0, verify_cb, (void *)parent_hi);
+        rc = drip_link_verify(&link_array[i], unixtime, verify_cb, (void *)parent_hi);
         if (rc != DRIP_SUCCESS) {
             return rc;
         }

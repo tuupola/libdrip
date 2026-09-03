@@ -1076,14 +1076,14 @@ TEST test_verify_chain_unixtime_expired(void) {
         links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vnb - 1,
         det_cshake128_cb, verify_ed25519
     );
-    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+    ASSERT_EQ(DRIP_ERROR_TIMESTAMP_NOT_YET_VALID, rc);
 
     /* Test one second after vna expired. */
     rc = drip_link_verify_chain(
         links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vna + 1,
         det_cshake128_cb, verify_ed25519
     );
-    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+    ASSERT_EQ(DRIP_ERROR_TIMESTAMP_EXPIRED, rc);
     PASS();
 }
 
@@ -1101,7 +1101,7 @@ TEST test_verify_chain_last_hop_unixtime_expired(void) {
         links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vnb,
         det_cshake128_cb, verify_ed25519
     );
-    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, rc);
+    ASSERT_EQ(DRIP_ERROR_TIMESTAMP_EXPIRED, rc);
     PASS();
 }
 

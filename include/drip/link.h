@@ -266,7 +266,8 @@ int drip_link_verify(
  * @retval DRIP_SUCCESS if the chain verifies.
  * @retval DRIP_ERROR_NULL_POINTER if link_array, root_det, root_hi, hash_cb,
  *         or verify_cb is NULL.
- * @retval DRIP_ERROR_INVALID_TIMESTAMP if unixtime is outside a hop VNB/VNA window.
+ * @retval DRIP_ERROR_TIMESTAMP_NOT_YET_VALID if unixtime is before a hop vnb.
+ * @retval DRIP_ERROR_TIMESTAMP_EXPIRED if unixtime is after a hop vna.
  * @retval DRIP_ERROR_CALLBACK_FAILED if a callback returned am error.
  * @retval DRIP_ERROR_VERIFICATION_FAILED if a hop DET hash or signature
  *         does not match or the chain is broken.
