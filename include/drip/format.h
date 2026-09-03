@@ -39,6 +39,8 @@ typedef enum {
     DRIP_ERROR_INVALID_IPV6_STRING = -16,
     /* DRIP_ERROR_INVALID_RAA = -17, */
     DRIP_ERROR_INVALID_DET = -18,
+    DRIP_ERROR_TIMESTAMP_NOT_YET_VALID = -19,
+    DRIP_ERROR_TIMESTAMP_EXPIRED = -20,
 } drip_status_t;
 
 typedef enum {

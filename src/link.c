@@ -245,10 +245,22 @@ int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *contex
 }
 
 int drip_link_verify(
-    const drip_link_t *link, drip_link_verify_cb_t callback, void *context
+    const drip_link_t *link, uint32_t unixtime, drip_link_verify_cb_t callback,
+    void *context
 ) {
     if (link == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (unixtime != 0) {
+        uint32_t vnb = drip_link_get_vnb_unixtime(link);
+        uint32_t vna = drip_link_get_vna_unixtime(link);
+        if (unixtime < vnb) {
+            return DRIP_ERROR_TIMESTAMP_NOT_YET_VALID;
+        }
+        if (unixtime > vna) {
+            return DRIP_ERROR_TIMESTAMP_EXPIRED;
+        }
     }
 
     size_t payload_length = SIGNED_PAYLOAD_SIZE;
@@ -334,7 +346,7 @@ int drip_link_verify_chain(
         }
 
         /* Make sure each Link is signed by the parent HI. */
-        rc = drip_link_verify(&link_array[i], verify_cb, (void *)parent_hi);
+        rc = drip_link_verify(&link_array[i], 0, verify_cb, (void *)parent_hi);
         if (rc != DRIP_SUCCESS) {
             return rc;
         }

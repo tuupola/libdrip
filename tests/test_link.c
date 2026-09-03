@@ -651,8 +651,89 @@ TEST test_sign_and_verify_success(void) {
     int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
-    rc = drip_link_verify(&link, verify_ed25519, (void *)public_key);
+    rc = drip_link_verify(&link, 0, verify_ed25519, (void *)public_key);
     ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_verify_null_ptr_link(void) {
+    int rc = drip_link_verify(NULL, 0, verify_ed25519, (void *)public_key);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_verify_null_ptr_callback(void) {
+    drip_link_t link;
+    drip_link_init(&link);
+    int rc = drip_link_verify(&link, 0, NULL, (void *)public_key);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_verify_unixtime_skipped(void) {
+    drip_link_t parent, child;
+    const drip_hi_t *parent_hi;
+
+    drip_link_decode(&parent, raa16376, sizeof(raa16376));
+    drip_link_decode(&child, hda16376_16376a, sizeof(hda16376_16376a));
+    parent_hi = drip_link_get_child_hi(&parent);
+
+    int rc = drip_link_verify(&child, 0, verify_ed25519, (void *)parent_hi);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_verify_unixtime_success(void) {
+    drip_link_t parent, child;
+    const drip_hi_t *parent_hi;
+    uint32_t vnb, vna;
+
+    drip_link_decode(&parent, raa16376, sizeof(raa16376));
+    drip_link_decode(&child, hda16376_16376a, sizeof(hda16376_16376a));
+    parent_hi = drip_link_get_child_hi(&parent);
+    vnb = drip_link_get_vnb_unixtime(&child);
+    vna = drip_link_get_vna_unixtime(&child);
+
+    int rc = drip_link_verify(&child, vnb, verify_ed25519, (void *)parent_hi);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_verify(
+        &child, vnb + (vna - vnb) / 2, verify_ed25519, (void *)parent_hi
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_verify(&child, vna, verify_ed25519, (void *)parent_hi);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_verify_unixtime_not_yet_valid(void) {
+    drip_link_t parent, child;
+    const drip_hi_t *parent_hi;
+    uint32_t vnb;
+
+    drip_link_decode(&parent, raa16376, sizeof(raa16376));
+    drip_link_decode(&child, hda16376_16376a, sizeof(hda16376_16376a));
+    parent_hi = drip_link_get_child_hi(&parent);
+    vnb = drip_link_get_vnb_unixtime(&child);
+
+    int rc = drip_link_verify(&child, vnb - 1, verify_ed25519, (void *)parent_hi);
+    ASSERT_EQ(DRIP_ERROR_TIMESTAMP_NOT_YET_VALID, rc);
+    PASS();
+}
+
+TEST test_verify_unixtime_expired(void) {
+    drip_link_t parent, child;
+    const drip_hi_t *parent_hi;
+    uint32_t vna;
+
+    drip_link_decode(&parent, raa16376, sizeof(raa16376));
+    drip_link_decode(&child, hda16376_16376a, sizeof(hda16376_16376a));
+    parent_hi = drip_link_get_child_hi(&parent);
+    vna = drip_link_get_vna_unixtime(&child);
+
+    int rc = drip_link_verify(&child, vna + 1, verify_ed25519, (void *)parent_hi);
+    ASSERT_EQ(DRIP_ERROR_TIMESTAMP_EXPIRED, rc);
     PASS();
 }
 
@@ -1148,6 +1229,12 @@ SUITE(link_suite) {
     RUN_TEST(test_sign_null_ptr_link);
     RUN_TEST(test_sign_null_ptr_callback);
     RUN_TEST(test_sign_and_verify_success);
+    RUN_TEST(test_verify_null_ptr_link);
+    RUN_TEST(test_verify_null_ptr_callback);
+    RUN_TEST(test_verify_unixtime_skipped);
+    RUN_TEST(test_verify_unixtime_success);
+    RUN_TEST(test_verify_unixtime_not_yet_valid);
+    RUN_TEST(test_verify_unixtime_expired);
     RUN_TEST(test_sign_invalid_output_length);
     RUN_TEST(test_validate_null_pointer);
     RUN_TEST(test_validate_invalid_sam_type);

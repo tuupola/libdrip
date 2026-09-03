@@ -57,7 +57,6 @@ int main(int argc, char *argv[]) {
     const char *child_hex = argv[2];
     int rc = 0;
     int length = 0;
-    uint32_t now, vnb, vna;
 
     uint8_t buffer[DRIP_LINK_SIZE];
 
@@ -103,29 +102,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    /* TODO: This should be somewhere else. */
-    now = (uint32_t)time(NULL);
-    vnb = drip_link_get_vnb_unixtime(&child_link);
-    vna = drip_link_get_vna_unixtime(&child_link);
-    if (now < vnb || now > vna) {
-        fprintf(
-            stderr, "Error: Child link timestamp now=%u vnb=%u vna=%u\n", now, vnb, vna
-        );
-        return 1;
-    }
-
-    /* TODO: This should be somewhere else. */
-    vnb = drip_link_get_vnb_unixtime(&parent_link);
-    vna = drip_link_get_vna_unixtime(&parent_link);
-    if (now < vnb || now > vna) {
-        fprintf(
-            stderr, "Error: Child link timestamp now=%u vnb=%u vna=%u\n", now, vnb, vna
-        );
-        return 1;
-    }
-
     parent_hi = drip_link_get_child_hi(&parent_link);
-    rc = drip_link_verify(&child_link, verify_ed25519, (void *)parent_hi);
+    rc = drip_link_verify(
+        &child_link, (uint32_t)time(NULL), verify_ed25519, (void *)parent_hi
+    );
 
     if (0 == rc) {
         printf("\nSignature verified.\n\n");

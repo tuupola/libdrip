@@ -225,26 +225,31 @@ int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *contex
 /**
  * @brief Verify the signature of a DRIP Link.
  *
- * Verifies the signature using the provided callback and parent HI. Parent HI
- * is the public key, pass it in the context.
+ * Verifies the signature using the provided callback, timestamp and parent HI.
+ * Parent HI is the public key, pass it in the context.
  *
  * @code
  * const drip_hi_t *parent_hi = drip_link_get_child_hi(&parent_link);
- * int rc = drip_link_verify(&child_link, verify_ed25519, (void *)parent_hi);
+ * uint32_t unixtime = (uint32_t)time(NULL);
+ * int rc = drip_link_verify(&child_link, unixtime, verify_ed25519, (void *)parent_hi);
  * @endcode
  *
  * @param link Pointer to the DRIP Link to verify.
+ * @param unixtime Unix time in seconds or 0 to ignore.
  * @param callback Callback function used to verify the signature.
  * @param context Opaque context passed to the callback.
  *
  * @retval DRIP_SUCCESS if the signature verifies.
  * @retval DRIP_ERROR_NULL_POINTER if link or callback is NULL.
+ * @retval DRIP_ERROR_TIMESTAMP_NOT_YET_VALID if unixtime is before vnb.
+ * @retval DRIP_ERROR_TIMESTAMP_EXPIRED if unixtime is after vna.
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned an error.
  *
  * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
  */
 int drip_link_verify(
-    const drip_link_t *link, drip_link_verify_cb_t callback, void *context
+    const drip_link_t *link, uint32_t unixtime, drip_link_verify_cb_t callback,
+    void *context
 );
 
 /**
