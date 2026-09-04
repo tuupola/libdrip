@@ -280,6 +280,34 @@ int drip_det_verify(
 );
 
 /**
+ * @brief Verify that a parent DET may delegate to a child DET.
+ *
+ * Uses Hierarchy ID (HID) only. HID is divided into Registered Assigning
+ * Authority (RAA) and HHIT Domain Authority (HDA). Does not verify hashes or
+ * signatures.
+ *
+ * Apex may only delegate to an RAA. RAA may only delegate to an HDA with
+ * the same RAA. HDA may only delegate to an HDA with the same RAA and HDA.
+ * UA is considered to be an HDA.
+ *
+ * @param parent Pointer to the parent DET.
+ * @param child Pointer to the child DET.
+ *
+ * @retval DRIP_SUCCESS if the delegation is valid.
+ * @retval DRIP_ERROR_NULL_POINTER if parent or child is NULL.
+ * @retval DRIP_ERROR_INVALID_APEX_DELEGATION if parent is Apex and child is not
+ *         an RAA.
+ * @retval DRIP_ERROR_INVALID_RAA_DELEGATION if parent is RAA and child is not
+ *         an HDA with the same RAA.
+ * @retval DRIP_ERROR_INVALID_HDA_DELEGATION if parent is HDA and child is not
+ *         an HDA with the same RAA and HDA.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.3
+ * @see https://www.rfc-editor.org/rfc/rfc9886.html#section-3
+ */
+int drip_det_verify_delegation(const drip_det_t *parent, const drip_det_t *child);
+
+/**
  * @brief Render a DET as a canonical IPv6 address string.
  *
  * @param det Pointer to the DET to render.

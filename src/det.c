@@ -221,6 +221,51 @@ int drip_det_verify(
     return DRIP_SUCCESS;
 }
 
+int drip_det_verify_delegation(const drip_det_t *parent, const drip_det_t *child) {
+    drip_det_role_t role;
+
+    if (parent == NULL || child == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    role = drip_det_role(parent);
+    switch (role) {
+        case DRIP_DET_ROLE_APEX:
+            /* Apex may only delegate to an RAA. */
+            if (drip_det_role(child) != DRIP_DET_ROLE_RAA) {
+                return DRIP_ERROR_INVALID_APEX_DELEGATION;
+            }
+            return DRIP_SUCCESS;
+
+        case DRIP_DET_ROLE_RAA:
+            /* RAA may only delegate to an HDA ... */
+            if (drip_det_role(child) != DRIP_DET_ROLE_HDA) {
+                return DRIP_ERROR_INVALID_RAA_DELEGATION;
+            }
+            /* ... with the same RAA. */
+            if (drip_det_get_raa(child) != drip_det_get_raa(parent)) {
+                return DRIP_ERROR_INVALID_RAA_DELEGATION;
+            }
+            return DRIP_SUCCESS;
+
+        case DRIP_DET_ROLE_HDA:
+            /* HDA may only delegate to an HDA ... */
+            if (drip_det_role(child) != DRIP_DET_ROLE_HDA) {
+                return DRIP_ERROR_INVALID_HDA_DELEGATION;
+            }
+            /* ... with the same RAA and HDA. */
+            if (drip_det_get_raa(child) != drip_det_get_raa(parent) ||
+                drip_det_get_hda(child) != drip_det_get_hda(parent)) {
+                return DRIP_ERROR_INVALID_HDA_DELEGATION;
+            }
+            return DRIP_SUCCESS;
+
+        default:
+            /* Should not happen? */
+            return DRIP_ERROR_VERIFICATION_FAILED;
+    }
+}
+
 int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_size) {
     if (det == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;

@@ -650,6 +650,91 @@ TEST test_decode_success(void) {
     PASS();
 }
 
+TEST test_verify_delegation_null_pointer(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+
+    int rc = drip_det_verify_delegation(NULL, &det);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+
+    rc = drip_det_verify_delegation(&det, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+
+    rc = drip_det_verify_delegation(NULL, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_verify_delegation_apex(void) {
+    drip_det_t parent;
+    drip_det_t child;
+
+    drip_det_init(&parent);
+    drip_det_set_raa(&parent, 0);
+    drip_det_set_hda(&parent, 0);
+
+    drip_det_init(&child);
+    drip_det_set_raa(&child, 10);
+    drip_det_set_hda(&child, 0);
+    ASSERT_EQ(DRIP_SUCCESS, drip_det_verify_delegation(&parent, &child));
+
+    drip_det_set_hda(&child, 20);
+    ASSERT_EQ(DRIP_ERROR_INVALID_APEX_DELEGATION, drip_det_verify_delegation(&parent, &child));
+
+    drip_det_set_raa(&child, 1);
+    drip_det_set_hda(&child, 0);
+    ASSERT_EQ(DRIP_ERROR_INVALID_APEX_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    PASS();
+}
+
+TEST test_verify_delegation_raa(void) {
+    drip_det_t parent;
+    drip_det_t child;
+
+    drip_det_init(&parent);
+    drip_det_set_raa(&parent, 10);
+    drip_det_set_hda(&parent, 0);
+
+    drip_det_init(&child);
+    drip_det_set_raa(&child, 10);
+    drip_det_set_hda(&child, 20);
+    ASSERT_EQ(DRIP_SUCCESS, drip_det_verify_delegation(&parent, &child));
+
+    drip_det_set_raa(&child, 11);
+    ASSERT_EQ(DRIP_ERROR_INVALID_RAA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+
+    drip_det_set_raa(&child, 10);
+    drip_det_set_hda(&child, 0);
+    ASSERT_EQ(DRIP_ERROR_INVALID_RAA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    PASS();
+}
+
+TEST test_verify_delegation_hda(void) {
+    drip_det_t parent;
+    drip_det_t child;
+
+    drip_det_init(&parent);
+    drip_det_set_raa(&parent, 10);
+    drip_det_set_hda(&parent, 20);
+
+    drip_det_init(&child);
+    drip_det_set_raa(&child, 10);
+    drip_det_set_hda(&child, 20);
+    ASSERT_EQ(DRIP_SUCCESS, drip_det_verify_delegation(&parent, &child));
+
+    drip_det_set_hda(&child, 21);
+    ASSERT_EQ(DRIP_ERROR_INVALID_HDA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+
+    drip_det_set_raa(&child, 11);
+    drip_det_set_hda(&child, 20);
+    ASSERT_EQ(DRIP_ERROR_INVALID_HDA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+
+    drip_det_set_raa(&child, 10);
+    drip_det_set_hda(&child, 0);
+    ASSERT_EQ(DRIP_ERROR_INVALID_HDA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    PASS();
+}
+
 SUITE(det_suite) {
     RUN_TEST(test_init_null_pointer);
     RUN_TEST(test_init);
@@ -709,4 +794,8 @@ SUITE(det_suite) {
     RUN_TEST(test_decode_buffer_too_small);
     RUN_TEST(test_decode_invalid_prefix);
     RUN_TEST(test_decode_success);
+    RUN_TEST(test_verify_delegation_null_pointer);
+    RUN_TEST(test_verify_delegation_apex);
+    RUN_TEST(test_verify_delegation_raa);
+    RUN_TEST(test_verify_delegation_hda);
 }
