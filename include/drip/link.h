@@ -268,9 +268,15 @@ int drip_link_verify(
  *         or verify_cb is NULL.
  * @retval DRIP_ERROR_TIMESTAMP_NOT_YET_VALID if unixtime is before a hop vnb.
  * @retval DRIP_ERROR_TIMESTAMP_EXPIRED if unixtime is after a hop vna.
- * @retval DRIP_ERROR_CALLBACK_FAILED if a callback returned am error.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if a callback returned an error.
  * @retval DRIP_ERROR_VERIFICATION_FAILED if a hop DET hash or signature
  *         does not match or the chain is broken.
+ * @retval DRIP_ERROR_INVALID_APEX_DELEGATION if a hop parent is Apex and child
+ *         is not an RAA.
+ * @retval DRIP_ERROR_INVALID_RAA_DELEGATION if a hop parent is RAA and child
+ *         is not an HDA with the same RAA.
+ * @retval DRIP_ERROR_INVALID_HDA_DELEGATION if a hop parent is HDA and child
+ *         is not an HDA with the same RAA and HDA.
  *
  * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-3.1.2
  * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2

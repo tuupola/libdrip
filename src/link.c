@@ -328,6 +328,12 @@ int drip_link_verify_chain(
         }
         expected_det = drip_link_get_child_det(&link_array[i]);
 
+        /* Make sure parent DET can deledate to the child. */
+        rc = drip_det_verify_delegation(parent_det, expected_det);
+        if (rc != DRIP_SUCCESS) {
+            return rc;
+        }
+
         /* Make sure child DET's hash matches its child HI. */
         child_hi = drip_link_get_child_hi(&link_array[i]);
         rc = drip_det_verify(expected_det, child_hi, hash_cb, NULL);

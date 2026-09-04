@@ -989,6 +989,50 @@ TEST test_verify_chain_parent_det_mismatch(void) {
     PASS();
 }
 
+TEST test_verify_chain_invalid_raa_delegation(void) {
+    drip_link_t root, links[3];
+    drip_det_t child_det;
+
+    /* root child DET is RAA 16376, HDA 0 */
+    init_full_chain(&root, links);
+    /* links[0] child_det is RAA 16376, HDA 16376 */
+    memcpy(&child_det, drip_link_get_child_det(&links[0]), sizeof(child_det));
+    /* child_det is now RAA 16376, HDA 0 */
+    drip_det_set_hda(&child_det, 0);
+    /* links[0] child_det is now RAA 16376, HDA 0 */
+    drip_link_set_child_det(&links[0], &child_det);
+
+    int rc = drip_link_verify_chain(
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
+    );
+    /* RAA cannot delegate to an RAA */
+    ASSERT_EQ(DRIP_ERROR_INVALID_RAA_DELEGATION, rc);
+    PASS();
+}
+
+TEST test_verify_chain_invalid_hda_delegation(void) {
+    drip_link_t root, links[3];
+    drip_det_t child_det;
+
+    /* root child DET is RAA 16376, HDA 0 */
+    init_full_chain(&root, links);
+    /* links[2] child_det is RAA 16376, HDA 16376 */
+    memcpy(&child_det, drip_link_get_child_det(&links[2]), sizeof(child_det));
+    /* child_det is now RAA 16376, HDA 21 */
+    drip_det_set_hda(&child_det, 21);
+    /* links[2] child_det is now RAA 16376, HDA 21 */
+    drip_link_set_child_det(&links[2], &child_det);
+
+    int rc = drip_link_verify_chain(
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
+    );
+    /* HDA cannot delegate to an HDA with a different HDA */
+    ASSERT_EQ(DRIP_ERROR_INVALID_HDA_DELEGATION, rc);
+    PASS();
+}
+
 TEST test_verify_chain_unixtime_skipped(void) {
     drip_link_t root, links[3];
     uint32_t now = 1600000000;
@@ -1249,6 +1293,8 @@ SUITE(link_suite) {
     RUN_TEST(test_verify_chain_null_ptr);
     RUN_TEST(test_verify_chain_empty);
     RUN_TEST(test_verify_chain_parent_det_mismatch);
+    RUN_TEST(test_verify_chain_invalid_raa_delegation);
+    RUN_TEST(test_verify_chain_invalid_hda_delegation);
     RUN_TEST(test_verify_chain_unixtime_skipped);
     RUN_TEST(test_verify_chain_unixtime_success);
     RUN_TEST(test_verify_chain_unixtime_expired);
