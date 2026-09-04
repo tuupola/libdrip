@@ -130,13 +130,11 @@ uint32_t drip_link_get_vna(const drip_link_t *link);
 int drip_link_set_vna_unixtime(drip_link_t *link, uint32_t unixtime);
 
 /**
- * @brief Get the vna timestamp.
+ * @brief Get the vna as a unix timestamp.
  *
- * Returned as seconds since DRIP_TIMESTAMP_EPOCH.
+ * @param link Pointer to the link.
  *
- * @param manifest Pointer to the manifest.
- *
- * @return The vna timestamp or 0 if manifest is NULL.
+ * @return The vna as unix timestamp or 0 if link is NULL.
  */
 uint32_t drip_link_get_vna_unixtime(const drip_link_t *link);
 
@@ -153,13 +151,11 @@ uint32_t drip_link_get_vna_unixtime(const drip_link_t *link);
 int drip_link_set_vnb_unixtime(drip_link_t *link, uint32_t unixtime);
 
 /**
- * @brief Get the vnb timestamp.
+ * @brief Get the vnb as a unix timestamp.
  *
- * Returned as seconds since DRIP_TIMESTAMP_EPOCH.
+ * @param link Pointer to the link.
  *
- * @param manifest Pointer to the manifest.
- *
- * @return The vnb timestamp or 0 if manifest is NULL.
+ * @return The vnb as unix timestamp or 0 if link is NULL.
  */
 uint32_t drip_link_get_vnb_unixtime(const drip_link_t *link);
 
