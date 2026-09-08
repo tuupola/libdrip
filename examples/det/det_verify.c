@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,13 +5,6 @@
 
 #include "drip/det.h"
 #include "SP800-185.h"
-
-/* clang-format off */
-static const uint8_t DRIP_DET_CONTEXT_ID[16] = {
-    0x00, 0xB5, 0xA6, 0x9C, 0x79, 0x5D, 0xF5, 0xD5,
-    0xF0, 0x08, 0x7F, 0x56, 0x84, 0x3F, 0x2C, 0x40
-};
-/* clang-format on */
 
 static void hex_string(const void *data, size_t size) {
     const uint8_t *p = data;
@@ -44,14 +36,15 @@ static int hex_to_bytes(const char *hex, uint8_t *bytes, size_t max_length) {
     return (int)byte_length;
 }
 
-static int det_cshake128_cb(
-    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+static int cshake128_cb(
+    void *context, const uint8_t *input, size_t input_length,
+    const uint8_t *customization, size_t customization_length, uint8_t *buffer,
     size_t buffer_size, size_t *output_length
 ) {
     (void)context;
     int rc = cSHAKE128(
-        input, input_length * 8, buffer, buffer_size * 8, NULL, 0, DRIP_DET_CONTEXT_ID,
-        sizeof(DRIP_DET_CONTEXT_ID) * 8
+        input, input_length * 8, buffer, buffer_size * 8, NULL, 0, customization,
+        customization_length * 8
     );
     if (rc != 0) {
         return rc;
@@ -97,7 +90,7 @@ int main(int argc, char *argv[]) {
     printf("DET: ");
     hex_string(&det, DRIP_DET_SIZE);
 
-    rc = drip_det_verify(&det, &hi, det_cshake128_cb, NULL);
+    rc = drip_det_verify(&det, &hi, cshake128_cb, NULL);
     if (rc == DRIP_SUCCESS) {
         printf("Verification: OK\n");
         return 0;

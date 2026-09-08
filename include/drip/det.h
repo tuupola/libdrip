@@ -17,6 +17,12 @@
 /** @brief Size of a DET in bytes. */
 #define DRIP_DET_SIZE 16
 
+/** @brief Length of the hash customization string in bytes. */
+#define DRIP_DET_CONTEXT_ID_SIZE 16
+
+/** @brief RFC 9374 ORCHID Context ID used as the hash customization string. */
+extern const uint8_t DRIP_DET_CONTEXT_ID[DRIP_DET_CONTEXT_ID_SIZE];
+
 /**
  * @brief 16-byte DRIP Entity Tag (DET).
  *

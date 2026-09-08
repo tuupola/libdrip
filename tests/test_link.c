@@ -26,11 +26,6 @@ static const uint8_t secret_key[64] = {
     0x5e, 0xa8, 0xaa, 0x4b, 0x15, 0xfb, 0x2e, 0x5e
 };
 
-static const uint8_t DRIP_DET_CONTEXT_ID[16] = {
-    0x00, 0xB5, 0xA6, 0x9C, 0x79, 0x5D, 0xF5, 0xD5,
-    0xF0, 0x08, 0x7F, 0x56, 0x84, 0x3F, 0x2C, 0x40
-};
-
 /* https://github.com/tuupola/drip-scripts/tree/testing/testing */
 /* raa16376.eds with SAM type 0x01 prepended */
 static const uint8_t raa16376[] = {
@@ -124,10 +119,13 @@ static int verify_ed25519(
 }
 
 static int dummy_hash_cb(
-    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    void *context, const uint8_t *input, size_t input_length,
+    const uint8_t *customization, size_t customization_length, uint8_t *buffer,
     size_t buffer_size, size_t *output_length
 ) {
     (void)context;
+    (void)customization;
+    (void)customization_length;
     (void)buffer_size;
     size_t len = input_length < DRIP_HASH_SIZE ? input_length : DRIP_HASH_SIZE;
     memcpy(buffer, input, len);
@@ -136,12 +134,15 @@ static int dummy_hash_cb(
 }
 
 static int failing_hash_cb(
-    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    void *context, const uint8_t *input, size_t input_length,
+    const uint8_t *customization, size_t customization_length, uint8_t *buffer,
     size_t buffer_size, size_t *output_length
 ) {
     (void)context;
     (void)input;
     (void)input_length;
+    (void)customization;
+    (void)customization_length;
     (void)buffer;
     (void)buffer_size;
     (void)output_length;
@@ -161,13 +162,14 @@ static int dummy_verify_cb(
 }
 
 static int det_cshake128_cb(
-    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    void *context, const uint8_t *input, size_t input_length,
+    const uint8_t *customization, size_t customization_length, uint8_t *buffer,
     size_t buffer_size, size_t *output_length
 ) {
     (void)context;
     int rc = cSHAKE128(
-        input, input_length * 8, buffer, buffer_size * 8, NULL, 0, DRIP_DET_CONTEXT_ID,
-        sizeof(DRIP_DET_CONTEXT_ID) * 8
+        input, input_length * 8, buffer, buffer_size * 8, NULL, 0, customization,
+        customization_length * 8
     );
     if (rc != 0) {
         return rc;

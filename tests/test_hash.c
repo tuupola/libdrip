@@ -6,14 +6,13 @@
 
 /* Just dummy callback to test it is called. */
 static int pass_through_callback(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length,
+    const uint8_t *customization, size_t customization_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 ) {
     (void)context;
+    (void)customization;
+    (void)customization_length;
     (void)buffer_size;
     size_t len = input_length < DRIP_HASH_SIZE ? input_length : DRIP_HASH_SIZE;
     memcpy(buffer, input, len);
@@ -23,16 +22,15 @@ static int pass_through_callback(
 
 /* Just dummy callback to test it is called. */
 static int failing_callback(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length,
+    const uint8_t *customization, size_t customization_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 ) {
     (void)context;
     (void)input;
     (void)input_length;
+    (void)customization;
+    (void)customization_length;
     (void)buffer;
     (void)buffer_size;
     (void)output_length;
@@ -41,14 +39,14 @@ static int failing_callback(
 
 TEST test_null_ptr_input(void) {
     drip_hash_t hash;
-    int rc = drip_hash(NULL, 0, &hash, pass_through_callback, NULL);
+    int rc = drip_hash(NULL, 0, NULL, 0, &hash, pass_through_callback, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
 
 TEST test_null_ptr_hash(void) {
     uint8_t input[] = {0x01, 0x02};
-    int rc = drip_hash(input, sizeof(input), NULL, pass_through_callback, NULL);
+    int rc = drip_hash(input, sizeof(input), NULL, 0, NULL, pass_through_callback, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -56,7 +54,15 @@ TEST test_null_ptr_hash(void) {
 TEST test_null_ptr_callback(void) {
     drip_hash_t hash;
     uint8_t input[] = {0x01, 0x02};
-    int rc = drip_hash(input, sizeof(input), &hash, NULL, NULL);
+    int rc = drip_hash(input, sizeof(input), NULL, 0, &hash, NULL, NULL);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_null_ptr_customization(void) {
+    drip_hash_t hash;
+    uint8_t input[] = {0x01, 0x02};
+    int rc = drip_hash(input, sizeof(input), NULL, 1, &hash, pass_through_callback, NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -64,7 +70,7 @@ TEST test_null_ptr_callback(void) {
 TEST test_hash_len(void) {
     drip_hash_t hash;
     uint8_t input[] = {0x01, 0x02};
-    int rc = drip_hash(input, sizeof(input), &hash, pass_through_callback, NULL);
+    int rc = drip_hash(input, sizeof(input), NULL, 0, &hash, pass_through_callback, NULL);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     PASS();
 }
@@ -72,7 +78,7 @@ TEST test_hash_len(void) {
 TEST test_callback(void) {
     drip_hash_t hash;
     uint8_t input[] = {0x01, 0x02};
-    int rc = drip_hash(input, sizeof(input), &hash, failing_callback, NULL);
+    int rc = drip_hash(input, sizeof(input), NULL, 0, &hash, failing_callback, NULL);
     ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
 }
@@ -80,7 +86,7 @@ TEST test_callback(void) {
 TEST test_success(void) {
     drip_hash_t hash;
     uint8_t input[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-    int rc = drip_hash(input, sizeof(input), &hash, pass_through_callback, NULL);
+    int rc = drip_hash(input, sizeof(input), NULL, 0, &hash, pass_through_callback, NULL);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_MEM_EQ(input, hash, DRIP_HASH_SIZE);
     PASS();
@@ -90,6 +96,7 @@ SUITE(hash_suite) {
     RUN_TEST(test_null_ptr_input);
     RUN_TEST(test_null_ptr_hash);
     RUN_TEST(test_null_ptr_callback);
+    RUN_TEST(test_null_ptr_customization);
     RUN_TEST(test_hash_len);
     RUN_TEST(test_callback);
     RUN_TEST(test_success);

@@ -4,6 +4,13 @@
 #include "drip/det.h"
 #include "drip/format.h"
 
+/* clang-format off */
+const uint8_t DRIP_DET_CONTEXT_ID[DRIP_DET_CONTEXT_ID_SIZE] = {
+    0x00, 0xB5, 0xA6, 0x9C, 0x79, 0x5D, 0xF5, 0xD5,
+    0xF0, 0x08, 0x7F, 0x56, 0x84, 0x3F, 0x2C, 0x40
+};
+/* clang-format on */
+
 /*
  *   +------------+---------+---------+--------+------------------+
  *   |  28 bits   | 14 bits | 14 bits | 8 bits |     64 bits      |
@@ -174,7 +181,10 @@ int drip_det_update_hash(
     memcpy(&input[0], &(*det)[0], 8); /* Prefix|HID|HHSI */
     memcpy(&input[8], hi, sizeof(drip_hi_t)); /* HOST_ID */
 
-    rc = drip_hash(input, sizeof(input), &hash, callback, context);
+    rc = drip_hash(
+        input, sizeof(input), DRIP_DET_CONTEXT_ID, DRIP_DET_CONTEXT_ID_SIZE, &hash,
+        callback, context
+    );
     if (rc != DRIP_SUCCESS) {
         return rc;
     }
@@ -208,7 +218,10 @@ int drip_det_verify(
     memcpy(&input[0], &(*det)[0], 8); /* Prefix|HID|HHSI */
     memcpy(&input[8], hi, sizeof(drip_hi_t)); /* HOST_ID */
 
-    rc = drip_hash(input, sizeof(input), &hash, callback, context);
+    rc = drip_hash(
+        input, sizeof(input), DRIP_DET_CONTEXT_ID, DRIP_DET_CONTEXT_ID_SIZE, &hash,
+        callback, context
+    );
     if (rc != DRIP_SUCCESS) {
         return rc;
     }

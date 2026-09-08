@@ -136,7 +136,10 @@ int drip_manifest_update_current_hash(
 
     size_t output_length = 0;
     int rc = callback(
-        context, buffer, offset, manifest->current_hash, DRIP_HASH_SIZE, &output_length
+        context, buffer, offset, (const uint8_t *)DRIP_MANIFEST_HASH_CUSTOMIZATION,
+        sizeof(DRIP_MANIFEST_HASH_CUSTOMIZATION) - 1, manifest->current_hash,
+        DRIP_HASH_SIZE,
+        &output_length
     );
 
     if (rc != 0) {

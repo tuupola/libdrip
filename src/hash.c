@@ -4,16 +4,20 @@
 #include "drip/hash.h"
 
 int drip_hash(
-    const uint8_t *input, size_t input_length, drip_hash_t *hash, drip_hash_cb_t callback,
-    void *context
+    const uint8_t *input, size_t input_length, const uint8_t *customization,
+    size_t customization_length, drip_hash_t *hash, drip_hash_cb_t callback, void *context
 ) {
     if (input == NULL || hash == NULL || callback == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+    if (customization == NULL && customization_length > 0) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
     size_t output_length = 0;
     int rc = callback(
-        context, input, input_length, (uint8_t *)hash, DRIP_HASH_SIZE, &output_length
+        context, input, input_length, customization, customization_length,
+        (uint8_t *)hash, DRIP_HASH_SIZE, &output_length
     );
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;

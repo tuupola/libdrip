@@ -242,6 +242,8 @@ static int hash_cb_short_write(
     void *context,
     const uint8_t *input,
     size_t input_length,
+    const uint8_t *customization,
+    size_t customization_length,
     uint8_t *buffer,
     size_t buffer_size,
     size_t *output_length
@@ -249,6 +251,8 @@ static int hash_cb_short_write(
     (void)context;
     (void)input;
     (void)input_length;
+    (void)customization;
+    (void)customization_length;
     (void)buffer_size;
     memset(buffer, 0xaa, 4);
     *output_length = 4;
@@ -259,6 +263,8 @@ static int hash_cb_zero_write(
     void *context,
     const uint8_t *input,
     size_t input_length,
+    const uint8_t *customization,
+    size_t customization_length,
     uint8_t *buffer,
     size_t buffer_size,
     size_t *output_length
@@ -266,6 +272,8 @@ static int hash_cb_zero_write(
     (void)context;
     (void)input;
     (void)input_length;
+    (void)customization;
+    (void)customization_length;
     (void)buffer;
     (void)buffer_size;
     *output_length = 0;
