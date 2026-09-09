@@ -1,0 +1,27 @@
+site_name: Drone Remote Identification Protocol
+site_description: Drone Remote Identification Protocol (DRIP)library written in C programming language.
+site_url: https://www.libdrip.org/latest/
+repo_url: https://github.com/tuupola/libdrip
+edit_uri: ""
+theme:
+  name: readthedocs
+  custom_dir: scripts/overrides
+plugins:
+  - llmstxt:
+      full_output: llms-full.txt
+      sections:
+        Docs:
+          - index.md: Project overview
+        API:
+          - api/*.md
+nav:
+  - Home: index.md
+  - API:
+      - DET: api/det.md
+      - Format: api/format.md
+      - Hash: api/hash.md
+      - Link: api/link.md
+      - Manifest: api/manifest.md
+exclude_docs: |
+  /xml/
+  /tmp/

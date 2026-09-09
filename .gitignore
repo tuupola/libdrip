@@ -1,0 +1,7 @@
+*.o
+.cache/
+build/
+site/
+docs/api/
+docs/xml/
+tests/test_runner
