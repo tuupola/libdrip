@@ -7,6 +7,9 @@ int drip_hash(
     const uint8_t *input, size_t input_length, const uint8_t *customization,
     size_t customization_length, drip_hash_t *hash, drip_hash_cb_t callback, void *context
 ) {
+    size_t output_length = 0;
+    int rc;
+
     if (input == NULL || hash == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -14,13 +17,15 @@ int drip_hash(
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t output_length = 0;
-    int rc = callback(
+    rc = callback(
         context, input, input_length, customization, customization_length,
         (uint8_t *)hash, DRIP_HASH_SIZE, &output_length
     );
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
+    }
+    if (output_length != DRIP_HASH_SIZE) {
+        return DRIP_ERROR_INVALID_LENGTH;
     }
 
     return DRIP_SUCCESS;

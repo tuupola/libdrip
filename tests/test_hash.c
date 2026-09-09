@@ -20,6 +20,54 @@ static int pass_through_callback(
     return 0;
 }
 
+static int short_write_callback(
+    void *context, const uint8_t *input, size_t input_length,
+    const uint8_t *customization, size_t customization_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)customization;
+    (void)customization_length;
+    (void)buffer_size;
+    memset(buffer, 0xaa, 4);
+    *output_length = 4;
+    return 0;
+}
+
+static int zero_write_callback(
+    void *context, const uint8_t *input, size_t input_length,
+    const uint8_t *customization, size_t customization_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)customization;
+    (void)customization_length;
+    (void)buffer;
+    (void)buffer_size;
+    *output_length = 0;
+    return 0;
+}
+
+static int long_write_callback(
+    void *context, const uint8_t *input, size_t input_length,
+    const uint8_t *customization, size_t customization_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)customization;
+    (void)customization_length;
+    (void)buffer;
+    (void)buffer_size;
+    *output_length = 16;
+    return 0;
+}
+
 /* Just dummy callback to test it is called. */
 static int failing_callback(
     void *context, const uint8_t *input, size_t input_length,
@@ -75,6 +123,21 @@ TEST test_hash_len(void) {
     PASS();
 }
 
+TEST test_invalid_output_length(void) {
+    drip_hash_t hash;
+    uint8_t input[] = {0x01, 0x02};
+
+    int rc = drip_hash(input, sizeof(input), NULL, 0, &hash, short_write_callback, NULL);
+    ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
+
+    rc = drip_hash(input, sizeof(input), NULL, 0, &hash, zero_write_callback, NULL);
+    ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
+
+    rc = drip_hash(input, sizeof(input), NULL, 0, &hash, long_write_callback, NULL);
+    ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
+    PASS();
+}
+
 TEST test_callback(void) {
     drip_hash_t hash;
     uint8_t input[] = {0x01, 0x02};
@@ -98,6 +161,7 @@ SUITE(hash_suite) {
     RUN_TEST(test_null_ptr_callback);
     RUN_TEST(test_null_ptr_customization);
     RUN_TEST(test_hash_len);
+    RUN_TEST(test_invalid_output_length);
     RUN_TEST(test_callback);
     RUN_TEST(test_success);
 }

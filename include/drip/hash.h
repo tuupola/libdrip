@@ -36,6 +36,24 @@ typedef int (*drip_hash_cb_t)(
     size_t buffer_size, size_t *output_length
 );
 
+/**
+ * @brief Hash input using a caller supplied callback.
+ *
+ * @param input Pointer to the payload to hash.
+ * @param input_length Length of the payload in bytes.
+ * @param customization Pointer to the hash customization string or NULL.
+ * @param customization_length Length of the customization string in bytes.
+ * @param hash Output buffer for the hash.
+ * @param callback Callback function used to generate the hash.
+ * @param context Opaque context passed to the callback.
+ *
+ * @retval DRIP_SUCCESS if the hash was generated.
+ * @retval DRIP_ERROR_NULL_POINTER if input or hash or callback is NULL or if
+ *         customization is NULL with customization_length > 0.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned an error.
+ * @retval DRIP_ERROR_INVALID_LENGTH if resulting hash size does not match
+ *         DRIP_HASH_SIZE.
+ */
 int drip_hash(
     const uint8_t *input, size_t input_length, const uint8_t *customization,
     size_t customization_length, drip_hash_t *hash, drip_hash_cb_t callback, void *context

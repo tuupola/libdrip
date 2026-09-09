@@ -236,6 +236,8 @@ const drip_hash_t *drip_det_get_hash(const drip_det_t *det);
  * @retval DRIP_SUCCESS if the hash was stored.
  * @retval DRIP_ERROR_NULL_POINTER if det or hi or callback is NULL.
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned an error.
+ * @retval DRIP_ERROR_INVALID_LENGTH if resulting hash size does not match
+ *         DRIP_HASH_SIZE.
  *
  * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.5.2
  */
@@ -277,6 +279,8 @@ int drip_det_validate(const drip_det_t *det);
  * @retval DRIP_SUCCESS if the hash matches.
  * @retval DRIP_ERROR_NULL_POINTER if det or hi or callback is NULL.
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
+ * @retval DRIP_ERROR_INVALID_LENGTH if resulting hash size does not match
+ *         DRIP_HASH_SIZE.
  * @retval DRIP_ERROR_VERIFICATION_FAILED if the hash does not match.
  *
  * @see https://www.rfc-editor.org/rfc/rfc9374.html#section-3.5.2
