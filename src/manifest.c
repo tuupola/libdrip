@@ -115,12 +115,14 @@ const drip_hash_t *drip_manifest_get_current_hash(const drip_manifest_t *manifes
 int drip_manifest_update_current_hash(
     drip_manifest_t *manifest, drip_hash_cb_t callback, void *context
 ) {
+    /* current hash + previous hash + DRIP_MANIFEST_EVIDENCE_MAX * evidence hash */
+    uint8_t buffer[DRIP_HASH_SIZE * (2 + DRIP_MANIFEST_EVIDENCE_MAX)];
+    size_t offset = 0;
+    int rc;
+
     if (manifest == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
-
-    uint8_t buffer[DRIP_HASH_SIZE * (2 + DRIP_MANIFEST_EVIDENCE_MAX)];
-    size_t offset = 0;
 
     memcpy(buffer + offset, manifest->previous_hash, DRIP_HASH_SIZE);
     offset += DRIP_HASH_SIZE;
@@ -134,20 +136,13 @@ int drip_manifest_update_current_hash(
         offset += DRIP_HASH_SIZE;
     }
 
-    size_t output_length = 0;
-    int rc = callback(
-        context, buffer, offset, (const uint8_t *)DRIP_MANIFEST_HASH_CUSTOMIZATION,
-        sizeof(DRIP_MANIFEST_HASH_CUSTOMIZATION) - 1, manifest->current_hash,
-        DRIP_HASH_SIZE,
-        &output_length
+    rc = drip_hash(
+        buffer, offset, (const uint8_t *)DRIP_MANIFEST_HASH_CUSTOMIZATION,
+        sizeof(DRIP_MANIFEST_HASH_CUSTOMIZATION) - 1, &manifest->current_hash, callback,
+        context
     );
-
-    if (rc != 0) {
-        return DRIP_ERROR_CALLBACK_FAILED;
-    }
-
-    if (output_length != DRIP_HASH_SIZE) {
-        return DRIP_ERROR_INVALID_LENGTH;
+    if (rc != DRIP_SUCCESS) {
+        return rc;
     }
 
     return DRIP_SUCCESS;

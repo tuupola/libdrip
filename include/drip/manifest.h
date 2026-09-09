@@ -173,6 +173,25 @@ uint32_t drip_manifest_get_vnb_unixtime(const drip_manifest_t *manifest);
 const drip_hash_t *drip_manifest_get_previous_hash(const drip_manifest_t *manifest);
 int drip_manifest_set_previous_hash(drip_manifest_t *manifest, const drip_hash_t *hash);
 const drip_hash_t *drip_manifest_get_current_hash(const drip_manifest_t *manifest);
+
+/**
+ * @brief Update the current hash of a manifest.
+ *
+ * Hashes the previous hash a zeroed current hash and the evidence hashes
+ * using the caller supplied callback.
+ *
+ * @param manifest Pointer to the manifest to modify.
+ * @param callback Callback function used to generate the hash.
+ * @param context Opaque context passed to the callback.
+ *
+ * @retval DRIP_SUCCESS if the hash was stored.
+ * @retval DRIP_ERROR_NULL_POINTER if manifest or callback is NULL.
+ * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned an error.
+ * @retval DRIP_ERROR_INVALID_LENGTH if resulting hash size does not match
+ *         DRIP_HASH_SIZE.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.4.3
+ */
 int drip_manifest_update_current_hash(
     drip_manifest_t *manifest, drip_hash_cb_t callback, void *context
 );
