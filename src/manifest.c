@@ -137,8 +137,8 @@ int drip_manifest_update_current_hash(
     }
 
     rc = drip_hash(
-        buffer, offset, (const uint8_t *)DRIP_MANIFEST_HASH_CUSTOMIZATION,
-        sizeof(DRIP_MANIFEST_HASH_CUSTOMIZATION) - 1, &manifest->current_hash, callback,
+        buffer, offset, (const uint8_t *)DRIP_AUTH_HASH_CUSTOMIZATION,
+        sizeof(DRIP_AUTH_HASH_CUSTOMIZATION) - 1, &manifest->current_hash, callback,
         context
     );
     if (rc != DRIP_SUCCESS) {

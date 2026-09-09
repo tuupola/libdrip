@@ -9,6 +9,9 @@
 
 #define DRIP_HASH_SIZE 8
 
+/** @brief RFC 9575 hash customization string for Remote ID authentication hashes. */
+#define DRIP_AUTH_HASH_CUSTOMIZATION "Remote ID Auth Hash"
+
 typedef uint8_t drip_hash_t[DRIP_HASH_SIZE];
 
 static_assert(sizeof(drip_hash_t) == DRIP_HASH_SIZE, "drip_hash_t size mismatch");

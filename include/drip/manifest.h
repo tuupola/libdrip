@@ -16,9 +16,6 @@
 #define DRIP_MANIFEST_MIN_SIZE 113 /* when zero hashes */
 #define DRIP_MANIFEST_MAX_SIZE 201 /* when 11 hashes */
 
-/** @brief RFC 9575 hash customization string for Remote ID authentication hashes. */
-#define DRIP_MANIFEST_HASH_CUSTOMIZATION "Remote ID Auth Hash"
-
 typedef struct drip_manifest {
     uint8_t sam_type;
 
