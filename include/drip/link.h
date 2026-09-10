@@ -9,6 +9,7 @@
 #include "drip/format.h"
 
 #define DRIP_LINK_SIZE 137
+#define DRIP_LINK_CHAIN_MAX_HOPS 8
 
 /**
  * @brief Callback function type for producing link signatures.
@@ -281,6 +282,33 @@ int drip_link_verify_chain(
     const drip_link_t *link_array, size_t link_count, const drip_det_t *root_det,
     const drip_hi_t *root_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
     drip_link_verify_cb_t verify_cb
+);
+
+/**
+ * @brief Filter an array of DRIP Links that belong to the chain of a UA.
+ *
+ * Use this to filter and sort an array of Links before passing them
+ * to drip_link_verify_chain() function. Output hops are in root-to-UA
+ * order. A self-signed Link is the root identity and is omitted.
+ * Structurally invalid Links are skipped.
+ *
+ * @param in_array Input array of Links.
+ * @param in_count Number of Links in in_array.
+ * @param ua_det UA DET to filter with.
+ * @param out_array Output array for the filtered chain.
+ * @param out_capacity Output array capacity.
+ * @param out_count Receives the number of hops written to the output array.
+ *
+ * @retval DRIP_SUCCESS on success including when result is a partial chain or
+ *         an empty array.
+ * @retval DRIP_ERROR_NULL_POINTER if in_array, ua_det, out_array or
+ *         out_count is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if out_capacity is too small.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if hops exceed DRIP_LINK_CHAIN_MAX_HOPS.
+ */
+int drip_link_filter_chain(
+    const drip_link_t *in_array, size_t in_count, const drip_det_t *ua_det,
+    drip_link_t *out_array, size_t out_capacity, size_t *out_count
 );
 
 /**

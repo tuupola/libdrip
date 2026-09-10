@@ -1226,6 +1226,225 @@ TEST test_verify_chain_fixture_full_chain(void) {
     PASS();
 }
 
+TEST test_filter_chain_null_ptr(void) {
+    drip_link_t in[1];
+    drip_link_t out[1];
+    drip_det_t ua_det;
+    size_t out_count;
+
+    drip_link_init(&in[0]);
+    memset(&ua_det, 0, sizeof(ua_det));
+
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_filter_chain(NULL, 1, &ua_det, out, 1, &out_count)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_filter_chain(in, 1, NULL, out, 1, &out_count)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_filter_chain(in, 1, &ua_det, NULL, 1, &out_count)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_filter_chain(in, 1, &ua_det, out, 1, NULL)
+    );
+    PASS();
+}
+
+TEST test_filter_chain_empty(void) {
+    drip_link_t in[1];
+    drip_link_t out[1];
+    drip_det_t ua_det;
+    size_t out_count = 99;
+
+    drip_link_init(&in[0]);
+    memset(&ua_det, 0, sizeof(ua_det));
+
+    int rc = drip_link_filter_chain(in, 0, &ua_det, out, 1, &out_count);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(0, out_count);
+    PASS();
+}
+
+TEST test_filter_chain_ua_not_present(void) {
+    drip_link_t root, links[3], all[4];
+    drip_link_t out[4];
+    drip_det_t ua_det;
+    size_t out_count = 99;
+
+    init_full_chain(&root, links);
+    all[0] = links[2];
+    all[1] = links[1];
+    all[2] = links[0];
+    all[3] = root;
+    memset(&ua_det, 0, sizeof(ua_det));
+
+    int rc = drip_link_filter_chain(all, 4, &ua_det, out, 4, &out_count);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(0, out_count);
+    PASS();
+}
+
+TEST test_filter_chain_unordered_and_extra(void) {
+    drip_link_t root, links[3];
+    drip_link_t in[5];
+    drip_link_t out[4];
+    size_t out_count;
+
+    init_full_chain(&root, links);
+    in[0] = links[2];
+    in[1] = links[1];
+    drip_link_init(&in[2]);
+    in[3] = links[0];
+    in[4] = root;
+
+    int rc = drip_link_filter_chain(
+        in, 5, drip_link_get_child_det(&links[2]), out, 4, &out_count
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(3, out_count);
+    ASSERT_MEM_EQ(&links[0], &out[0], sizeof(drip_link_t));
+    ASSERT_MEM_EQ(&links[1], &out[1], sizeof(drip_link_t));
+    ASSERT_MEM_EQ(&links[2], &out[2], sizeof(drip_link_t));
+    PASS();
+}
+
+TEST test_filter_chain_skips_invalid(void) {
+    drip_link_t root, links[3];
+    drip_link_t in[2];
+    drip_link_t out[4];
+    size_t out_count;
+
+    init_full_chain(&root, links);
+    in[0] = links[2];
+    in[0].sam_type = 0xFF;
+    in[1] = links[2];
+
+    int rc = drip_link_filter_chain(
+        in, 2, drip_link_get_child_det(&links[2]), out, 4, &out_count
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(1, out_count);
+    ASSERT_MEM_EQ(&links[2], &out[0], sizeof(drip_link_t));
+    PASS();
+}
+
+TEST test_filter_chain_self_signed_only(void) {
+    drip_link_t root, links[3];
+    drip_link_t in[1];
+    drip_link_t out[4];
+    size_t out_count;
+
+    init_full_chain(&root, links);
+    in[0] = root;
+
+    int rc = drip_link_filter_chain(
+        in, 1, drip_link_get_child_det(&root), out, 4, &out_count
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(0, out_count);
+    PASS();
+}
+
+TEST test_filter_chain_buffer_too_small(void) {
+    drip_link_t root, links[3], all[4];
+    drip_link_t out[1];
+    size_t out_count = 0;
+
+    init_full_chain(&root, links);
+    all[0] = links[2];
+    all[1] = links[1];
+    all[2] = links[0];
+    all[3] = root;
+
+    int rc = drip_link_filter_chain(
+        all, 4, drip_link_get_child_det(&links[2]), out, 1, &out_count
+    );
+    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    ASSERT_EQ(0, out_count);
+    PASS();
+}
+
+TEST test_filter_chain_in_place(void) {
+    drip_link_t root, links[3];
+    drip_link_t all[4];
+    size_t out_count;
+
+    init_full_chain(&root, links);
+    all[0] = root;
+    all[1] = links[0];
+    all[2] = links[1];
+    all[3] = links[2];
+
+    int rc = drip_link_filter_chain(
+        all, 4, drip_link_get_child_det(&links[2]), all, 4, &out_count
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(3, out_count);
+    ASSERT_MEM_EQ(&links[0], &all[0], sizeof(drip_link_t));
+    ASSERT_MEM_EQ(&links[1], &all[1], sizeof(drip_link_t));
+    ASSERT_MEM_EQ(&links[2], &all[2], sizeof(drip_link_t));
+    PASS();
+}
+
+TEST test_filter_chain_without_selfie(void) {
+    drip_link_t root, links[3];
+    drip_link_t in[3];
+    drip_link_t out[DRIP_LINK_CHAIN_MAX_HOPS];
+    size_t out_count;
+
+    init_full_chain(&root, links);
+    in[0] = links[2];
+    in[1] = links[0];
+    in[2] = links[1];
+
+    int rc = drip_link_filter_chain(
+        in, 3, drip_link_get_child_det(&links[2]), out, DRIP_LINK_CHAIN_MAX_HOPS,
+        &out_count
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(3, out_count);
+    ASSERT_MEM_EQ(&links[0], &out[0], sizeof(drip_link_t));
+    ASSERT_MEM_EQ(&links[1], &out[1], sizeof(drip_link_t));
+    ASSERT_MEM_EQ(&links[2], &out[2], sizeof(drip_link_t));
+
+    rc = drip_link_verify_chain(
+        out, out_count, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
+TEST test_filter_chain_composes_with_verify_chain(void) {
+    drip_link_t root, links[3], all[4];
+    drip_link_t out[DRIP_LINK_CHAIN_MAX_HOPS];
+    size_t out_count;
+
+    init_full_chain(&root, links);
+    all[0] = links[2];
+    all[1] = links[1];
+    all[2] = links[0];
+    all[3] = root;
+
+    int rc = drip_link_filter_chain(
+        all, 4, drip_link_get_child_det(&links[2]), out, DRIP_LINK_CHAIN_MAX_HOPS,
+        &out_count
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(3, out_count);
+
+    rc = drip_link_verify_chain(
+        out, out_count, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
 SUITE(link_suite) {
     RUN_TEST(test_init_null_ptr);
     RUN_TEST(test_init);
@@ -1306,4 +1525,14 @@ SUITE(link_suite) {
     RUN_TEST(test_verify_chain_signature_failed);
     RUN_TEST(test_verify_chain_wrong_root_hi);
     RUN_TEST(test_verify_chain_fixture_full_chain);
+    RUN_TEST(test_filter_chain_null_ptr);
+    RUN_TEST(test_filter_chain_empty);
+    RUN_TEST(test_filter_chain_ua_not_present);
+    RUN_TEST(test_filter_chain_unordered_and_extra);
+    RUN_TEST(test_filter_chain_skips_invalid);
+    RUN_TEST(test_filter_chain_self_signed_only);
+    RUN_TEST(test_filter_chain_buffer_too_small);
+    RUN_TEST(test_filter_chain_in_place);
+    RUN_TEST(test_filter_chain_without_selfie);
+    RUN_TEST(test_filter_chain_composes_with_verify_chain);
 }

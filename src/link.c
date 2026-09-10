@@ -352,6 +352,78 @@ int drip_link_verify_chain(
     return DRIP_SUCCESS;
 }
 
+int drip_link_filter_chain(
+    const drip_link_t *in_array, size_t in_count, const drip_det_t *ua_det,
+    drip_link_t *out_array, size_t out_capacity, size_t *out_count
+) {
+    const drip_det_t *expected_det, *child_det, *parent_det;
+    drip_link_t tmp[DRIP_LINK_CHAIN_MAX_HOPS];
+    size_t i, hop_count;
+    int found, done;
+
+    if (in_array == NULL || ua_det == NULL || out_array == NULL || out_count == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    *out_count = 0;
+    expected_det = ua_det;
+    hop_count = 0;
+    done = 0;
+
+    while (hop_count < in_count && !done) {
+        found = 0;
+        for (i = 0; i < in_count; i++) {
+            /* Find the link whose child DET is the expected DET. */
+            child_det = drip_link_get_child_det(&in_array[i]);
+            if (memcmp(child_det, expected_det, DRIP_DET_SIZE) != 0) {
+                continue;
+            }
+
+            /* Skip carbage links. */
+            if (drip_link_validate(&in_array[i]) != DRIP_SUCCESS) {
+                continue;
+            }
+
+            /* Self-signed hop is the root not hop 0. */
+            parent_det = drip_link_get_parent_det(&in_array[i]);
+            if (memcmp(parent_det, child_det, DRIP_DET_SIZE) == 0) {
+                done = 1;
+                found = 1;
+                break;
+            }
+
+            if (hop_count >= DRIP_LINK_CHAIN_MAX_HOPS) {
+                return DRIP_ERROR_ARRAY_OVERFLOW;
+            }
+
+            memcpy(&tmp[hop_count], &in_array[i], sizeof(drip_link_t));
+            hop_count++;
+
+            /* Next search target is the parent DET. */
+            expected_det = parent_det;
+            found = 1;
+            break;
+        }
+
+        /* Empty result and partial chains are still considered success. */
+        if (!found) {
+            break;
+        }
+    }
+
+    if (hop_count > out_capacity) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    /* Reverse hops to root-to-UA order. */
+    for (i = 0; i < hop_count; i++) {
+        memcpy(&out_array[i], &tmp[hop_count - 1 - i], sizeof(drip_link_t));
+    }
+    *out_count = hop_count;
+
+    return DRIP_SUCCESS;
+}
+
 int drip_link_to_json(
     const drip_link_t *link, char *buffer, size_t buffer_size, size_t *json_length
 ) {
