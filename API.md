@@ -845,6 +845,7 @@ _Timestamp epoch (2019-01-01 00:00:00 UTC as Unix timestamp)._
 
 | Type | Name |
 | ---: | :--- |
+| define  | [**DRIP\_AUTH\_HASH\_CUSTOMIZATION**](#define-drip_auth_hash_customization)  "Remote ID Auth Hash"<br>_RFC 9575 hash customization string for Remote ID authentication hashes._ |
 | define  | [**DRIP\_HASH\_SIZE**](#define-drip_hash_size)  8<br> |
 
 ## Structures and Types Documentation
@@ -936,6 +937,13 @@ int drip_hash_to_hex (
 
 ## Macros Documentation
 
+### define `DRIP_AUTH_HASH_CUSTOMIZATION`
+
+_RFC 9575 hash customization string for Remote ID authentication hashes._
+```c
+#define DRIP_AUTH_HASH_CUSTOMIZATION "Remote ID Auth Hash"
+```
+
 ### define `DRIP_HASH_SIZE`
 
 ```c
@@ -963,6 +971,7 @@ int drip_hash_to_hex (
 | ---: | :--- |
 |  int | [**drip\_link\_decode**](#function-drip_link_decode) ([**drip\_link\_t**](#struct-drip_link_t) \*link, const uint8\_t \*buffer, size\_t buffer\_size) <br> |
 |  int | [**drip\_link\_encode**](#function-drip_link_encode) (const [**drip\_link\_t**](#struct-drip_link_t) \*link, uint8\_t \*buffer, size\_t buffer\_size, size\_t \*encoded\_length) <br> |
+|  int | [**drip\_link\_filter\_chain**](#function-drip_link_filter_chain) (const [**drip\_link\_t**](#struct-drip_link_t) \*in\_array, size\_t in\_count, const [**drip\_det\_t**](#typedef-drip_det_t) \*ua\_det, [**drip\_link\_t**](#struct-drip_link_t) \*out\_array, size\_t out\_capacity, size\_t \*out\_count) <br>_Filter an array of DRIP Links that belong to the chain of a UA._ |
 |  const [**drip\_det\_t**](#typedef-drip_det_t) \* | [**drip\_link\_get\_child\_det**](#function-drip_link_get_child_det) (const [**drip\_link\_t**](#struct-drip_link_t) \*link) <br> |
 |  const [**drip\_hi\_t**](#typedef-drip_hi_t) \* | [**drip\_link\_get\_child\_hi**](#function-drip_link_get_child_hi) (const [**drip\_link\_t**](#struct-drip_link_t) \*link) <br> |
 |  const [**drip\_det\_t**](#typedef-drip_det_t) \* | [**drip\_link\_get\_parent\_det**](#function-drip_link_get_parent_det) (const [**drip\_link\_t**](#struct-drip_link_t) \*link) <br> |
@@ -990,6 +999,7 @@ int drip_hash_to_hex (
 
 | Type | Name |
 | ---: | :--- |
+| define  | [**DRIP\_LINK\_CHAIN\_MAX\_HOPS**](#define-drip_link_chain_max_hops)  8<br> |
 | define  | [**DRIP\_LINK\_SIZE**](#define-drip_link_size)  137<br> |
 
 ## Structures and Types Documentation
@@ -1092,6 +1102,43 @@ int drip_link_encode (
 ) 
 ```
 
+### function `drip_link_filter_chain`
+
+_Filter an array of DRIP Links that belong to the chain of a UA._
+```c
+int drip_link_filter_chain (
+    const drip_link_t *in_array,
+    size_t in_count,
+    const drip_det_t *ua_det,
+    drip_link_t *out_array,
+    size_t out_capacity,
+    size_t *out_count
+) 
+```
+
+
+Use this to filter and sort an array of Links before passing them to [**drip\_link\_verify\_chain()**](#function-drip_link_verify_chain) function. Output hops are in root-to-UA order. A self-signed Link is the root identity and is omitted. Structurally invalid Links are skipped.
+
+
+
+**Parameters:**
+
+
+* `in_array` Input array of Links. 
+* `in_count` Number of Links in in\_array. 
+* `ua_det` UA DET to filter with. 
+* `out_array` Output array for the filtered chain. 
+* `out_capacity` Output array capacity. 
+* `out_count` Receives the number of hops written to the output array.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` on success including when result is a partial chain or an empty array. 
+* `DRIP_ERROR_NULL_POINTER` if in\_array, ua\_det, out\_array or out\_count is NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if out\_capacity is too small. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if hops exceed DRIP\_LINK\_CHAIN\_MAX\_HOPS.
 ### function `drip_link_get_child_det`
 
 ```c
@@ -1555,6 +1602,12 @@ int drip_link_verify_chain (
 
 ## Macros Documentation
 
+### define `DRIP_LINK_CHAIN_MAX_HOPS`
+
+```c
+#define DRIP_LINK_CHAIN_MAX_HOPS 8
+```
+
 ### define `DRIP_LINK_SIZE`
 
 ```c
@@ -1614,7 +1667,6 @@ int drip_link_verify_chain (
 | ---: | :--- |
 | define  | [**DRIP\_EVIDENCE\_SIZE**](#define-drip_evidence_size)  112<br> |
 | define  | [**DRIP\_MANIFEST\_EVIDENCE\_MAX**](#define-drip_manifest_evidence_max)  11<br> |
-| define  | [**DRIP\_MANIFEST\_HASH\_CUSTOMIZATION**](#define-drip_manifest_hash_customization)  "Remote ID Auth Hash"<br>_RFC 9575 hash customization string for Remote ID authentication hashes._ |
 | define  | [**DRIP\_MANIFEST\_MAX\_SIZE**](#define-drip_manifest_max_size)  201 /\* when 11 hashes \*/<br> |
 | define  | [**DRIP\_MANIFEST\_MIN\_SIZE**](#define-drip_manifest_min_size)  113 /\* when zero hashes \*/<br> |
 | define  | [**DRIP\_SAM\_TYPE\_SIZE**](#define-drip_sam_type_size)  1<br> |
@@ -2189,13 +2241,6 @@ int drip_manifest_verify (
 
 ```c
 #define DRIP_MANIFEST_EVIDENCE_MAX 11
-```
-
-### define `DRIP_MANIFEST_HASH_CUSTOMIZATION`
-
-_RFC 9575 hash customization string for Remote ID authentication hashes._
-```c
-#define DRIP_MANIFEST_HASH_CUSTOMIZATION "Remote ID Auth Hash"
 ```
 
 ### define `DRIP_MANIFEST_MAX_SIZE`
