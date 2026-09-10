@@ -250,21 +250,18 @@ int drip_link_verify(
 );
 
 /**
- * @brief Verify a chain of DRIP Links from a UA to a self-signed Apex or RAA.
+ * @brief Verify a chain of DRIP Links from a trusted root.
  *
- * TODO: This verifies the chain but does not tell you if you can actually
- * trust the root.
- *
- * @param link_array Array of DRIP Links from UA to root.
+ * @param link_array Array of DRIP Links.
  * @param link_count Number of DRIP Links in link_array.
- * @param ua_det UA DET.
- * @param ua_hi UA Host Identity.
+ * @param root_det Trusted root DET.
+ * @param root_hi Trusted root Host Identity.
  * @param unixtime Unix time in seconds or 0 ignore.
  * @param hash_cb Callback used to verify each child DET hash.
  * @param verify_cb Callback used to verify each DRIP Link signature.
  *
  * @retval DRIP_SUCCESS if the chain verifies.
- * @retval DRIP_ERROR_NULL_POINTER if link_array, ua_det, ua_hi, hash_cb,
+ * @retval DRIP_ERROR_NULL_POINTER if link_array, root_det, root_hi, hash_cb,
  *         or verify_cb is NULL.
  * @retval DRIP_ERROR_TIMESTAMP_NOT_YET_VALID if unixtime is before a hop vnb.
  * @retval DRIP_ERROR_TIMESTAMP_EXPIRED if unixtime is after a hop vna.
@@ -282,8 +279,8 @@ int drip_link_verify(
  * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
  */
 int drip_link_verify_chain(
-    const drip_link_t *link_array, size_t link_count, const drip_det_t *ua_det,
-    const drip_hi_t *ua_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
+    const drip_link_t *link_array, size_t link_count, const drip_det_t *root_det,
+    const drip_hi_t *root_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
     drip_link_verify_cb_t verify_cb
 );
 
