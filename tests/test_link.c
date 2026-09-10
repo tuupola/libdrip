@@ -179,11 +179,11 @@ static int det_cshake128_cb(
     return 0;
 }
 
-static void init_full_chain(drip_link_t links[4]) {
-    drip_link_decode(&links[0], ua1_16376_16376, sizeof(ua1_16376_16376));
+static void init_full_chain(drip_link_t *root, drip_link_t links[3]) {
+    drip_link_decode(root, raa16376, sizeof(raa16376));
+    drip_link_decode(&links[0], hda16376_16376a, sizeof(hda16376_16376a));
     drip_link_decode(&links[1], hda16376_16376i, sizeof(hda16376_16376i));
-    drip_link_decode(&links[2], hda16376_16376a, sizeof(hda16376_16376a));
-    drip_link_decode(&links[3], raa16376, sizeof(raa16376));
+    drip_link_decode(&links[2], ua1_16376_16376, sizeof(ua1_16376_16376));
 }
 
 TEST test_init_null_ptr(void) {
@@ -929,95 +929,106 @@ TEST test_to_json_optional_json_length(void) {
 
 TEST test_verify_chain_null_ptr(void) {
     drip_link_t link;
-    drip_det_t ua_det;
-    drip_hi_t ua_hi;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
     drip_link_init(&link);
 
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
         drip_link_verify_chain(
-            NULL, 1, &ua_det, &ua_hi, 0, dummy_hash_cb, dummy_verify_cb
+            NULL, 1, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
         )
     );
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
-        drip_link_verify_chain(&link, 1, NULL, &ua_hi, 0, dummy_hash_cb, dummy_verify_cb)
+        drip_link_verify_chain(
+            &link, 1, NULL, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
+        )
     );
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
-        drip_link_verify_chain(&link, 1, &ua_det, NULL, 0, dummy_hash_cb, dummy_verify_cb)
+        drip_link_verify_chain(
+            &link, 1, &root_det, NULL, 0, dummy_hash_cb, dummy_verify_cb
+        )
     );
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
-        drip_link_verify_chain(&link, 1, &ua_det, &ua_hi, 0, NULL, verify_ed25519)
+        drip_link_verify_chain(&link, 1, &root_det, &root_hi, 0, NULL, verify_ed25519)
     );
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
-        drip_link_verify_chain(&link, 1, &ua_det, &ua_hi, 0, dummy_hash_cb, NULL)
+        drip_link_verify_chain(&link, 1, &root_det, &root_hi, 0, dummy_hash_cb, NULL)
     );
     PASS();
 }
 
 TEST test_verify_chain_empty(void) {
     drip_link_t link;
-    drip_det_t ua_det;
-    drip_hi_t ua_hi;
+    drip_det_t root_det;
+    drip_hi_t root_hi;
     drip_link_init(&link);
 
     int rc = drip_link_verify_chain(
-        &link, 0, &ua_det, &ua_hi, 0, dummy_hash_cb, dummy_verify_cb
+        &link, 0, &root_det, &root_hi, 0, dummy_hash_cb, dummy_verify_cb
     );
     ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
     PASS();
 }
 
 TEST test_verify_chain_parent_det_mismatch(void) {
-    drip_link_t links[4];
+    drip_link_t root, links[3];
     drip_det_t wrong_det;
 
-    init_full_chain(links);
-    memcpy(&wrong_det, drip_link_get_parent_det(&links[0]), sizeof(wrong_det));
-    wrong_det[15] ^= 0xFF;
-    drip_link_set_parent_det(&links[0], &wrong_det);
+    init_full_chain(&root, links);
+    drip_det_init(&wrong_det);
+    drip_link_set_parent_det(&links[2], &wrong_det);
 
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        0, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
     PASS();
 }
 
 TEST test_verify_chain_invalid_raa_delegation(void) {
-    drip_link_t links[4];
-    drip_det_t parent_det;
+    drip_link_t root, links[3];
+    drip_det_t child_det;
 
-    init_full_chain(links);
-    memcpy(&parent_det, drip_link_get_child_det(&links[3]), sizeof(parent_det));
-    drip_det_set_raa(&parent_det, 4);
-    drip_link_set_parent_det(&links[0], &parent_det);
+    /* root child DET is RAA 16376, HDA 0 */
+    init_full_chain(&root, links);
+    /* links[0] child_det is RAA 16376, HDA 16376 */
+    memcpy(&child_det, drip_link_get_child_det(&links[0]), sizeof(child_det));
+    /* child_det is now RAA 16376, HDA 0 */
+    drip_det_set_hda(&child_det, 0);
+    /* links[0] child_det is now RAA 16376, HDA 0 */
+    drip_link_set_child_det(&links[0], &child_det);
 
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        0, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
     );
-    /* RAA cannot delegate to an HDA with a different RAA */
+    /* RAA cannot delegate to an RAA */
     ASSERT_EQ(DRIP_ERROR_INVALID_RAA_DELEGATION, rc);
     PASS();
 }
 
 TEST test_verify_chain_invalid_hda_delegation(void) {
-    drip_link_t links[4];
-    drip_det_t parent_det;
+    drip_link_t root, links[3];
+    drip_det_t child_det;
 
-    init_full_chain(links);
-    memcpy(&parent_det, drip_link_get_parent_det(&links[0]), sizeof(parent_det));
-    drip_det_set_hda(&parent_det, 21);
-    drip_link_set_parent_det(&links[0], &parent_det);
+    /* root child DET is RAA 16376, HDA 0 */
+    init_full_chain(&root, links);
+    /* links[2] child_det is RAA 16376, HDA 16376 */
+    memcpy(&child_det, drip_link_get_child_det(&links[2]), sizeof(child_det));
+    /* child_det is now RAA 16376, HDA 21 */
+    drip_det_set_hda(&child_det, 21);
+    /* links[2] child_det is now RAA 16376, HDA 21 */
+    drip_link_set_child_det(&links[2], &child_det);
 
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        0, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
     );
     /* HDA cannot delegate to an HDA with a different HDA */
     ASSERT_EQ(DRIP_ERROR_INVALID_HDA_DELEGATION, rc);
@@ -1025,33 +1036,33 @@ TEST test_verify_chain_invalid_hda_delegation(void) {
 }
 
 TEST test_verify_chain_unixtime_skipped(void) {
-    drip_link_t links[4];
+    drip_link_t root, links[3];
     uint32_t now = 1600000000;
 
-    init_full_chain(links);
+    init_full_chain(&root, links);
     /* Make last hop expired. */
-    drip_link_set_vnb_unixtime(&links[3], now - 20);
-    drip_link_set_vna_unixtime(&links[3], now - 10);
+    drip_link_set_vnb_unixtime(&links[2], now - 20);
+    drip_link_set_vna_unixtime(&links[2], now - 10);
 
     /* Pass 0 to ignore timestamps. */
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        0, det_cshake128_cb, dummy_verify_cb
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, dummy_verify_cb
     );
     ASSERT_EQ(DRIP_SUCCESS, rc);
     PASS();
 }
 
 TEST test_verify_chain_unixtime_success(void) {
-    drip_link_t links[4];
+    drip_link_t root, links[3];
     uint32_t vnb, vna, hop_vnb, hop_vna;
     size_t i;
 
-    init_full_chain(links);
+    init_full_chain(&root, links);
     /* Find out max vnb and min vna. */
     vnb = drip_link_get_vnb_unixtime(&links[0]);
     vna = drip_link_get_vna_unixtime(&links[0]);
-    for (i = 1; i < 4; i++) {
+    for (i = 1; i < 3; i++) {
         hop_vnb = drip_link_get_vnb_unixtime(&links[i]);
         hop_vna = drip_link_get_vna_unixtime(&links[i]);
         if (hop_vnb > vnb) {
@@ -1064,38 +1075,38 @@ TEST test_verify_chain_unixtime_success(void) {
 
     /* Test exactly when vnb is valid. */
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        vnb, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vnb,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
     /* Test in middle of vnb and vna. */
     rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root),
         vnb + (vna - vnb) / 2, det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
     /* Test when vna ends. */
     rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        vna, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vna,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_SUCCESS, rc);
     PASS();
 }
 
 TEST test_verify_chain_unixtime_expired(void) {
-    drip_link_t links[4];
+    drip_link_t root, links[3];
     uint32_t vnb, vna, hop_vnb, hop_vna;
     size_t i;
     int rc;
 
-    init_full_chain(links);
+    init_full_chain(&root, links);
     /* Find out max vnb and min vna. */
     vnb = drip_link_get_vnb_unixtime(&links[0]);
     vna = drip_link_get_vna_unixtime(&links[0]);
-    for (i = 1; i < 4; i++) {
+    for (i = 1; i < 3; i++) {
         hop_vnb = drip_link_get_vnb_unixtime(&links[i]);
         hop_vna = drip_link_get_vna_unixtime(&links[i]);
         if (hop_vnb > vnb) {
@@ -1108,53 +1119,53 @@ TEST test_verify_chain_unixtime_expired(void) {
 
     /* Test one second before vnb is valid. */
     rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        vnb - 1, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vnb - 1,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_TIMESTAMP_NOT_YET_VALID, rc);
 
     /* Test one second after vna expired. */
     rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        vna + 1, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vna + 1,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_TIMESTAMP_EXPIRED, rc);
     PASS();
 }
 
 TEST test_verify_chain_last_hop_unixtime_expired(void) {
-    drip_link_t links[4];
+    drip_link_t root, links[3];
     uint32_t vnb;
 
-    init_full_chain(links);
+    init_full_chain(&root, links);
     /* Make last hop expired 20 seconds before hop 0. */
     vnb = drip_link_get_vnb_unixtime(&links[0]);
-    drip_link_set_vnb_unixtime(&links[3], vnb - 30);
-    drip_link_set_vna_unixtime(&links[3], vnb - 20);
+    drip_link_set_vnb_unixtime(&links[2], vnb - 30);
+    drip_link_set_vna_unixtime(&links[2], vnb - 20);
 
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        vnb, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), vnb,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_TIMESTAMP_EXPIRED, rc);
     PASS();
 }
 
 TEST test_verify_chain_child_hash_mismatch(void) {
-    drip_link_t links[4];
+    drip_link_t root, links[3];
     drip_det_t child_det;
     drip_hash_t bad_hash;
-    drip_hi_t ua_hi;
 
-    init_full_chain(links);
-    memcpy(&ua_hi, drip_link_get_child_hi(&links[0]), sizeof(ua_hi));
-    memcpy(&child_det, drip_link_get_child_det(&links[0]), sizeof(child_det));
+    init_full_chain(&root, links);
+    /* Break the last hops child det hash. */
+    memcpy(&child_det, drip_link_get_child_det(&links[2]), sizeof(child_det));
     memset(&bad_hash, 0xFF, sizeof(bad_hash));
     drip_det_set_hash(&child_det, &bad_hash);
-    drip_link_set_child_det(&links[0], &child_det);
+    drip_link_set_child_det(&links[2], &child_det);
 
     int rc = drip_link_verify_chain(
-        links, 4, &child_det, &ua_hi, 0, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
     PASS();
@@ -1162,87 +1173,56 @@ TEST test_verify_chain_child_hash_mismatch(void) {
 
 /* Check if the callback itself fails, even if hashes are valid. */
 TEST test_verify_chain_hash_cb_failed(void) {
-    drip_link_t links[4];
+    drip_link_t root, links[3];
 
-    init_full_chain(links);
+    init_full_chain(&root, links);
 
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        0, failing_hash_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        failing_hash_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
 }
 
 TEST test_verify_chain_signature_failed(void) {
-    drip_link_t links[4];
+    drip_link_t root, links[3];
 
-    init_full_chain(links);
+    init_full_chain(&root, links);
     /* Break the last hop signature. */
-    links[3].signature[0] ^= 0xFF;
+    links[2].signature[0] ^= 0xFF;
 
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        0, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
 }
 
-TEST test_verify_chain_wrong_ua_hi(void) {
-    drip_link_t links[4];
+TEST test_verify_chain_wrong_root_hi(void) {
+    drip_link_t root, links[3];
 
-    init_full_chain(links);
+    init_full_chain(&root, links);
 
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[3]),
-        0, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&links[2]), 0,
+        det_cshake128_cb, verify_ed25519
     );
-    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
+    ASSERT_EQ(DRIP_ERROR_CALLBACK_FAILED, rc);
     PASS();
 }
 
 TEST test_verify_chain_fixture_full_chain(void) {
-    drip_link_t links[4];
+    drip_link_t root, links[3];
 
-    init_full_chain(links);
+    init_full_chain(&root, links);
 
     int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        0, det_cshake128_cb, verify_ed25519
+        links, 3, drip_link_get_child_det(&root), drip_link_get_child_hi(&root), 0,
+        det_cshake128_cb, verify_ed25519
     );
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    PASS();
-}
-
-TEST test_verify_chain_not_self_signed(void) {
-    drip_link_t links[4];
-    drip_det_t wrong_det;
-
-    init_full_chain(links);
-    memcpy(&wrong_det, drip_link_get_parent_det(&links[3]), sizeof(wrong_det));
-    wrong_det[15] ^= 0xFF;
-    drip_link_set_parent_det(&links[3], &wrong_det);
-
-    int rc = drip_link_verify_chain(
-        links, 4, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        0, det_cshake128_cb, verify_ed25519
-    );
-    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
-    PASS();
-}
-
-TEST test_verify_chain_self_signed_hda(void) {
-    drip_link_t links[4];
-
-    init_full_chain(links);
-    drip_link_set_parent_det(&links[2], drip_link_get_child_det(&links[2]));
-
-    int rc = drip_link_verify_chain(
-        links, 3, drip_link_get_child_det(&links[0]), drip_link_get_child_hi(&links[0]),
-        0, det_cshake128_cb, verify_ed25519
-    );
-    ASSERT_EQ(DRIP_ERROR_VERIFICATION_FAILED, rc);
     PASS();
 }
 
@@ -1324,8 +1304,6 @@ SUITE(link_suite) {
     RUN_TEST(test_verify_chain_child_hash_mismatch);
     RUN_TEST(test_verify_chain_hash_cb_failed);
     RUN_TEST(test_verify_chain_signature_failed);
-    RUN_TEST(test_verify_chain_wrong_ua_hi);
+    RUN_TEST(test_verify_chain_wrong_root_hi);
     RUN_TEST(test_verify_chain_fixture_full_chain);
-    RUN_TEST(test_verify_chain_not_self_signed);
-    RUN_TEST(test_verify_chain_self_signed_hda);
 }

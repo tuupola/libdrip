@@ -292,17 +292,16 @@ int drip_link_verify(
 }
 
 int drip_link_verify_chain(
-    const drip_link_t *link_array, size_t link_count, const drip_det_t *ua_det,
-    const drip_hi_t *ua_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
+    const drip_link_t *link_array, size_t link_count, const drip_det_t *root_det,
+    const drip_hi_t *root_hi, uint32_t unixtime, drip_hash_cb_t hash_cb,
     drip_link_verify_cb_t verify_cb
 ) {
-    const drip_det_t *expected_det, *child_det, *parent_det, *next_child;
+    const drip_det_t *expected_det, *parent_det;
     const drip_hi_t *child_hi, *parent_hi;
-    drip_det_role_t role;
     size_t i;
     int rc;
 
-    if (link_array == NULL || ua_det == NULL || ua_hi == NULL || hash_cb == NULL ||
+    if (link_array == NULL || root_det == NULL || root_hi == NULL || hash_cb == NULL ||
         verify_cb == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -311,8 +310,9 @@ int drip_link_verify_chain(
         return DRIP_ERROR_VERIFICATION_FAILED;
     }
 
-    /* First expected DET is the UA. */
-    expected_det = ua_det;
+    /* First expected det is the root, which is often the APEX. */
+    expected_det = root_det;
+    parent_hi = root_hi;
 
     for (i = 0; i < link_count; i++) {
         /* Make sure current link is structurally valid. */
@@ -321,49 +321,22 @@ int drip_link_verify_chain(
             return rc;
         }
 
-        child_det = drip_link_get_child_det(&link_array[i]);
-        child_hi = drip_link_get_child_hi(&link_array[i]);
+        /* Make sure next link's parent is the previous links's child. */
         parent_det = drip_link_get_parent_det(&link_array[i]);
-
-        /* Make sure this link's child is the previous link's parent. */
-        if (memcmp(child_det, expected_det, DRIP_DET_SIZE) != 0) {
+        if (memcmp(parent_det, expected_det, DRIP_DET_SIZE) != 0) {
             return DRIP_ERROR_VERIFICATION_FAILED;
         }
+        expected_det = drip_link_get_child_det(&link_array[i]);
 
-        /* Make sure first hop child HI matches the UA HI. */
-        if (i == 0) {
-            if (memcmp(child_hi, ua_hi, DRIP_HI_SIZE) != 0) {
-                return DRIP_ERROR_VERIFICATION_FAILED;
-            }
+        /* Make sure parent DET can deledate to the child. */
+        rc = drip_det_verify_delegation(parent_det, expected_det);
+        if (rc != DRIP_SUCCESS) {
+            return rc;
         }
 
-        if (i + 1 < link_count) {
-            /* Make sure parent DET can delegate to the child. */
-            rc = drip_det_verify_delegation(parent_det, child_det);
-            if (rc != DRIP_SUCCESS) {
-                return rc;
-            }
-
-            /* Make sure next hop child is this hop parent. */
-            next_child = drip_link_get_child_det(&link_array[i + 1]);
-            if (memcmp(parent_det, next_child, DRIP_DET_SIZE) != 0) {
-                return DRIP_ERROR_VERIFICATION_FAILED;
-            }
-            parent_hi = drip_link_get_child_hi(&link_array[i + 1]);
-        } else {
-            /* Last hop must be a self-signed Apex or RAA. */
-            if (memcmp(parent_det, child_det, DRIP_DET_SIZE) != 0) {
-                return DRIP_ERROR_VERIFICATION_FAILED;
-            }
-            role = drip_det_role(child_det);
-            if (role != DRIP_DET_ROLE_APEX && role != DRIP_DET_ROLE_RAA) {
-                return DRIP_ERROR_VERIFICATION_FAILED;
-            }
-            parent_hi = child_hi;
-        }
-
-        /* Make sure child DET hash matches its child HI. */
-        rc = drip_det_verify(child_det, child_hi, hash_cb, NULL);
+        /* Make sure child DET's hash matches its child HI. */
+        child_hi = drip_link_get_child_hi(&link_array[i]);
+        rc = drip_det_verify(expected_det, child_hi, hash_cb, NULL);
         if (rc != DRIP_SUCCESS) {
             return rc;
         }
@@ -373,8 +346,7 @@ int drip_link_verify_chain(
         if (rc != DRIP_SUCCESS) {
             return rc;
         }
-
-        expected_det = parent_det;
+        parent_hi = child_hi;
     }
 
     return DRIP_SUCCESS;
