@@ -287,6 +287,27 @@ int drip_link_verify_chain(
 );
 
 /**
+ * @brief Filter DRIP Links that belong to the chain of a UA.
+ *
+ * @param in_array Input array of DRIP Links.
+ * @param in_count Number of DRIP Links in in_array.
+ * @param ua_det UA DET to filter with.
+ * @param out_array Output array for the filtered chain.
+ * @param out_capacity How many DRIP Links fit into out_array.
+ * @param out_count Receives the number of hops written to out_array.
+ *
+ * @retval DRIP_SUCCESS on success including when result is a partial chain or
+ *         an empty array.
+ * @retval DRIP_ERROR_NULL_POINTER if in_array ua_det out_array or
+ *         out_count is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if out_capacity is too small.
+ */
+int drip_link_filter_chain(
+    const drip_link_t *in_array, size_t in_count, const drip_det_t *ua_det,
+    drip_link_t *out_array, size_t out_capacity, size_t *out_count
+);
+
+/**
  * @brief Serialize a DRIP link to a JSON string.
  *
  * On success writes a NULL terminated JSON to buffer. When buffer_size is

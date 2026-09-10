@@ -380,6 +380,59 @@ int drip_link_verify_chain(
     return DRIP_SUCCESS;
 }
 
+int drip_link_filter_chain(
+    const drip_link_t *in_array, size_t in_count, const drip_det_t *ua_det,
+    drip_link_t *out_array, size_t out_capacity, size_t *out_count
+) {
+    const drip_det_t *expected_det, *child_det, *parent_det;
+    size_t i;
+    int found;
+
+    if (in_array == NULL || ua_det == NULL || out_array == NULL || out_count == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    *out_count = 0;
+    expected_det = ua_det;
+
+    while (*out_count < in_count) {
+        found = 0;
+        for (i = 0; i < in_count; i++) {
+            /* Find the DRIP Link whose child DET is the expected DET. */
+            child_det = drip_link_get_child_det(&in_array[i]);
+            if (memcmp(child_det, expected_det, DRIP_DET_SIZE) != 0) {
+                continue;
+            }
+
+            if (*out_count >= out_capacity) {
+                return DRIP_ERROR_BUFFER_TOO_SMALL;
+            }
+
+            /* Copy the found DRIP Link to the out array. */
+            memcpy(&out_array[*out_count], &in_array[i], sizeof(drip_link_t));
+            (*out_count)++;
+
+            /* Check the hop is self signed i.e. the root. */
+            parent_det = drip_link_get_parent_det(&in_array[i]);
+            if (memcmp(parent_det, child_det, DRIP_DET_SIZE) == 0) {
+                return DRIP_SUCCESS;
+            }
+
+            /* Next search target is the parent DET. */
+            expected_det = parent_det;
+            found = 1;
+            break;
+        }
+
+        /* Empty result and partial chains are still considered success. */
+        if (!found) {
+            return DRIP_SUCCESS;
+        }
+    }
+
+    return DRIP_SUCCESS;
+}
+
 int drip_link_to_json(
     const drip_link_t *link, char *buffer, size_t buffer_size, size_t *json_length
 ) {
