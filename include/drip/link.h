@@ -9,6 +9,7 @@
 #include "drip/format.h"
 
 #define DRIP_LINK_SIZE 137
+#define DRIP_LINK_CHAIN_MAX_HOPS 8
 
 /**
  * @brief Callback function type for producing link signatures.
