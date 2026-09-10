@@ -289,16 +289,19 @@ int drip_link_verify_chain(
 /**
  * @brief Filter DRIP Links that belong to the chain of a UA.
  *
+ * Use this to filter and sort an array of DRIP Links before passing them
+ * to drip_link_verify_chain() function.
+ *
  * @param in_array Input array of DRIP Links.
  * @param in_count Number of DRIP Links in in_array.
  * @param ua_det UA DET to filter with.
  * @param out_array Output array for the filtered chain.
- * @param out_capacity How many DRIP Links fit into out_array.
- * @param out_count Receives the number of hops written to out_array.
+ * @param out_capacity Output array capacity.
+ * @param out_count Receives the number of hops written to the output array.
  *
  * @retval DRIP_SUCCESS on success including when result is a partial chain or
  *         an empty array.
- * @retval DRIP_ERROR_NULL_POINTER if in_array ua_det out_array or
+ * @retval DRIP_ERROR_NULL_POINTER if in_array, ua_det, out_array or
  *         out_count is NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if out_capacity is too small.
  */
