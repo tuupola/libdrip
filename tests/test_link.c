@@ -1232,6 +1232,120 @@ TEST test_verify_chain_not_self_signed(void) {
     PASS();
 }
 
+TEST test_filter_chain_null_ptr(void) {
+    drip_link_t in;
+    drip_link_t out;
+    drip_det_t ua_det;
+    size_t out_count;
+
+    drip_link_init(&in);
+    memset(&ua_det, 0, sizeof(ua_det));
+
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_filter_chain(NULL, 1, &ua_det, &out, 1, &out_count)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_filter_chain(&in, 1, NULL, &out, 1, &out_count)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_filter_chain(&in, 1, &ua_det, NULL, 1, &out_count)
+    );
+    ASSERT_EQ(
+        DRIP_ERROR_NULL_POINTER,
+        drip_link_filter_chain(&in, 1, &ua_det, &out, 1, NULL)
+    );
+    PASS();
+}
+
+TEST test_filter_chain_empty(void) {
+    drip_link_t in;
+    drip_link_t out;
+    drip_det_t ua_det;
+    size_t out_count = 99;
+
+    drip_link_init(&in);
+    memset(&ua_det, 0, sizeof(ua_det));
+
+    int rc = drip_link_filter_chain(&in, 0, &ua_det, &out, 1, &out_count);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(0, out_count);
+    PASS();
+}
+
+TEST test_filter_chain_ua_not_present(void) {
+    drip_link_t links[4];
+    drip_link_t out[4];
+    drip_det_t ua_det;
+    size_t out_count = 99;
+
+    init_full_chain(links);
+    memset(&ua_det, 0, sizeof(ua_det));
+
+    int rc = drip_link_filter_chain(links, 4, &ua_det, out, 4, &out_count);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(0, out_count);
+    PASS();
+}
+
+TEST test_filter_chain_unordered_and_extra(void) {
+    drip_link_t links[4];
+    drip_link_t in[5];
+    drip_link_t out[4];
+    size_t out_count;
+
+    init_full_chain(links);
+    in[0] = links[3];
+    in[1] = links[1];
+    drip_link_init(&in[2]);
+    in[3] = links[0];
+    in[4] = links[2];
+
+    int rc = drip_link_filter_chain(
+        in, 5, drip_link_get_child_det(&links[0]), out, 4, &out_count
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(4, out_count);
+    ASSERT_MEM_EQ(&links[0], &out[0], sizeof(drip_link_t));
+    ASSERT_MEM_EQ(&links[1], &out[1], sizeof(drip_link_t));
+    ASSERT_MEM_EQ(&links[2], &out[2], sizeof(drip_link_t));
+    ASSERT_MEM_EQ(&links[3], &out[3], sizeof(drip_link_t));
+    PASS();
+}
+
+TEST test_filter_chain_self_signed_only(void) {
+    drip_link_t links[4];
+    drip_link_t out[4];
+    size_t out_count;
+
+    init_full_chain(links);
+
+    int rc = drip_link_filter_chain(
+        &links[3], 1, drip_link_get_child_det(&links[3]), out, 4, &out_count
+    );
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_EQ(1, out_count);
+    ASSERT_MEM_EQ(&links[3], &out[0], sizeof(drip_link_t));
+    PASS();
+}
+
+TEST test_filter_chain_buffer_too_small(void) {
+    drip_link_t links[4];
+    drip_link_t out[1];
+    size_t out_count = 0;
+
+    init_full_chain(links);
+
+    int rc = drip_link_filter_chain(
+        links, 4, drip_link_get_child_det(&links[0]), out, 1, &out_count
+    );
+    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    ASSERT_EQ(1, out_count);
+    PASS();
+}
+
 TEST test_verify_chain_self_signed_hda(void) {
     drip_link_t links[4];
 
@@ -1328,4 +1442,10 @@ SUITE(link_suite) {
     RUN_TEST(test_verify_chain_fixture_full_chain);
     RUN_TEST(test_verify_chain_not_self_signed);
     RUN_TEST(test_verify_chain_self_signed_hda);
+    RUN_TEST(test_filter_chain_null_ptr);
+    RUN_TEST(test_filter_chain_empty);
+    RUN_TEST(test_filter_chain_ua_not_present);
+    RUN_TEST(test_filter_chain_unordered_and_extra);
+    RUN_TEST(test_filter_chain_self_signed_only);
+    RUN_TEST(test_filter_chain_buffer_too_small);
 }
