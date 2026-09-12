@@ -523,9 +523,16 @@ TEST test_from_ipv6_string_invalid_format(void) {
     PASS();
 }
 
+TEST test_from_ipv6_string_trailing_garbage(void) {
+    drip_det_t det;
+    int rc = drip_det_from_ipv6_string(&det, "2001:30:280:1405:a3ad:1952:ad0:a69eBEEF");
+    ASSERT_EQ(DRIP_ERROR_INVALID_IPV6_STRING, rc);
+    PASS();
+}
+
 TEST test_from_ipv6_string_wrong_prefix(void) {
     drip_det_t det;
-    int rc = drip_det_from_ipv6_string(&det, "::1");
+    int rc = drip_det_from_ipv6_string(&det, "0:0:0:0:0:0:0:1");
     ASSERT_EQ(DRIP_ERROR_INVALID_IPV6_PREFIX, rc);
     PASS();
 }
@@ -679,11 +686,15 @@ TEST test_verify_delegation_apex(void) {
     ASSERT_EQ(DRIP_SUCCESS, drip_det_verify_delegation(&parent, &child));
 
     drip_det_set_hda(&child, 20);
-    ASSERT_EQ(DRIP_ERROR_INVALID_APEX_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_APEX_DELEGATION, drip_det_verify_delegation(&parent, &child)
+    );
 
     drip_det_set_raa(&child, 1);
     drip_det_set_hda(&child, 0);
-    ASSERT_EQ(DRIP_ERROR_INVALID_APEX_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_APEX_DELEGATION, drip_det_verify_delegation(&parent, &child)
+    );
     PASS();
 }
 
@@ -701,11 +712,15 @@ TEST test_verify_delegation_raa(void) {
     ASSERT_EQ(DRIP_SUCCESS, drip_det_verify_delegation(&parent, &child));
 
     drip_det_set_raa(&child, 11);
-    ASSERT_EQ(DRIP_ERROR_INVALID_RAA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_RAA_DELEGATION, drip_det_verify_delegation(&parent, &child)
+    );
 
     drip_det_set_raa(&child, 10);
     drip_det_set_hda(&child, 0);
-    ASSERT_EQ(DRIP_ERROR_INVALID_RAA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_RAA_DELEGATION, drip_det_verify_delegation(&parent, &child)
+    );
     PASS();
 }
 
@@ -723,15 +738,21 @@ TEST test_verify_delegation_hda(void) {
     ASSERT_EQ(DRIP_SUCCESS, drip_det_verify_delegation(&parent, &child));
 
     drip_det_set_hda(&child, 21);
-    ASSERT_EQ(DRIP_ERROR_INVALID_HDA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_HDA_DELEGATION, drip_det_verify_delegation(&parent, &child)
+    );
 
     drip_det_set_raa(&child, 11);
     drip_det_set_hda(&child, 20);
-    ASSERT_EQ(DRIP_ERROR_INVALID_HDA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_HDA_DELEGATION, drip_det_verify_delegation(&parent, &child)
+    );
 
     drip_det_set_raa(&child, 10);
     drip_det_set_hda(&child, 0);
-    ASSERT_EQ(DRIP_ERROR_INVALID_HDA_DELEGATION, drip_det_verify_delegation(&parent, &child));
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_HDA_DELEGATION, drip_det_verify_delegation(&parent, &child)
+    );
     PASS();
 }
 
@@ -782,6 +803,7 @@ SUITE(det_suite) {
     RUN_TEST(test_from_ipv6_string_null_det);
     RUN_TEST(test_from_ipv6_string_null_string);
     RUN_TEST(test_from_ipv6_string_invalid_format);
+    RUN_TEST(test_from_ipv6_string_trailing_garbage);
     RUN_TEST(test_from_ipv6_string_wrong_prefix);
     RUN_TEST(test_from_ipv6_string_rfc_9374_example);
     RUN_TEST(test_from_ipv6_string_round_trip);

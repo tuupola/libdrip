@@ -1,4 +1,4 @@
-#include <arpa/inet.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "drip/det.h"
@@ -307,12 +307,30 @@ int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_s
 }
 
 int drip_det_from_ipv6_string(drip_det_t *det, const char *string) {
+    unsigned hex[8];
+    int matches = 0, n = 0;
+    size_t i;
+
     if (det == NULL || string == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    if (inet_pton(AF_INET6, string, det) != 1) {
+    matches = sscanf(
+        string, "%4x:%4x:%4x:%4x:%4x:%4x:%4x:%4x%n", &hex[0], &hex[1], &hex[2], &hex[3],
+        &hex[4], &hex[5], &hex[6], &hex[7], &n
+    );
+    if (matches != 8) {
         return DRIP_ERROR_INVALID_IPV6_STRING;
+    }
+
+    /* Reject if there is any trailing garbage. */
+    if (string[n] != '\0') {
+        return DRIP_ERROR_INVALID_IPV6_STRING;
+    }
+
+    for (i = 0; i < 8; i++) {
+        (*det)[2 * i] = (uint8_t)(hex[i] >> 8);
+        (*det)[2 * i + 1] = (uint8_t)hex[i];
     }
 
     return drip_det_validate(det);
