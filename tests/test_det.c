@@ -467,7 +467,7 @@ TEST test_to_ipv6_string_rfc_9374_example(void) {
 
     int rc = drip_det_to_ipv6_string(&det, buffer, sizeof(buffer));
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    ASSERT_STR_EQ("2001:30:280:1405:a3ad:1952:ad0:a69e", buffer);
+    ASSERT_STR_EQ("2001:0030:0280:1405:a3ad:1952:0ad0:a69e", buffer);
     PASS();
 }
 
@@ -553,7 +553,7 @@ TEST test_from_ipv6_string_round_trip(void) {
     char buffer[DRIP_DET_IPV6_STRING_SIZE];
     rc = drip_det_to_ipv6_string(&det, buffer, sizeof(buffer));
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    ASSERT_STR_EQ("2001:30:280:1405:a3ad:1952:ad0:a69e", buffer);
+    ASSERT_STR_EQ("2001:0030:0280:1405:a3ad:1952:0ad0:a69e", buffer);
     PASS();
 }
 

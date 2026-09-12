@@ -280,13 +280,28 @@ int drip_det_verify_delegation(const drip_det_t *parent, const drip_det_t *child
 }
 
 int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_size) {
+    static const char hex[] = "0123456789abcdef";
+    char *p;
+    size_t i;
+
     if (det == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    if (inet_ntop(AF_INET6, det, buffer, (socklen_t)buffer_size) == NULL) {
+    if (buffer_size < DRIP_DET_IPV6_STRING_SIZE) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
+
+    /* inet_ntop() */
+    p = buffer;
+    for (i = 0; i < DRIP_DET_SIZE; i++) {
+        if (i && (i % 2) == 0) {
+            *p++ = ':';
+        }
+        *p++ = hex[(*det)[i] >> 4];
+        *p++ = hex[(*det)[i] & 0xf];
+    }
+    *p = '\0';
 
     return DRIP_SUCCESS;
 }
