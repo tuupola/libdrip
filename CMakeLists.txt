@@ -26,6 +26,7 @@ else()
   option(DRIP_BUILD_TESTS "Build unit tests" OFF)
 
   add_library(drip
+        src/error.c
         src/hash.c
         src/link.c
         src/manifest.c

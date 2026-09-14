@@ -6,6 +6,7 @@ GREATEST_MAIN_DEFS();
 int main(int argc, char **argv) {
     GREATEST_MAIN_BEGIN();
 
+    RUN_SUITE(error_suite);
     RUN_SUITE(manifest_suite);
     RUN_SUITE(hash_suite);
     RUN_SUITE(link_suite);

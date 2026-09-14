@@ -3,6 +3,7 @@
 
 #include "greatest.h"
 
+extern SUITE(error_suite);
 extern SUITE(manifest_suite);
 extern SUITE(hash_suite);
 extern SUITE(link_suite);
