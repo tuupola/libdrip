@@ -3,6 +3,7 @@
 ## Header files
 
 - [include/drip/det.h](#file-includedripdeth)
+- [include/drip/error.h](#file-includedriperrorh)
 - [include/drip/format.h](#file-includedripformath)
 - [include/drip/hash.h](#file-includedriphashh)
 - [include/drip/link.h](#file-includedriplinkh)
@@ -719,6 +720,80 @@ _Size of a DET in bytes._
 ```
 
 
+## File include/drip/error.h
+
+
+
+
+
+## Structures and Types
+
+| Type | Name |
+| ---: | :--- |
+| enum  | [**drip\_error\_t**](#enum-drip_error_t)  <br> |
+
+## Functions
+
+| Type | Name |
+| ---: | :--- |
+|  const char \* | [**drip\_error\_to\_string**](#function-drip_error_to_string) ([**drip\_error\_t**](#enum-drip_error_t) error) <br>_Convert error code to string representation._ |
+
+
+## Structures and Types Documentation
+
+### enum `drip_error_t`
+
+```c
+enum drip_error_t {
+    DRIP_SUCCESS = 0,
+    DRIP_ERROR_NULL_POINTER = -1,
+    DRIP_ERROR_BUFFER_TOO_SMALL = -2,
+    DRIP_ERROR_BUFFER_TOO_LARGE = -3,
+    DRIP_ERROR_ARRAY_OVERFLOW = -4,
+    DRIP_ERROR_INVALID_INDEX = -5,
+    DRIP_ERROR_CALLBACK_FAILED = -6,
+    DRIP_ERROR_INVALID_LENGTH = -7,
+    DRIP_ERROR_INVALID_SAM_TYPE = -8,
+    DRIP_ERROR_OUT_OF_RANGE = -9,
+    DRIP_ERROR_INVALID_IPV6_PREFIX = -10,
+    DRIP_ERROR_VERIFICATION_FAILED = -11,
+    DRIP_ERROR_INVALID_TIMESTAMP = -12,
+    DRIP_ERROR_INVALID_CHILD_DET = -13,
+    DRIP_ERROR_INVALID_PARENT_DET = -14,
+    DRIP_ERROR_INVALID_IPV6_STRING = -16,
+    DRIP_ERROR_INVALID_DET = -18,
+    DRIP_ERROR_TIMESTAMP_NOT_YET_VALID = -19,
+    DRIP_ERROR_TIMESTAMP_EXPIRED = -20,
+    DRIP_ERROR_INVALID_APEX_DELEGATION = -21,
+    DRIP_ERROR_INVALID_RAA_DELEGATION = -22,
+    DRIP_ERROR_INVALID_HDA_DELEGATION = -23
+};
+```
+
+
+## Functions Documentation
+
+### function `drip_error_to_string`
+
+_Convert error code to string representation._
+```c
+const char * drip_error_to_string (
+    drip_error_t error
+) 
+```
+
+
+**Parameters:**
+
+
+* `error` The error code to convert.
+
+
+**Returns:**
+
+String representation of the error code. Returns "UNKNOWN" for invalid values.
+
+
 ## File include/drip/format.h
 
 
@@ -732,7 +807,6 @@ _Size of a DET in bytes._
 | typedef uint8\_t | [**drip\_hi\_t**](#typedef-drip_hi_t)  <br> |
 | enum  | [**drip\_sam\_type\_t**](#enum-drip_sam_type_t)  <br> |
 | typedef uint8\_t | [**drip\_signature\_t**](#typedef-drip_signature_t)  <br> |
-| enum  | [**drip\_status\_t**](#enum-drip_status_t)  <br> |
 
 
 ## Macros
@@ -766,35 +840,6 @@ enum drip_sam_type_t {
 
 ```c
 typedef uint8_t drip_signature_t[64];
-```
-
-### enum `drip_status_t`
-
-```c
-enum drip_status_t {
-    DRIP_SUCCESS = 0,
-    DRIP_ERROR_NULL_POINTER = -1,
-    DRIP_ERROR_BUFFER_TOO_SMALL = -2,
-    DRIP_ERROR_BUFFER_TOO_LARGE = -3,
-    DRIP_ERROR_ARRAY_OVERFLOW = -4,
-    DRIP_ERROR_INVALID_INDEX = -5,
-    DRIP_ERROR_CALLBACK_FAILED = -6,
-    DRIP_ERROR_INVALID_LENGTH = -7,
-    DRIP_ERROR_INVALID_SAM_TYPE = -8,
-    DRIP_ERROR_OUT_OF_RANGE = -9,
-    DRIP_ERROR_INVALID_IPV6_PREFIX = -10,
-    DRIP_ERROR_VERIFICATION_FAILED = -11,
-    DRIP_ERROR_INVALID_TIMESTAMP = -12,
-    DRIP_ERROR_INVALID_CHILD_DET = -13,
-    DRIP_ERROR_INVALID_PARENT_DET = -14,
-    DRIP_ERROR_INVALID_IPV6_STRING = -16,
-    DRIP_ERROR_INVALID_DET = -18,
-    DRIP_ERROR_TIMESTAMP_NOT_YET_VALID = -19,
-    DRIP_ERROR_TIMESTAMP_EXPIRED = -20,
-    DRIP_ERROR_INVALID_APEX_DELEGATION = -21,
-    DRIP_ERROR_INVALID_RAA_DELEGATION = -22,
-    DRIP_ERROR_INVALID_HDA_DELEGATION = -23
-};
 ```
 
 
@@ -972,6 +1017,7 @@ _RFC 9575 hash customization string for Remote ID authentication hashes._
 |  int | [**drip\_link\_decode**](#function-drip_link_decode) ([**drip\_link\_t**](#struct-drip_link_t) \*link, const uint8\_t \*buffer, size\_t buffer\_size) <br> |
 |  int | [**drip\_link\_encode**](#function-drip_link_encode) (const [**drip\_link\_t**](#struct-drip_link_t) \*link, uint8\_t \*buffer, size\_t buffer\_size, size\_t \*encoded\_length) <br> |
 |  int | [**drip\_link\_filter\_chain**](#function-drip_link_filter_chain) (const [**drip\_link\_t**](#struct-drip_link_t) \*in\_array, size\_t in\_count, const [**drip\_det\_t**](#typedef-drip_det_t) \*ua\_det, [**drip\_link\_t**](#struct-drip_link_t) \*out\_array, size\_t out\_capacity, size\_t \*out\_count) <br>_Filter an array of DRIP Links that belong to the chain of a UA._ |
+|  int | [**drip\_link\_from\_endorsement**](#function-drip_link_from_endorsement) ([**drip\_link\_t**](#struct-drip_link_t) \*link, const uint8\_t \*buffer, size\_t buffer\_size) <br>_Construct a DRIP Link from a Broadcast Endorsement._ |
 |  const [**drip\_det\_t**](#typedef-drip_det_t) \* | [**drip\_link\_get\_child\_det**](#function-drip_link_get_child_det) (const [**drip\_link\_t**](#struct-drip_link_t) \*link) <br> |
 |  const [**drip\_hi\_t**](#typedef-drip_hi_t) \* | [**drip\_link\_get\_child\_hi**](#function-drip_link_get_child_hi) (const [**drip\_link\_t**](#struct-drip_link_t) \*link) <br> |
 |  const [**drip\_det\_t**](#typedef-drip_det_t) \* | [**drip\_link\_get\_parent\_det**](#function-drip_link_get_parent_det) (const [**drip\_link\_t**](#struct-drip_link_t) \*link) <br> |
@@ -990,6 +1036,7 @@ _RFC 9575 hash customization string for Remote ID authentication hashes._
 |  int | [**drip\_link\_set\_vnb**](#function-drip_link_set_vnb) ([**drip\_link\_t**](#struct-drip_link_t) \*link, uint32\_t vnb) <br>_Set the vnb timestamp._ |
 |  int | [**drip\_link\_set\_vnb\_unixtime**](#function-drip_link_set_vnb_unixtime) ([**drip\_link\_t**](#struct-drip_link_t) \*link, uint32\_t unixtime) <br>_Set the vnb from unix timestamp._ |
 |  int | [**drip\_link\_sign**](#function-drip_link_sign) ([**drip\_link\_t**](#struct-drip_link_t) \*link, [**drip\_link\_sign\_cb\_t**](#typedef-drip_link_sign_cb_t) callback, void \*context) <br>_Sign a DRIP Link._ |
+|  int | [**drip\_link\_to\_endorsement**](#function-drip_link_to_endorsement) (const [**drip\_link\_t**](#struct-drip_link_t) \*link, uint8\_t \*buffer, size\_t buffer\_size) <br>_Extract a Broadcast Endorsement from a DRIP Link._ |
 |  int | [**drip\_link\_to\_json**](#function-drip_link_to_json) (const [**drip\_link\_t**](#struct-drip_link_t) \*link, char \*buffer, size\_t buffer\_size, size\_t \*json\_length) <br>_Serialize a DRIP link to a JSON string._ |
 |  int | [**drip\_link\_validate**](#function-drip_link_validate) (const [**drip\_link\_t**](#struct-drip_link_t) \*link) <br>_Validate the structural state of a DRIP Link._ |
 |  int | [**drip\_link\_verify**](#function-drip_link_verify) (const [**drip\_link\_t**](#struct-drip_link_t) \*link, uint32\_t unixtime, [**drip\_link\_verify\_cb\_t**](#typedef-drip_link_verify_cb_t) callback, void \*context) <br>_Verify the signature of a DRIP Link._ |
@@ -1000,6 +1047,7 @@ _RFC 9575 hash customization string for Remote ID authentication hashes._
 | Type | Name |
 | ---: | :--- |
 | define  | [**DRIP\_LINK\_CHAIN\_MAX\_HOPS**](#define-drip_link_chain_max_hops)  8<br> |
+| define  | [**DRIP\_LINK\_ENDORSEMENT\_SIZE**](#define-drip_link_endorsement_size)  136<br> |
 | define  | [**DRIP\_LINK\_SIZE**](#define-drip_link_size)  137<br> |
 
 ## Structures and Types Documentation
@@ -1139,6 +1187,39 @@ Use this to filter and sort an array of Links before passing them to [**drip\_li
 * `DRIP_ERROR_NULL_POINTER` if in\_array, ua\_det, out\_array or out\_count is NULL. 
 * `DRIP_ERROR_BUFFER_TOO_SMALL` if out\_capacity is too small. 
 * `DRIP_ERROR_ARRAY_OVERFLOW` if hops exceed DRIP\_LINK\_CHAIN\_MAX\_HOPS.
+### function `drip_link_from_endorsement`
+
+_Construct a DRIP Link from a Broadcast Endorsement._
+```c
+int drip_link_from_endorsement (
+    drip_link_t *link,
+    const uint8_t *buffer,
+    size_t buffer_size
+) 
+```
+
+
+The endorsement is a 136-byte payload without SAM type. This simple helper just adds SAM Type 0x01 (DRIP\_SAM\_TYPE\_LINK) in front of it.
+
+
+
+**Parameters:**
+
+
+* `link` Pointer to the DRIP Link to populate. 
+* `buffer` Pointer to the endorsement bytes. 
+* `buffer_size` Size of buffer in bytes. Must be at least DRIP\_LINK\_ENDORSEMENT\_SIZE.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if the link was constructed. 
+* `DRIP_ERROR_NULL_POINTER` if link or buffer is NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is less than DRIP\_LINK\_ENDORSEMENT\_SIZE.
+
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2](https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2)
 ### function `drip_link_get_child_det`
 
 ```c
@@ -1444,6 +1525,40 @@ int rc = drip_link_sign(&link, sign_ed25519, (void *)secret_key);
 
 
 **See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2](https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2)
+### function `drip_link_to_endorsement`
+
+_Extract a Broadcast Endorsement from a DRIP Link._
+```c
+int drip_link_to_endorsement (
+    const drip_link_t *link,
+    uint8_t *buffer,
+    size_t buffer_size
+) 
+```
+
+
+The endorsement is a 136-byte payload without SAM type. This simple helper just strips the SAM type from the link.
+
+
+
+**Parameters:**
+
+
+* `link` Pointer to the DRIP Link to read. 
+* `buffer` Output buffer for the endorsement bytes. 
+* `buffer_size` Size of buffer in bytes. Must be at least DRIP\_LINK\_ENDORSEMENT\_SIZE.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if the endorsement was written. 
+* `DRIP_ERROR_NULL_POINTER` if link or buffer is NULL. 
+* `DRIP_ERROR_INVALID_SAM_TYPE` if sam\_type is not DRIP\_SAM\_TYPE\_LINK. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is less than DRIP\_LINK\_ENDORSEMENT\_SIZE.
+
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2](https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2)
 ### function `drip_link_to_json`
 
 _Serialize a DRIP link to a JSON string._
@@ -1606,6 +1721,12 @@ int drip_link_verify_chain (
 
 ```c
 #define DRIP_LINK_CHAIN_MAX_HOPS 8
+```
+
+### define `DRIP_LINK_ENDORSEMENT_SIZE`
+
+```c
+#define DRIP_LINK_ENDORSEMENT_SIZE 136
 ```
 
 ### define `DRIP_LINK_SIZE`
