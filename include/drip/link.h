@@ -9,6 +9,7 @@
 #include "drip/format.h"
 
 #define DRIP_LINK_SIZE 137
+#define DRIP_LINK_ENDORSEMENT_SIZE 136
 #define DRIP_LINK_CHAIN_MAX_HOPS 8
 
 /**
@@ -65,6 +66,9 @@ typedef struct __attribute__((__packed__)) drip_link {
 } drip_link_t;
 
 static_assert(sizeof(drip_link_t) == DRIP_LINK_SIZE, "drip_link_t size mismatch");
+static_assert(
+    DRIP_LINK_SIZE == 1 + DRIP_LINK_ENDORSEMENT_SIZE, "endorsement size mismatch"
+);
 
 int drip_link_init(drip_link_t *link);
 
@@ -194,6 +198,51 @@ int drip_link_validate(const drip_link_t *link);
 int drip_link_decode(drip_link_t *link, const uint8_t *buffer, size_t buffer_size);
 int drip_link_encode(
     const drip_link_t *link, uint8_t *buffer, size_t buffer_size, size_t *encoded_length
+);
+
+/**
+ * @brief Construct a DRIP Link from a Broadcast Endorsement.
+ *
+ * The endorsement is a 136-byte payload without SAM type. This simple
+ * helper just adds SAM Type 0x01 (DRIP_SAM_TYPE_LINK) in front of it.
+ *
+ * @param link Pointer to the DRIP Link to populate.
+ * @param buffer Pointer to the endorsement bytes.
+ * @param buffer_size Size of buffer in bytes. Must be at least
+ *        DRIP_LINK_ENDORSEMENT_SIZE.
+ *
+ * @retval DRIP_SUCCESS if the link was constructed.
+ * @retval DRIP_ERROR_NULL_POINTER if link or buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is less than
+ *         DRIP_LINK_ENDORSEMENT_SIZE.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
+int drip_link_from_endorsement(
+    drip_link_t *link, const uint8_t *buffer, size_t buffer_size
+);
+
+/**
+ * @brief Extract a Broadcast Endorsement from a DRIP Link.
+ *
+ * The endorsement is a 136-byte payload without SAM type. This simple
+ * helper just strips the SAM type from the link.
+ *
+ * @param link Pointer to the DRIP Link to read.
+ * @param buffer Output buffer for the endorsement bytes.
+ * @param buffer_size Size of buffer in bytes. Must be at least
+ *        DRIP_LINK_ENDORSEMENT_SIZE.
+ *
+ * @retval DRIP_SUCCESS if the endorsement was written.
+ * @retval DRIP_ERROR_NULL_POINTER if link or buffer is NULL.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not DRIP_SAM_TYPE_LINK.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is less than
+ *         DRIP_LINK_ENDORSEMENT_SIZE.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
+int drip_link_to_endorsement(
+    const drip_link_t *link, uint8_t *buffer, size_t buffer_size
 );
 
 /**

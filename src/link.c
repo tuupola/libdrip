@@ -205,6 +205,43 @@ int drip_link_encode(
     return DRIP_SUCCESS;
 }
 
+int drip_link_from_endorsement(
+    drip_link_t *link, const uint8_t *buffer, size_t buffer_size
+) {
+    if (link == NULL || buffer == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (buffer_size < DRIP_LINK_ENDORSEMENT_SIZE) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    drip_link_init(link);
+    memcpy(&link->vnb, buffer, DRIP_LINK_ENDORSEMENT_SIZE);
+
+    return DRIP_SUCCESS;
+}
+
+int drip_link_to_endorsement(
+    const drip_link_t *link, uint8_t *buffer, size_t buffer_size
+) {
+    if (link == NULL || buffer == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (link->sam_type != DRIP_SAM_TYPE_LINK) {
+        return DRIP_ERROR_INVALID_SAM_TYPE;
+    }
+
+    if (buffer_size < DRIP_LINK_ENDORSEMENT_SIZE) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    memcpy(buffer, &link->vnb, DRIP_LINK_ENDORSEMENT_SIZE);
+
+    return DRIP_SUCCESS;
+}
+
 int drip_link_sign(drip_link_t *link, drip_link_sign_cb_t callback, void *context) {
     if (link == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;

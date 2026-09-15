@@ -555,6 +555,105 @@ TEST test_decode_success(void) {
     PASS();
 }
 
+TEST test_from_endorsement_null_ptr_link(void) {
+    uint8_t endorsement[DRIP_LINK_ENDORSEMENT_SIZE] = {0};
+    int rc = drip_link_from_endorsement(NULL, endorsement, sizeof(endorsement));
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_from_endorsement_null_ptr_endorsement(void) {
+    drip_link_t link;
+    int rc = drip_link_from_endorsement(&link, NULL, DRIP_LINK_ENDORSEMENT_SIZE);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_from_endorsement_buffer_too_small(void) {
+    drip_link_t link;
+    uint8_t endorsement[DRIP_LINK_ENDORSEMENT_SIZE - 1] = {0};
+    int rc = drip_link_from_endorsement(&link, endorsement, sizeof(endorsement));
+    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    PASS();
+}
+
+TEST test_from_endorsement_success(void) {
+    drip_link_t link_a, link_b;
+    /* Endorsement starts at offset 1. */
+    const uint8_t *endorsement = raa16376 + 1;
+
+    int rc = drip_link_from_endorsement(&link_a, endorsement, sizeof(raa16376) - 1);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_decode(&link_b, raa16376, sizeof(raa16376));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    ASSERT_MEM_EQ(&link_a, &link_b, sizeof(drip_link_t));
+    PASS();
+}
+
+TEST test_to_endorsement_null_ptr_link(void) {
+    uint8_t endorsement[DRIP_LINK_ENDORSEMENT_SIZE] = {0};
+    int rc = drip_link_to_endorsement(NULL, endorsement, sizeof(endorsement));
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_to_endorsement_null_ptr_endorsement(void) {
+    drip_link_t link;
+    drip_link_init(&link);
+    int rc = drip_link_to_endorsement(&link, NULL, DRIP_LINK_ENDORSEMENT_SIZE);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_to_endorsement_invalid_sam_type(void) {
+    drip_link_t link;
+    uint8_t endorsement[DRIP_LINK_ENDORSEMENT_SIZE] = {0};
+    drip_link_init(&link);
+    link.sam_type = DRIP_SAM_TYPE_WRAPPER;
+    int rc = drip_link_to_endorsement(&link, endorsement, sizeof(endorsement));
+    ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, rc);
+    PASS();
+}
+
+TEST test_to_endorsement_buffer_too_small(void) {
+    drip_link_t link;
+    uint8_t endorsement[DRIP_LINK_ENDORSEMENT_SIZE - 1] = {0};
+    drip_link_init(&link);
+    int rc = drip_link_to_endorsement(&link, endorsement, sizeof(endorsement));
+    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    PASS();
+}
+
+TEST test_to_endorsement_success(void) {
+    drip_link_t link;
+    uint8_t endorsement[DRIP_LINK_ENDORSEMENT_SIZE];
+
+    int rc = drip_link_decode(&link, raa16376, sizeof(raa16376));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_to_endorsement(&link, endorsement, sizeof(endorsement));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_MEM_EQ(raa16376 + 1, endorsement, DRIP_LINK_ENDORSEMENT_SIZE);
+    PASS();
+}
+
+TEST test_to_endorsement_round_trip(void) {
+    drip_link_t link;
+    uint8_t endorsement[DRIP_LINK_ENDORSEMENT_SIZE];
+    /* Endorsement starts at offset 1. */
+    const uint8_t *original = raa16376 + 1;
+
+    int rc = drip_link_from_endorsement(&link, original, DRIP_LINK_ENDORSEMENT_SIZE);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+
+    rc = drip_link_to_endorsement(&link, endorsement, sizeof(endorsement));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_MEM_EQ(original, endorsement, DRIP_LINK_ENDORSEMENT_SIZE);
+    PASS();
+}
+
 TEST test_encode_null_ptr_link(void) {
     uint8_t buffer[DRIP_LINK_SIZE];
     size_t encoded_length = 0;
@@ -1240,16 +1339,14 @@ TEST test_filter_chain_null_ptr(void) {
         drip_link_filter_chain(NULL, 1, &ua_det, out, 1, &out_count)
     );
     ASSERT_EQ(
-        DRIP_ERROR_NULL_POINTER,
-        drip_link_filter_chain(in, 1, NULL, out, 1, &out_count)
+        DRIP_ERROR_NULL_POINTER, drip_link_filter_chain(in, 1, NULL, out, 1, &out_count)
     );
     ASSERT_EQ(
         DRIP_ERROR_NULL_POINTER,
         drip_link_filter_chain(in, 1, &ua_det, NULL, 1, &out_count)
     );
     ASSERT_EQ(
-        DRIP_ERROR_NULL_POINTER,
-        drip_link_filter_chain(in, 1, &ua_det, out, 1, NULL)
+        DRIP_ERROR_NULL_POINTER, drip_link_filter_chain(in, 1, &ua_det, out, 1, NULL)
     );
     PASS();
 }
@@ -1341,9 +1438,8 @@ TEST test_filter_chain_self_signed_only(void) {
     init_full_chain(&root, links);
     in[0] = root;
 
-    int rc = drip_link_filter_chain(
-        in, 1, drip_link_get_child_det(&root), out, 4, &out_count
-    );
+    int rc =
+        drip_link_filter_chain(in, 1, drip_link_get_child_det(&root), out, 4, &out_count);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_EQ(0, out_count);
     PASS();
@@ -1486,6 +1582,16 @@ SUITE(link_suite) {
     RUN_TEST(test_decode_buffer_too_small);
     RUN_TEST(test_decode_invalid_sam_type);
     RUN_TEST(test_decode_success);
+    RUN_TEST(test_from_endorsement_null_ptr_link);
+    RUN_TEST(test_from_endorsement_null_ptr_endorsement);
+    RUN_TEST(test_from_endorsement_buffer_too_small);
+    RUN_TEST(test_from_endorsement_success);
+    RUN_TEST(test_to_endorsement_null_ptr_link);
+    RUN_TEST(test_to_endorsement_null_ptr_endorsement);
+    RUN_TEST(test_to_endorsement_invalid_sam_type);
+    RUN_TEST(test_to_endorsement_buffer_too_small);
+    RUN_TEST(test_to_endorsement_success);
+    RUN_TEST(test_to_endorsement_round_trip);
     RUN_TEST(test_encode_null_ptr_link);
     RUN_TEST(test_encode_null_ptr_buffer);
     RUN_TEST(test_encode_null_ptr_encoded_length);
