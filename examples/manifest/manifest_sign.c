@@ -30,12 +30,8 @@ static void hexstring(const void *data, size_t size) {
 
 /* Callback wrapper for libsodium */
 static int sign_ed25519(
-    void *context,
-    const uint8_t *input,
-    size_t input_length,
-    uint8_t *buffer,
-    size_t buffer_size,
-    size_t *output_length
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
 ) {
     (void)buffer_size;
     const uint8_t *key = (const uint8_t *)context;
@@ -51,10 +47,8 @@ int main(void) {
     drip_manifest_t manifest;
     drip_hash_t hash = {0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD, 0xBE, 0xEF};
     /* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e */
-    drip_det_t det = {
-        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
-        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
-    };
+    drip_det_t det = {0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+                      0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e};
 
     uint8_t encoded[DRIP_MANIFEST_MAX_SIZE];
 
@@ -69,7 +63,7 @@ int main(void) {
 
     rc = drip_manifest_validate(&manifest);
     if (rc != DRIP_SUCCESS) {
-        fprintf(stderr, "Error: Manifest validation failed (%d)\n", rc);
+        fprintf(stderr, "Manifest validation failed: %s\n", drip_error_to_string(rc));
         return 1;
     }
 

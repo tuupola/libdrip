@@ -32,8 +32,8 @@ static int hex_to_bytes(const char *hex, uint8_t *bytes, size_t max_length) {
 
 /* Callback wrapper for libsodium */
 static int verify_ed25519(
-    void *context, const uint8_t *message, size_t message_len,
-    const uint8_t *signature, size_t signature_length
+    void *context, const uint8_t *message, size_t message_len, const uint8_t *signature,
+    size_t signature_length
 ) {
     (void)signature_length;
     const uint8_t *key = (const uint8_t *)context;
@@ -56,20 +56,20 @@ int main(int argc, char *argv[]) {
     uint8_t buffer[DRIP_MANIFEST_MAX_SIZE + 1];
     int length = hex_to_bytes(hex_input, buffer, sizeof(buffer));
     if (length < 0) {
-        fprintf(stderr, "Error: Invalid hex string\n");
+        fprintf(stderr, "Invalid hex string\n");
         return 1;
     }
 
     drip_manifest_t manifest;
     rc = drip_manifest_decode(&manifest, buffer, length);
     if (rc != DRIP_SUCCESS) {
-         fprintf(stderr, "Error: No auth message found\n");
-         return 1;
+        fprintf(stderr, "Failed to decode manifest: %s\n", drip_error_to_string(rc));
+        return 1;
     }
 
     rc = drip_manifest_validate(&manifest);
     if (rc != DRIP_SUCCESS) {
-        fprintf(stderr, "Error: Manifest validation failed (%d)\n", rc);
+        fprintf(stderr, "Manifest validation failed: %s\n", drip_error_to_string(rc));
         return 1;
     }
 
@@ -78,7 +78,8 @@ int main(int argc, char *argv[]) {
     if (0 == rc) {
         printf("\nSignature verified.\n\n");
     } else {
-        printf("\nSignature verification failed.\n\n");
+        fprintf(stderr, "Signature verification failed: %s\n", drip_error_to_string(rc));
+        return 1;
     }
 
     return 0;
