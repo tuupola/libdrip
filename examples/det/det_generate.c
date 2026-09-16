@@ -71,42 +71,42 @@ int main(int argc, char *argv[]) {
     errno = 0;
     raa = strtol(argv[1], &endptr, 10);
     if (errno != 0 || *endptr != '\0') {
-        fprintf(stderr, "Error: Invalid RAA value\n");
+        fprintf(stderr, "Invalid RAA value\n");
         return 1;
     }
 
     hda = strtol(argv[2], &endptr, 10);
     if (errno != 0 || *endptr != '\0') {
-        fprintf(stderr, "Error: Invalid HDA value\n");
+        fprintf(stderr, "Invalid HDA value\n");
         return 1;
     }
 
     length = hex_to_bytes(argv[3], hi, sizeof(hi));
     if (length < 0) {
-        fprintf(stderr, "Error: Invalid hex string\n");
+        fprintf(stderr, "Invalid hex string\n");
         return 1;
     }
 
     if (length != DRIP_HI_SIZE) {
-        fprintf(stderr, "Error: Hex string must be %d bytes\n", DRIP_HI_SIZE);
+        fprintf(stderr, "Hex string must be %d bytes\n", DRIP_HI_SIZE);
         return 1;
     }
 
     rc = drip_det_init(&det);
     if (rc != DRIP_SUCCESS) {
-        fprintf(stderr, "Error: Failed to initialize det\n");
+        fprintf(stderr, "Failed to initialize det: %s\n", drip_error_to_string(rc));
         return 1;
     }
 
     rc = drip_det_set_raa(&det, (uint16_t)raa);
     if (rc != DRIP_SUCCESS) {
-        fprintf(stderr, "Error: Invalid RAA value\n");
+        fprintf(stderr, "Invalid RAA value: %s\n", drip_error_to_string(rc));
         return 1;
     }
 
     rc = drip_det_set_hda(&det, (uint16_t)hda);
     if (rc != DRIP_SUCCESS) {
-        fprintf(stderr, "Error: Invalid HDA value\n");
+        fprintf(stderr, "Invalid HDA value: %s\n", drip_error_to_string(rc));
         return 1;
     }
 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 
     rc = drip_det_update_hash(&det, &hi, cshake128_cb, NULL);
     if (rc != DRIP_SUCCESS) {
-        fprintf(stderr, "Error: Failed to update hash: %d\n", rc);
+        fprintf(stderr, "Failed to update hash: %s\n", drip_error_to_string(rc));
         return 1;
     }
 

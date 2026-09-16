@@ -7,7 +7,7 @@ CSHAKE_SRC = $(CSHAKE_DIR)/SP800-185.c \
              $(CSHAKE_DIR)/KeccakP-1600-inplace32BI.c
 
 SRC_DIR = ../../src
-SRC = $(SRC_DIR)/det.c $(SRC_DIR)/hash.c
+SRC = $(SRC_DIR)/det.c $(SRC_DIR)/hash.c $(SRC_DIR)/error.c
 
 TARGETS = det_generate det_verify
 

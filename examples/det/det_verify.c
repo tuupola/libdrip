@@ -67,23 +67,23 @@ int main(int argc, char *argv[]) {
 
     length = hex_to_bytes(argv[1], (uint8_t *)&det, sizeof(det));
     if (length < 0) {
-        fprintf(stderr, "Error: Invalid DET hex string\n");
+        fprintf(stderr, "Invalid DET hex string\n");
         return 1;
     }
 
     if (length != DRIP_DET_SIZE) {
-        fprintf(stderr, "Error: DET hex string must be %d bytes\n", DRIP_DET_SIZE);
+        fprintf(stderr, "DET hex string must be %d bytes\n", DRIP_DET_SIZE);
         return 1;
     }
 
     length = hex_to_bytes(argv[2], (uint8_t *)&hi, sizeof(hi));
     if (length < 0) {
-        fprintf(stderr, "Error: Invalid HI hex string\n");
+        fprintf(stderr, "Invalid HI hex string\n");
         return 1;
     }
 
     if (length != DRIP_HI_SIZE) {
-        fprintf(stderr, "Error: HI hex string must be %d bytes\n", DRIP_HI_SIZE);
+        fprintf(stderr, "HI hex string must be %d bytes\n", DRIP_HI_SIZE);
         return 1;
     }
 
@@ -94,11 +94,8 @@ int main(int argc, char *argv[]) {
     if (rc == DRIP_SUCCESS) {
         printf("Verification: OK\n");
         return 0;
-    } else if (rc == DRIP_ERROR_VERIFICATION_FAILED) {
-        printf("Verification: FAILED\n");
-        return 1;
     } else {
-        printf("Error: verification error: %d\n", rc);
+        fprintf(stderr, "Verification failed: %s\n", drip_error_to_string(rc));
         return 1;
     }
 }
