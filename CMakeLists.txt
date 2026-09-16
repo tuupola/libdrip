@@ -31,6 +31,7 @@ else()
         src/link.c
         src/manifest.c
         src/det.c
+        src/wrapper.c
     )
 
   target_include_directories(drip PUBLIC include)
