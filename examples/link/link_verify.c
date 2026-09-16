@@ -62,43 +62,43 @@ int main(int argc, char *argv[]) {
 
     length = hex_to_bytes(parent_hex, buffer, sizeof(buffer));
     if (length != DRIP_LINK_SIZE) {
-        fprintf(stderr, "Error: Link hex must be %d bytes\n", DRIP_LINK_SIZE);
+        fprintf(stderr, "Link hex must be %d bytes\n", DRIP_LINK_SIZE);
         return 1;
     }
 
     rc = drip_link_decode(&parent_link, buffer, (size_t)length);
     if (rc != 0) {
-        fprintf(stderr, "Error: Failed to decode parent link\n");
+        fprintf(stderr, "Failed to decode parent link: %s\n", drip_error_to_string(rc));
         return 1;
     }
 
     rc = drip_link_validate(&parent_link);
     if (rc != DRIP_SUCCESS) {
-        fprintf(stderr, "Error: Parent link validation failed: %d\n", rc);
+        fprintf(stderr, "Parent link validation failed: %s\n", drip_error_to_string(rc));
         return 1;
     }
 
     length = hex_to_bytes(child_hex, buffer, sizeof(buffer));
     if (length < 0) {
-        fprintf(stderr, "Error: Invalid child hex string\n");
+        fprintf(stderr, "Invalid child hex string\n");
         return 1;
     }
 
     rc = drip_link_decode(&child_link, buffer, (size_t)length);
     if (rc != 0) {
-        fprintf(stderr, "Error: Failed to decode child link\n");
+        fprintf(stderr, "Failed to decode child link: %s\n", drip_error_to_string(rc));
         return 1;
     }
 
     rc = drip_link_validate(&child_link);
     if (rc != DRIP_SUCCESS) {
-        fprintf(stderr, "Error: Child link validation failed: %d\n", rc);
+        fprintf(stderr, "Child link validation failed: %s\n", drip_error_to_string(rc));
         return 1;
     }
 
     /* TODO: This should be somewhere else. */
     if (memcmp(parent_link.child_det, child_link.parent_det, DRIP_DET_SIZE) != 0) {
-        fprintf(stderr, "Error: Parent / Child DET mismatch\n");
+        fprintf(stderr, "Parent / Child DET mismatch\n");
         return 1;
     }
 
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
     if (0 == rc) {
         printf("\nSignature verified.\n\n");
     } else {
-        printf("\nSignature verification failed.\n\n");
+        fprintf(stderr, "Signature verification failed: %s\n", drip_error_to_string(rc));
         return 1;
     }
 
