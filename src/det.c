@@ -306,6 +306,22 @@ int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_s
     return DRIP_SUCCESS;
 }
 
+int drip_det_hid_abbreviation(const drip_det_t *det, char *buffer, size_t buffer_size) {
+    if (det == NULL || buffer == NULL) {
+        return DRIP_ERROR_NULL_POINTER;
+    }
+
+    if (buffer_size < DRIP_DET_HID_ABBREVIATION_SIZE) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    snprintf(
+        buffer, buffer_size, "%04x %04x", drip_det_get_raa(det), drip_det_get_hda(det)
+    );
+
+    return DRIP_SUCCESS;
+}
+
 int drip_det_from_ipv6_string(drip_det_t *det, const char *string) {
     unsigned hex[8];
     int matches = 0, n = 0;

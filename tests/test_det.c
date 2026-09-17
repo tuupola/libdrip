@@ -564,6 +564,76 @@ TEST test_from_ipv6_string_round_trip(void) {
     PASS();
 }
 
+TEST test_hid_abbreviation_null_det(void) {
+    char buffer[DRIP_DET_HID_ABBREVIATION_SIZE];
+    int rc = drip_det_hid_abbreviation(NULL, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_hid_abbreviation_null_buffer(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+
+    int rc = drip_det_hid_abbreviation(&det, NULL, DRIP_DET_HID_ABBREVIATION_SIZE);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_hid_abbreviation_buffer_too_small(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+
+    char buffer[DRIP_DET_HID_ABBREVIATION_SIZE];
+    int rc = drip_det_hid_abbreviation(&det, buffer, 1);
+    ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
+    PASS();
+}
+
+/* RFC 9886 5.1.2: RAA=10 HDA=20 is abbreviated 000a 0014 */
+TEST test_hid_abbreviation_rfc_9886_example(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+    drip_det_set_raa(&det, 10);
+    drip_det_set_hda(&det, 20);
+
+    char buffer[DRIP_DET_HID_ABBREVIATION_SIZE];
+    memset(buffer, 0xff, sizeof(buffer));
+
+    int rc = drip_det_hid_abbreviation(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_STR_EQ("000a 0014", buffer);
+    PASS();
+}
+
+/* RFC 9886 Appendix A.1: RAA=16376 HDA=0 is abbreviated 3ff8 0000 */
+TEST test_hid_abbreviation_rfc_9886_appendix_raa(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+    drip_det_set_raa(&det, 16376);
+    drip_det_set_hda(&det, 0);
+
+    char buffer[DRIP_DET_HID_ABBREVIATION_SIZE];
+    int rc = drip_det_hid_abbreviation(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_STR_EQ("3ff8 0000", buffer);
+    PASS();
+}
+
+/* RFC 9886 Appendix A.2: RAA=16376 HDA=10 is abbreviated 3ff8 000a */
+TEST test_hid_abbreviation_rfc_9886_appendix_hda(void) {
+    drip_det_t det;
+    drip_det_init(&det);
+    drip_det_set_raa(&det, 16376);
+    drip_det_set_hda(&det, 10);
+
+    char buffer[DRIP_DET_HID_ABBREVIATION_SIZE];
+    int rc = drip_det_hid_abbreviation(&det, buffer, sizeof(buffer));
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    ASSERT_STR_EQ("3ff8 000a", buffer);
+    PASS();
+}
+
 TEST test_encode_null_ptr_det(void) {
     uint8_t buffer[DRIP_DET_SIZE];
     int rc = drip_det_encode(NULL, buffer, sizeof(buffer));
@@ -807,6 +877,12 @@ SUITE(det_suite) {
     RUN_TEST(test_from_ipv6_string_wrong_prefix);
     RUN_TEST(test_from_ipv6_string_rfc_9374_example);
     RUN_TEST(test_from_ipv6_string_round_trip);
+    RUN_TEST(test_hid_abbreviation_null_det);
+    RUN_TEST(test_hid_abbreviation_null_buffer);
+    RUN_TEST(test_hid_abbreviation_buffer_too_small);
+    RUN_TEST(test_hid_abbreviation_rfc_9886_example);
+    RUN_TEST(test_hid_abbreviation_rfc_9886_appendix_raa);
+    RUN_TEST(test_hid_abbreviation_rfc_9886_appendix_hda);
     RUN_TEST(test_encode_null_ptr_det);
     RUN_TEST(test_encode_null_ptr_buffer);
     RUN_TEST(test_encode_buffer_too_small);

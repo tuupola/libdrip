@@ -14,6 +14,9 @@
 /** @brief Buffer size in bytes for a NULL terminated DET IPv6 string. */
 #define DRIP_DET_IPV6_STRING_SIZE 40
 
+/** @brief Buffer size in bytes for a NULL terminated HID abbreviation. */
+#define DRIP_DET_HID_ABBREVIATION_SIZE 10
+
 /** @brief Size of a DET in bytes. */
 #define DRIP_DET_SIZE 16
 
@@ -330,6 +333,25 @@ int drip_det_verify_delegation(const drip_det_t *parent, const drip_det_t *child
  *         hold the rendered ipv6 string.
  */
 int drip_det_to_ipv6_string(const drip_det_t *det, char *buffer, size_t buffer_size);
+
+/**
+ * @brief Render the default HID abbreviation of a DET.
+ *
+ * RFC 9886 default is a four character hexadecimal RAA and HDA
+ * with a space between them.
+ *
+ * @param det Pointer to the DET to render.
+ * @param buffer Output buffer for the NULL terminated abbreviation.
+ * @param buffer_size Size of the output buffer.
+ *
+ * @retval DRIP_SUCCESS if the abbreviation was rendered.
+ * @retval DRIP_ERROR_NULL_POINTER if det or buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is too small to
+ *         hold the rendered abbreviation.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9886.html#section-5.1.2
+ */
+int drip_det_hid_abbreviation(const drip_det_t *det, char *buffer, size_t buffer_size);
 
 /**
  * @brief Parse a canonical IPv6 address string into a DET.
