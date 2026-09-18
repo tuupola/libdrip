@@ -41,4 +41,32 @@ typedef enum {
     DRIP_SSI_TYPE_IEEE_1609_2_HASHED_ID8 = 0x02,
 } drip_ssi_type_t;
 
+/**
+ * @brief HHIT Entity Type values per RFC 9886.
+ *
+ * Numeric field of the HHIT DNS resource record.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9886.html#section-6.2.2
+ * @see https://www.iana.org/assignments/drip/#hhit-entity-types
+ */
+typedef enum {
+    DRIP_HHIT_ENTITY_TYPE_NOT_DEFINED = 0,
+    DRIP_HHIT_ENTITY_TYPE_DIME = 1,
+    DRIP_HHIT_ENTITY_TYPE_APEX = 5,
+    DRIP_HHIT_ENTITY_TYPE_RAA = 9,
+    DRIP_HHIT_ENTITY_TYPE_HDA = 13,
+    DRIP_HHIT_ENTITY_TYPE_UA = 16,
+    DRIP_HHIT_ENTITY_TYPE_GCS = 17,
+    DRIP_HHIT_ENTITY_TYPE_UAS = 18,
+    DRIP_HHIT_ENTITY_TYPE_RID_MODULE = 19,
+    DRIP_HHIT_ENTITY_TYPE_PILOT = 20,
+    DRIP_HHIT_ENTITY_TYPE_OPERATOR = 21,
+    DRIP_HHIT_ENTITY_TYPE_DSS = 22,
+    DRIP_HHIT_ENTITY_TYPE_USS = 23,
+    DRIP_HHIT_ENTITY_TYPE_SP = 24,
+    DRIP_HHIT_ENTITY_TYPE_DP = 25,
+    DRIP_HHIT_ENTITY_TYPE_SDSP = 26,
+    DRIP_HHIT_ENTITY_TYPE_CROWD_SOURCED_RID_FINDER = 27,
+} drip_hhit_entity_type_t;
+
 #endif
