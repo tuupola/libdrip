@@ -157,6 +157,13 @@ int drip_wrapper_add_evidence(
     return DRIP_SUCCESS;
 }
 
+uint8_t drip_wrapper_evidence_count(const drip_wrapper_t *wrapper) {
+    if (wrapper == NULL) {
+        return 0;
+    }
+    return wrapper->evidence_count;
+}
+
 const uint8_t *
 drip_wrapper_get_evidence_at(const drip_wrapper_t *wrapper, uint8_t index) {
     if (wrapper == NULL) {

@@ -188,6 +188,15 @@ int drip_wrapper_set_signature(
  */
 int drip_wrapper_validate(const drip_wrapper_t *wrapper);
 
+/**
+ * @brief Get the evidence count.
+ *
+ * @param wrapper Pointer to the wrapper.
+ *
+ * @return The evidence count or 0 if wrapper is NULL.
+ */
+uint8_t drip_wrapper_evidence_count(const drip_wrapper_t *wrapper);
+
 const uint8_t *drip_wrapper_get_evidence_at(const drip_wrapper_t *wrapper, uint8_t index);
 
 int drip_wrapper_add_evidence(

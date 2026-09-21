@@ -65,6 +65,7 @@ TEST test_init(void) {
     int rc = drip_manifest_init(&manifest);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     ASSERT_EQ(DRIP_SAM_TYPE_MANIFEST, manifest.sam_type);
+    ASSERT_EQ(0, drip_manifest_evidence_count(&manifest));
     PASS();
 }
 
@@ -486,13 +487,19 @@ TEST test_add_message_hash_success(void) {
     drip_manifest_init(&manifest);
     int rc = drip_manifest_add_evidence(&manifest, &hash1);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    ASSERT_EQ(1, manifest.evidence_count);
+    ASSERT_EQ(1, drip_manifest_evidence_count(&manifest));
     ASSERT_MEM_EQ(hash1, manifest.evidence[0], sizeof(drip_hash_t));
 
     rc = drip_manifest_add_evidence(&manifest, &hash2);
     ASSERT_EQ(DRIP_SUCCESS, rc);
-    ASSERT_EQ(2, manifest.evidence_count);
+    ASSERT_EQ(2, drip_manifest_evidence_count(&manifest));
     ASSERT_MEM_EQ(hash2, manifest.evidence[1], sizeof(drip_hash_t));
+    PASS();
+}
+
+TEST test_evidence_count_null_ptr(void) {
+    uint8_t result = drip_manifest_evidence_count(NULL);
+    ASSERT_EQ(0, result);
     PASS();
 }
 
@@ -691,7 +698,7 @@ TEST test_decode_success(void) {
     ASSERT_MEM_EQ(previous_hash, out.previous_hash, sizeof(drip_hash_t));
     ASSERT_MEM_EQ(current_hash, out.current_hash, sizeof(drip_hash_t));
     ASSERT_MEM_EQ(link_hash, out.link_hash, sizeof(drip_hash_t));
-    ASSERT_EQ(2, out.evidence_count);
+    ASSERT_EQ(2, drip_manifest_evidence_count(&out));
     ASSERT_MEM_EQ(msg_hash1, out.evidence[0], sizeof(drip_hash_t));
     ASSERT_MEM_EQ(msg_hash2, out.evidence[1], sizeof(drip_hash_t));
     ASSERT_MEM_EQ(det, out.det, sizeof(drip_det_t));
@@ -781,6 +788,7 @@ SUITE(manifest_suite) {
     RUN_TEST(test_add_message_hash_null_ptr_hash);
     RUN_TEST(test_add_evidence_full);
     RUN_TEST(test_add_message_hash_success);
+    RUN_TEST(test_evidence_count_null_ptr);
     RUN_TEST(test_get_evidence_at_null_manifest);
     RUN_TEST(test_get_evidence_at_invalid_index);
     RUN_TEST(test_get_evidence_at_success);

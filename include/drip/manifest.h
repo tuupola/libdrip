@@ -219,6 +219,16 @@ int drip_manifest_set_signature(
  * @retval DRIP_ERROR_INVALID_DET if @p det fails drip_det_validate().
  */
 int drip_manifest_validate(const drip_manifest_t *manifest);
+
+/**
+ * @brief Get the evidence count.
+ *
+ * @param manifest Pointer to the manifest.
+ *
+ * @return The evidence count or 0 if manifest is NULL.
+ */
+uint8_t drip_manifest_evidence_count(const drip_manifest_t *manifest);
+
 const drip_hash_t *
 drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index);
 int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *hash);

@@ -214,6 +214,13 @@ int drip_manifest_validate(const drip_manifest_t *manifest) {
     return DRIP_SUCCESS;
 }
 
+uint8_t drip_manifest_evidence_count(const drip_manifest_t *manifest) {
+    if (manifest == NULL) {
+        return 0;
+    }
+    return manifest->evidence_count;
+}
+
 int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *hash) {
     if (manifest == NULL || hash == NULL) {
         return DRIP_ERROR_NULL_POINTER;
