@@ -8,6 +8,7 @@
 - [include/drip/hash.h](#file-includedriphashh)
 - [include/drip/link.h](#file-includedriplinkh)
 - [include/drip/manifest.h](#file-includedripmanifesth)
+- [include/drip/wrapper.h](#file-includedripwrapperh)
 
 ## File include/drip/det.h
 
@@ -35,6 +36,7 @@
 |  uint8\_t | [**drip\_det\_get\_hhsi**](#function-drip_det_get_hhsi) (const [**drip\_det\_t**](#typedef-drip_det_t) \*det) <br>_Get the HHIT Suite ID (HHSI) of a DET._ |
 |  uint32\_t | [**drip\_det\_get\_hid**](#function-drip_det_get_hid) (const [**drip\_det\_t**](#typedef-drip_det_t) \*det) <br>_Get the Hierarchy ID (HID) of a DET._ |
 |  uint16\_t | [**drip\_det\_get\_raa**](#function-drip_det_get_raa) (const [**drip\_det\_t**](#typedef-drip_det_t) \*det) <br>_Get the Registered Assigning Authority (RAA) of a DET._ |
+|  int | [**drip\_det\_hid\_abbreviation**](#function-drip_det_hid_abbreviation) (const [**drip\_det\_t**](#typedef-drip_det_t) \*det, char \*buffer, size\_t buffer\_size) <br>_Render the default HID abbreviation of a DET._ |
 |  int | [**drip\_det\_init**](#function-drip_det_init) ([**drip\_det\_t**](#typedef-drip_det_t) \*det) <br>_Initialize a DET._ |
 |  [**drip\_det\_role\_t**](#enum-drip_det_role_t) | [**drip\_det\_role**](#function-drip_det_role) (const [**drip\_det\_t**](#typedef-drip_det_t) \*det) <br>_Get the role of a DET from its HID._ |
 |  int | [**drip\_det\_set\_hash**](#function-drip_det_set_hash) ([**drip\_det\_t**](#typedef-drip_det_t) \*det, const [**drip\_hash\_t**](#typedef-drip_hash_t) \*hash) <br>_Set the hash of a DET._ |
@@ -53,6 +55,7 @@
 | Type | Name |
 | ---: | :--- |
 | define  | [**DRIP\_DET\_CONTEXT\_ID\_SIZE**](#define-drip_det_context_id_size)  16<br>_Length of the hash customization string in bytes._ |
+| define  | [**DRIP\_DET\_HID\_ABBREVIATION\_SIZE**](#define-drip_det_hid_abbreviation_size)  10<br>_Buffer size in bytes for a NULL terminated HID abbreviation._ |
 | define  | [**DRIP\_DET\_IPV6\_PREFIX\_STRING**](#define-drip_det_ipv6_prefix_string)  "2001:30::/28"<br>_DET IPv6 prefix string (2001:30::/28)._ |
 | define  | [**DRIP\_DET\_IPV6\_STRING\_SIZE**](#define-drip_det_ipv6_string_size)  40<br>_Buffer size in bytes for a NULL terminated DET IPv6 string._ |
 | define  | [**DRIP\_DET\_SIZE**](#define-drip_det_size)  16<br>_Size of a DET in bytes._ |
@@ -310,6 +313,39 @@ The stored RAA or 0 if det is NULL.
 
 
 **See also:** [https://www.rfc-editor.org/rfc/rfc9374.html#section-3.3.1](https://www.rfc-editor.org/rfc/rfc9374.html#section-3.3.1)
+### function `drip_det_hid_abbreviation`
+
+_Render the default HID abbreviation of a DET._
+```c
+int drip_det_hid_abbreviation (
+    const drip_det_t *det,
+    char *buffer,
+    size_t buffer_size
+) 
+```
+
+
+RFC 9886 default is a four character hexadecimal RAA and HDA with a space between them.
+
+
+
+**Parameters:**
+
+
+* `det` Pointer to the DET to render. 
+* `buffer` Output buffer for the NULL terminated abbreviation. 
+* `buffer_size` Size of the output buffer.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if the abbreviation was rendered. 
+* `DRIP_ERROR_NULL_POINTER` if det or buffer is NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is too small to hold the rendered abbreviation.
+
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9886.html#section-5.1.2](https://www.rfc-editor.org/rfc/rfc9886.html#section-5.1.2)
 ### function `drip_det_init`
 
 _Initialize a DET._
@@ -698,6 +734,13 @@ _Length of the hash customization string in bytes._
 #define DRIP_DET_CONTEXT_ID_SIZE 16
 ```
 
+### define `DRIP_DET_HID_ABBREVIATION_SIZE`
+
+_Buffer size in bytes for a NULL terminated HID abbreviation._
+```c
+#define DRIP_DET_HID_ABBREVIATION_SIZE 10
+```
+
 ### define `DRIP_DET_IPV6_PREFIX_STRING`
 
 _DET IPv6 prefix string (2001:30::/28)._
@@ -804,9 +847,11 @@ String representation of the error code. Returns "UNKNOWN" for invalid values.
 
 | Type | Name |
 | ---: | :--- |
+| enum  | [**drip\_hhit\_entity\_type\_t**](#enum-drip_hhit_entity_type_t)  <br>_HHIT Entity Type values per RFC 9886._ |
 | typedef uint8\_t | [**drip\_hi\_t**](#typedef-drip_hi_t)  <br> |
 | enum  | [**drip\_sam\_type\_t**](#enum-drip_sam_type_t)  <br> |
 | typedef uint8\_t | [**drip\_signature\_t**](#typedef-drip_signature_t)  <br> |
+| enum  | [**drip\_ssi\_type\_t**](#enum-drip_ssi_type_t)  <br>_Specific Session ID (SSI) Type values per RFC 9374._ |
 
 
 ## Macros
@@ -819,6 +864,39 @@ String representation of the error code. Returns "UNKNOWN" for invalid values.
 
 ## Structures and Types Documentation
 
+### enum `drip_hhit_entity_type_t`
+
+_HHIT Entity Type values per RFC 9886._
+```c
+enum drip_hhit_entity_type_t {
+    DRIP_HHIT_ENTITY_TYPE_NOT_DEFINED = 0,
+    DRIP_HHIT_ENTITY_TYPE_DIME = 1,
+    DRIP_HHIT_ENTITY_TYPE_APEX = 5,
+    DRIP_HHIT_ENTITY_TYPE_RAA = 9,
+    DRIP_HHIT_ENTITY_TYPE_HDA = 13,
+    DRIP_HHIT_ENTITY_TYPE_UA = 16,
+    DRIP_HHIT_ENTITY_TYPE_GCS = 17,
+    DRIP_HHIT_ENTITY_TYPE_UAS = 18,
+    DRIP_HHIT_ENTITY_TYPE_RID_MODULE = 19,
+    DRIP_HHIT_ENTITY_TYPE_PILOT = 20,
+    DRIP_HHIT_ENTITY_TYPE_OPERATOR = 21,
+    DRIP_HHIT_ENTITY_TYPE_DSS = 22,
+    DRIP_HHIT_ENTITY_TYPE_USS = 23,
+    DRIP_HHIT_ENTITY_TYPE_SP = 24,
+    DRIP_HHIT_ENTITY_TYPE_DP = 25,
+    DRIP_HHIT_ENTITY_TYPE_SDSP = 26,
+    DRIP_HHIT_ENTITY_TYPE_CROWD_SOURCED_RID_FINDER = 27
+};
+```
+
+
+Numeric field of the HHIT DNS resource record.
+
+
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9886.html#section-6.2.2](https://www.rfc-editor.org/rfc/rfc9886.html#section-6.2.2)
+
+**See also:** [https://www.iana.org/assignments/drip/#hhit-entity-types](https://www.iana.org/assignments/drip/#hhit-entity-types)
 ### typedef `drip_hi_t`
 
 ```c
@@ -842,6 +920,24 @@ enum drip_sam_type_t {
 typedef uint8_t drip_signature_t[64];
 ```
 
+### enum `drip_ssi_type_t`
+
+_Specific Session ID (SSI) Type values per RFC 9374._
+```c
+enum drip_ssi_type_t {
+    DRIP_SSI_TYPE_DRIP_ENTITY_ID = 0x01,
+    DRIP_SSI_TYPE_IEEE_1609_2_HASHED_ID8 = 0x02
+};
+```
+
+
+First byte of the 20-byte Remote ID UAS ID when ID type is 4 (SSI).
+
+
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9374.html#section-4](https://www.rfc-editor.org/rfc/rfc9374.html#section-4)
+
+**See also:** [https://www.librid.org/latest/api/basic\_id/#enum-rid\_basic\_id\_type\_t](https://www.librid.org/latest/api/basic_id/#enum-rid_basic_id_type_t)
 
 
 ## Macros Documentation
@@ -2386,6 +2482,579 @@ int drip_manifest_verify (
 
 ```c
 #define DRIP_TIMESTAMP_SIZE 4
+```
+
+
+## File include/drip/wrapper.h
+
+
+
+
+
+## Structures and Types
+
+| Type | Name |
+| ---: | :--- |
+| typedef int(\* | [**drip\_wrapper\_sign\_cb\_t**](#typedef-drip_wrapper_sign_cb_t)  <br>_Callback function type for producing wrapper signatures._ |
+| struct | [**drip\_wrapper\_t**](#struct-drip_wrapper_t) <br> |
+| typedef int(\* | [**drip\_wrapper\_verify\_cb\_t**](#typedef-drip_wrapper_verify_cb_t)  <br>_Callback function type for verifying wrapper signatures._ |
+
+## Functions
+
+| Type | Name |
+| ---: | :--- |
+|  int | [**drip\_wrapper\_add\_evidence**](#function-drip_wrapper_add_evidence) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const uint8\_t \*buffer, size\_t buffer\_size) <br> |
+|  int | [**drip\_wrapper\_decode**](#function-drip_wrapper_decode) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const uint8\_t \*buffer, size\_t buffer\_size) <br>_Decode a wrapper from its wire format._ |
+|  int | [**drip\_wrapper\_encode**](#function-drip_wrapper_encode) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint8\_t \*buffer, size\_t buffer\_size, size\_t \*encoded\_length) <br> |
+|  const [**drip\_det\_t**](#typedef-drip_det_t) \* | [**drip\_wrapper\_get\_det**](#function-drip_wrapper_get_det) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br> |
+|  const uint8\_t \* | [**drip\_wrapper\_get\_evidence\_at**](#function-drip_wrapper_get_evidence_at) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint8\_t index) <br> |
+|  const [**drip\_signature\_t**](#typedef-drip_signature_t) \* | [**drip\_wrapper\_get\_signature**](#function-drip_wrapper_get_signature) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br> |
+|  uint32\_t | [**drip\_wrapper\_get\_vna**](#function-drip_wrapper_get_vna) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the vna timestamp._ |
+|  uint32\_t | [**drip\_wrapper\_get\_vna\_unixtime**](#function-drip_wrapper_get_vna_unixtime) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the vna as a unix timestamp._ |
+|  uint32\_t | [**drip\_wrapper\_get\_vnb**](#function-drip_wrapper_get_vnb) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the vnb timestamp._ |
+|  uint32\_t | [**drip\_wrapper\_get\_vnb\_unixtime**](#function-drip_wrapper_get_vnb_unixtime) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the vnb as a unix timestamp._ |
+|  int | [**drip\_wrapper\_init**](#function-drip_wrapper_init) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br> |
+|  int | [**drip\_wrapper\_set\_det**](#function-drip_wrapper_set_det) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const [**drip\_det\_t**](#typedef-drip_det_t) \*det) <br> |
+|  int | [**drip\_wrapper\_set\_signature**](#function-drip_wrapper_set_signature) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const [**drip\_signature\_t**](#typedef-drip_signature_t) \*signature) <br> |
+|  int | [**drip\_wrapper\_set\_vna**](#function-drip_wrapper_set_vna) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint32\_t vna) <br>_Set the vna timestamp._ |
+|  int | [**drip\_wrapper\_set\_vna\_unixtime**](#function-drip_wrapper_set_vna_unixtime) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint32\_t unixtime) <br>_Set the vna from unix timestamp._ |
+|  int | [**drip\_wrapper\_set\_vnb**](#function-drip_wrapper_set_vnb) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint32\_t vnb) <br>_Set the vnb timestamp._ |
+|  int | [**drip\_wrapper\_set\_vnb\_unixtime**](#function-drip_wrapper_set_vnb_unixtime) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint32\_t unixtime) <br>_Set the vnb from unix timestamp._ |
+|  int | [**drip\_wrapper\_sign**](#function-drip_wrapper_sign) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, [**drip\_wrapper\_sign\_cb\_t**](#typedef-drip_wrapper_sign_cb_t) callback, void \*context) <br>_Sign a wrapper with caller supplied callback._ |
+|  int | [**drip\_wrapper\_to\_json**](#function-drip_wrapper_to_json) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, char \*buffer, size\_t buffer\_size, size\_t \*json\_length) <br>_Serialize a DRIP wrapper to a JSON string._ |
+|  int | [**drip\_wrapper\_validate**](#function-drip_wrapper_validate) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Validate the structural state of a wrapper._ |
+|  int | [**drip\_wrapper\_verify**](#function-drip_wrapper_verify) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, [**drip\_wrapper\_verify\_cb\_t**](#typedef-drip_wrapper_verify_cb_t) callback, void \*context) <br> |
+
+## Macros
+
+| Type | Name |
+| ---: | :--- |
+| define  | [**DRIP\_SAM\_TYPE\_SIZE**](#define-drip_sam_type_size)  1<br> |
+| define  | [**DRIP\_TIMESTAMP\_SIZE**](#define-drip_timestamp_size)  4<br> |
+| define  | [**DRIP\_WRAPPER\_EVIDENCE\_MAX**](#define-drip_wrapper_evidence_max)  4 /\* 0..4 messages \*/<br> |
+| define  | [**DRIP\_WRAPPER\_EVIDENCE\_SIZE**](#define-drip_wrapper_evidence_size)  112<br> |
+| define  | [**DRIP\_WRAPPER\_MAX\_SIZE**](#define-drip_wrapper_max_size)  189 /\* When four messages. \*/<br> |
+| define  | [**DRIP\_WRAPPER\_MIN\_SIZE**](#define-drip_wrapper_min_size)  89 /\* When zero messages. \*/<br> |
+| define  | [**RID\_MESSAGE\_SIZE**](#define-rid_message_size)  25<br> |
+
+## Structures and Types Documentation
+
+### typedef `drip_wrapper_sign_cb_t`
+
+_Callback function type for producing wrapper signatures._
+```c
+typedef int(* drip_wrapper_sign_cb_t) (void *context, const uint8_t *input, size_t input_length, uint8_t *buffer, size_t buffer_size, size_t *output_length);
+```
+
+
+Called by [**drip\_wrapper\_sign()**](#function-drip_wrapper_sign) to perform the actual signing of the payload.
+
+
+
+**Parameters:**
+
+
+* `context` Opaque context passed to the callback. 
+* `input` Pointer to the payload to sign. 
+* `input_length` Length of the payload in bytes. 
+* `buffer` Output buffer for the signature. 
+* `buffer_size` Size of the signature buffer in bytes. 
+* `output_length` Receives resulting wrapper length written.
+
+
+**Return value:**
+
+
+* `0` on success. 
+* `Non-zero` on signing failure.
+### struct `drip_wrapper_t`
+
+
+Variables:
+
+-  [**drip\_det\_t**](#typedef-drip_det_t) det  
+
+-  uint8\_t evidence  
+
+-  uint8\_t evidence_count  
+
+-  uint8\_t sam_type  
+
+-  [**drip\_signature\_t**](#typedef-drip_signature_t) signature  
+
+-  uint32\_t vna  
+
+-  uint32\_t vnb  
+
+### typedef `drip_wrapper_verify_cb_t`
+
+_Callback function type for verifying wrapper signatures._
+```c
+typedef int(* drip_wrapper_verify_cb_t) (void *context, const uint8_t *input, size_t input_length, const uint8_t *signature, size_t signature_length);
+```
+
+
+Called by [**drip\_wrapper\_verify()**](#function-drip_wrapper_verify) to perform the actual verification of the signed payload.
+
+
+
+**Parameters:**
+
+
+* `context` Opaque context passed to the callback. 
+* `input` Pointer to the signed payload data. 
+* `input_length` Length of the signed payload in bytes. 
+* `signature` Pointer to the signature to verify against. 
+* `signature_length` Length of the signature in bytes.
+
+
+**Return value:**
+
+
+* `0` on success. 
+* `Non-zero` on verification failure.
+
+## Functions Documentation
+
+### function `drip_wrapper_add_evidence`
+
+```c
+int drip_wrapper_add_evidence (
+    drip_wrapper_t *wrapper,
+    const uint8_t *buffer,
+    size_t buffer_size
+) 
+```
+
+### function `drip_wrapper_decode`
+
+_Decode a wrapper from its wire format._
+```c
+int drip_wrapper_decode (
+    drip_wrapper_t *wrapper,
+    const uint8_t *buffer,
+    size_t buffer_size
+) 
+```
+
+
+The buffer must contain only the bytes for the wrapper and nothing else.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper that receives the decoded data. 
+* `buffer` Input buffer holding the wire format bytes. 
+* `buffer_size` Size of buffer in bytes.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` on success. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper or buffer is NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is less than DRIP\_WRAPPER\_MIN\_SIZE. 
+* `DRIP_ERROR_INVALID_LENGTH` if the evidence payload length is not a multiple of DRIP\_HASH\_SIZE. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if the evidence count would exceed DRIP\_wrapper\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_INVALID_SAM_TYPE` if the decoded SAM type is not DRIP\_SAM\_TYPE\_WRAPPER.
+### function `drip_wrapper_encode`
+
+```c
+int drip_wrapper_encode (
+    const drip_wrapper_t *wrapper,
+    uint8_t *buffer,
+    size_t buffer_size,
+    size_t *encoded_length
+) 
+```
+
+### function `drip_wrapper_get_det`
+
+```c
+const drip_det_t * drip_wrapper_get_det (
+    const drip_wrapper_t *wrapper
+) 
+```
+
+### function `drip_wrapper_get_evidence_at`
+
+```c
+const uint8_t * drip_wrapper_get_evidence_at (
+    const drip_wrapper_t *wrapper,
+    uint8_t index
+) 
+```
+
+### function `drip_wrapper_get_signature`
+
+```c
+const drip_signature_t * drip_wrapper_get_signature (
+    const drip_wrapper_t *wrapper
+) 
+```
+
+### function `drip_wrapper_get_vna`
+
+_Get the vna timestamp._
+```c
+uint32_t drip_wrapper_get_vna (
+    const drip_wrapper_t *wrapper
+) 
+```
+
+
+Returned as seconds since DRIP\_TIMESTAMP\_EPOCH.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper.
+
+
+**Returns:**
+
+The vna timestamp or 0 if wrapper is NULL.
+### function `drip_wrapper_get_vna_unixtime`
+
+_Get the vna as a unix timestamp._
+```c
+uint32_t drip_wrapper_get_vna_unixtime (
+    const drip_wrapper_t *wrapper
+) 
+```
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper.
+
+
+**Returns:**
+
+The vna as unix timestamp or 0 if wrapper is NULL.
+### function `drip_wrapper_get_vnb`
+
+_Get the vnb timestamp._
+```c
+uint32_t drip_wrapper_get_vnb (
+    const drip_wrapper_t *wrapper
+) 
+```
+
+
+Returned as seconds since DRIP\_TIMESTAMP\_EPOCH.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper.
+
+
+**Returns:**
+
+The vnb timestamp or 0 if wrapper is NULL.
+### function `drip_wrapper_get_vnb_unixtime`
+
+_Get the vnb as a unix timestamp._
+```c
+uint32_t drip_wrapper_get_vnb_unixtime (
+    const drip_wrapper_t *wrapper
+) 
+```
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper.
+
+
+**Returns:**
+
+The vnb as unix timestamp or 0 if wrapper is NULL.
+### function `drip_wrapper_init`
+
+```c
+int drip_wrapper_init (
+    drip_wrapper_t *wrapper
+) 
+```
+
+### function `drip_wrapper_set_det`
+
+```c
+int drip_wrapper_set_det (
+    drip_wrapper_t *wrapper,
+    const drip_det_t *det
+) 
+```
+
+### function `drip_wrapper_set_signature`
+
+```c
+int drip_wrapper_set_signature (
+    drip_wrapper_t *wrapper,
+    const drip_signature_t *signature
+) 
+```
+
+### function `drip_wrapper_set_vna`
+
+_Set the vna timestamp._
+```c
+int drip_wrapper_set_vna (
+    drip_wrapper_t *wrapper,
+    uint32_t vna
+) 
+```
+
+
+Stored internally as seconds since DRIP\_TIMESTAMP\_EPOCH.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to modify. 
+* `vna` Offset from DRIP\_TIMESTAMP\_EPOCH in seconds.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if vna was stored. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper is NULL. 
+* `DRIP_ERROR_OUT_OF_RANGE` if vna &gt; UINT32\_MAX - DRIP\_TIMESTAMP\_EPOCH.
+### function `drip_wrapper_set_vna_unixtime`
+
+_Set the vna from unix timestamp._
+```c
+int drip_wrapper_set_vna_unixtime (
+    drip_wrapper_t *wrapper,
+    uint32_t unixtime
+) 
+```
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to modify. 
+* `unixtime` Unix timestamp in seconds.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if vna was stored. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper is NULL. 
+* `DRIP_ERROR_OUT_OF_RANGE` if unixtime &lt; DRIP\_TIMESTAMP\_EPOCH.
+### function `drip_wrapper_set_vnb`
+
+_Set the vnb timestamp._
+```c
+int drip_wrapper_set_vnb (
+    drip_wrapper_t *wrapper,
+    uint32_t vnb
+) 
+```
+
+
+Stored internally as seconds since DRIP\_TIMESTAMP\_EPOCH.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to modify. 
+* `vnb` Offset from DRIP\_TIMESTAMP\_EPOCH in seconds.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if vnb was stored. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper is NULL. 
+* `DRIP_ERROR_OUT_OF_RANGE` if vnb &gt; UINT32\_MAX - DRIP\_TIMESTAMP\_EPOCH.
+### function `drip_wrapper_set_vnb_unixtime`
+
+_Set the vnb from unix timestamp._
+```c
+int drip_wrapper_set_vnb_unixtime (
+    drip_wrapper_t *wrapper,
+    uint32_t unixtime
+) 
+```
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to modify. 
+* `unixtime` Unix timestamp in seconds.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if vnb was stored. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper is NULL. 
+* `DRIP_ERROR_OUT_OF_RANGE` if unixtime &lt; DRIP\_TIMESTAMP\_EPOCH.
+### function `drip_wrapper_sign`
+
+_Sign a wrapper with caller supplied callback._
+```c
+int drip_wrapper_sign (
+    drip_wrapper_t *wrapper,
+    drip_wrapper_sign_cb_t callback,
+    void *context
+) 
+```
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to be signed. 
+* `callback` Callback function used to generate the signature. 
+* `context` Opaque context passed to the callback.
+
+
+**Precondition:**
+
+You must call drip\_wrapper\_update\_current\_hash() atleast once before calling this function.
+
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if signing succeeded. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper or callback is NULL. 
+* `DRIP_ERROR_CALLBACK_FAILED` if callback returned non-zero.
+### function `drip_wrapper_to_json`
+
+_Serialize a DRIP wrapper to a JSON string._
+```c
+int drip_wrapper_to_json (
+    const drip_wrapper_t *wrapper,
+    char *buffer,
+    size_t buffer_size,
+    size_t *json_length
+) 
+```
+
+
+On success writes a NULL terminated JSON to buffer. When buffer\_size is too small the output is truncated and DRIP\_ERROR\_BUFFER\_TOO\_SMALL is returned. The truncated buffer is still NULL terminated.
+
+
+
+**Parameters:**
+
+
+* `link` Pointer to the wrapper to serialize. 
+* `buffer` Output buffer for the JSON representation. 
+* `buffer_size` Size of buffer in bytes. 
+* `json_length` Optional. Receives receives the number of characters for the full non truncated output. Ignored if NULL.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` on success. 
+* `DRIP_ERROR_NULL_POINTER` if link or buffer is NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is too small.
+### function `drip_wrapper_validate`
+
+_Validate the structural state of a wrapper._
+```c
+int drip_wrapper_validate (
+    const drip_wrapper_t *wrapper
+) 
+```
+
+
+Performs structural checks only. Does not verify the signature.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to validate.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if wrapper is structurally valid. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper is NULL. 
+* `DRIP_ERROR_INVALID_SAM_TYPE` if sam\_type is not DRIP\_SAM\_TYPE\_wrapper. 
+* `DRIP_ERROR_INVALID_TIMESTAMP` if vnb &gt; vna. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_wrapper\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_INVALID_DET` if det fails [**drip\_det\_validate()**](#function-drip_det_validate).
+### function `drip_wrapper_verify`
+
+```c
+int drip_wrapper_verify (
+    drip_wrapper_t *wrapper,
+    drip_wrapper_verify_cb_t callback,
+    void *context
+) 
+```
+
+
+## Macros Documentation
+
+### define `DRIP_SAM_TYPE_SIZE`
+
+```c
+#define DRIP_SAM_TYPE_SIZE 1
+```
+
+### define `DRIP_TIMESTAMP_SIZE`
+
+```c
+#define DRIP_TIMESTAMP_SIZE 4
+```
+
+### define `DRIP_WRAPPER_EVIDENCE_MAX`
+
+```c
+#define DRIP_WRAPPER_EVIDENCE_MAX 4 /* 0..4 messages */
+```
+
+### define `DRIP_WRAPPER_EVIDENCE_SIZE`
+
+```c
+#define DRIP_WRAPPER_EVIDENCE_SIZE 112
+```
+
+### define `DRIP_WRAPPER_MAX_SIZE`
+
+```c
+#define DRIP_WRAPPER_MAX_SIZE 189 /* When four messages. */
+```
+
+### define `DRIP_WRAPPER_MIN_SIZE`
+
+```c
+#define DRIP_WRAPPER_MIN_SIZE 89 /* When zero messages. */
+```
+
+### define `RID_MESSAGE_SIZE`
+
+```c
+#define RID_MESSAGE_SIZE 25
 ```
 
 
