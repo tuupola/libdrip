@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -494,8 +495,8 @@ int drip_link_to_json(
         buffer, buffer_size,
         "{"
         "\"sam_type\": %u, "
-        "\"vnb\": %u, "
-        "\"vna\": %u, "
+        "\"vnb\": %" PRIu32 ", "
+        "\"vna\": %" PRIu32 ", "
         "\"child_det\": \"%s\", "
         "\"child_hi\": \"%s\", "
         "\"parent_det\": \"%s\", "

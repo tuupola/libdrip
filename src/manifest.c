@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -510,8 +511,8 @@ int drip_manifest_to_json(
         buffer, buffer_size,
         "{"
         "\"sam_type\": %u, "
-        "\"vnb\": %u, "
-        "\"vna\": %u, "
+        "\"vnb\": %" PRIu32 ", "
+        "\"vna\": %" PRIu32 ", "
         "\"previous_hash\": \"%s\", "
         "\"current_hash\": \"%s\", "
         "\"link_hash\": \"%s\", "
