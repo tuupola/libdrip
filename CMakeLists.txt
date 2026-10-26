@@ -1,8 +1,16 @@
 if(ESP_PLATFORM)
   idf_component_register(
-        SRCS "src/manifest.c"
-        INCLUDE_DIRS "include"
+        SRCS
+            "src/det.c"
+            "src/error.c"
+            "src/hash.c"
+            "src/link.c"
+            "src/manifest.c"
+            "src/wrapper.c"
+        INCLUDE_DIRS
+            "include"
     )
+  target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-error=format)
 else()
   cmake_minimum_required(VERSION 3.10)
   project(libdrip LANGUAGES C)
