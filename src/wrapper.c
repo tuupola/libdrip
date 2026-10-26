@@ -3,6 +3,14 @@
 
 #include "drip/wrapper.h"
 
+static int check_evidence_type(const uint8_t *buffer) {
+    uint8_t type = buffer[0] >> 4;
+    if (type != 0x0 && type != 0x1 && type != 0x3 && type != 0x4 && type != 0x5) {
+        return DRIP_ERROR_INVALID_MESSAGE_TYPE;
+    }
+    return DRIP_SUCCESS;
+}
+
 int drip_wrapper_init(drip_wrapper_t *wrapper) {
     if (wrapper == NULL) {
         return DRIP_ERROR_NULL_POINTER;
@@ -134,6 +142,12 @@ int drip_wrapper_validate(const drip_wrapper_t *wrapper) {
     if (wrapper->evidence_count > DRIP_WRAPPER_EVIDENCE_MAX) {
         return DRIP_ERROR_ARRAY_OVERFLOW;
     }
+    for (uint8_t i = 0; i < wrapper->evidence_count; i++) {
+        int rc = check_evidence_type(wrapper->evidence[i]);
+        if (rc != DRIP_SUCCESS) {
+            return rc;
+        }
+    }
     if (drip_det_validate(&wrapper->det) != DRIP_SUCCESS) {
         return DRIP_ERROR_INVALID_DET;
     }
@@ -148,6 +162,10 @@ int drip_wrapper_add_evidence(
     }
     if (buffer_size != RID_MESSAGE_SIZE) {
         return DRIP_ERROR_INVALID_LENGTH;
+    }
+    int rc = check_evidence_type(buffer);
+    if (rc != DRIP_SUCCESS) {
+        return rc;
     }
     if (wrapper->evidence_count >= DRIP_WRAPPER_EVIDENCE_MAX) {
         return DRIP_ERROR_ARRAY_OVERFLOW;

@@ -179,11 +179,11 @@ int drip_wrapper_set_signature(
  *
  * @retval DRIP_SUCCESS if wrapper is structurally valid.
  * @retval DRIP_ERROR_NULL_POINTER if wrapper is NULL.
- * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not
- *         DRIP_SAM_TYPE_wrapper.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not DRIP_SAM_TYPE_WRAPPER.
  * @retval DRIP_ERROR_INVALID_TIMESTAMP if vnb > vna.
- * @retval DRIP_ERROR_ARRAY_OVERFLOW if evidence_count exceeds
- *         DRIP_wrapper_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if evidence_count exceeds DRIP_WRAPPER_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_INVALID_MESSAGE_TYPE if an evidence message type is not
+ *         0x0 0x1 0x3 0x4 or 0x5.
  * @retval DRIP_ERROR_INVALID_DET if det fails drip_det_validate().
  */
 int drip_wrapper_validate(const drip_wrapper_t *wrapper);
@@ -199,6 +199,24 @@ uint8_t drip_wrapper_evidence_count(const drip_wrapper_t *wrapper);
 
 const uint8_t *drip_wrapper_get_evidence_at(const drip_wrapper_t *wrapper, uint8_t index);
 
+/**
+ * @brief Add a 25-byte ASTM message to the wrapper evidence.
+ *
+ * Only ASTM Message Types 0x0 0x1 0x3 0x4 and 0x5 are allowed.
+ *
+ * @param wrapper Pointer to the wrapper to modify.
+ * @param buffer Pointer to a 25-byte ASTM message.
+ * @param buffer_size Size of buffer in bytes. Must be RID_MESSAGE_SIZE.
+ *
+ * @retval DRIP_SUCCESS if the message was added to the wrapper.
+ * @retval DRIP_ERROR_NULL_POINTER if wrapper or buffer is NULL.
+ * @retval DRIP_ERROR_INVALID_LENGTH if buffer_size is not RID_MESSAGE_SIZE.
+ * @retval DRIP_ERROR_INVALID_MESSAGE_TYPE if the given ASTM message type is not allowed.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if evidence_count would exceed
+ *         DRIP_WRAPPER_EVIDENCE_MAX.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.3
+ */
 int drip_wrapper_add_evidence(
     drip_wrapper_t *wrapper, const uint8_t *buffer, size_t buffer_size
 );

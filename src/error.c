@@ -32,6 +32,8 @@ const char *drip_error_to_string(drip_error_t error) {
             return "DRIP_ERROR_INVALID_CHILD_DET";
         case DRIP_ERROR_INVALID_PARENT_DET:
             return "DRIP_ERROR_INVALID_PARENT_DET";
+        case DRIP_ERROR_INVALID_MESSAGE_TYPE:
+            return "DRIP_ERROR_INVALID_MESSAGE_TYPE";
         case DRIP_ERROR_INVALID_IPV6_STRING:
             return "DRIP_ERROR_INVALID_IPV6_STRING";
         case DRIP_ERROR_INVALID_DET:
