@@ -3,7 +3,7 @@ jobs:
   examples:
     runs-on: docker
     container:
-      image: node:22-bookworm
+      image: node:22-trixie
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
