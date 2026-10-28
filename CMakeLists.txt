@@ -12,7 +12,7 @@ if(ESP_PLATFORM)
     )
   target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-error=format)
 else()
-  cmake_minimum_required(VERSION 3.10)
+  cmake_minimum_required(VERSION 3.30)
   project(libdrip LANGUAGES C)
 
   set(CMAKE_C_STANDARD 11)

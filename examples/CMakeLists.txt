@@ -40,5 +40,6 @@ FetchContent_Declare(
     librid
     GIT_REPOSITORY https://github.com/tuupola/librid.git
     GIT_TAG master
+    EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(librid)
