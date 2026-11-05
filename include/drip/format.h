@@ -7,13 +7,43 @@
 
 #include "drip/error.h"
 
-/** @brief Timestamp epoch (2019-01-01 00:00:00 UTC as Unix timestamp). */
+/**
+ * @brief Timestamp epoch, 2019-01-01 00:00:00 UTC as Unix timestamp.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-3.2.4.3
+ */
 #define DRIP_TIMESTAMP_EPOCH 1546300800
 
+/**
+ * @brief Size of a Host Identity in bytes.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
 #define DRIP_HI_SIZE 32
+
+/**
+ * @brief Size of a signature in bytes.
+ *
+ * RFC 9575 defines the field size to be 64 bytes. Algorithm is defined by
+ * the HHIT Suite ID (HHSI). The only algorithm which fits to 64 bytes Ed25519
+ * i.e. HHSI 5. Not sure how other algorithms should be handled.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.1
+ */
 #define DRIP_SIGNATURE_SIZE 64
 
+/**
+ * @brief 32-byte Host Identity (HI).
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2
+ */
 typedef uint8_t drip_hi_t[DRIP_HI_SIZE];
+
+/**
+ * @brief 64-byte signature.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-4.1
+ */
 typedef uint8_t drip_signature_t[DRIP_SIGNATURE_SIZE];
 
 static_assert(sizeof(drip_hi_t) == DRIP_HI_SIZE, "drip_hi_t size mismatch");
@@ -21,6 +51,15 @@ static_assert(
     sizeof(drip_signature_t) == DRIP_SIGNATURE_SIZE, "drip_signature_t size mismatch"
 );
 
+/**
+ * @brief Specific Authentication Method (SAM) Type values per RFC 9575.
+ *
+ * First byte of SAM Authentication Data. Selects the format of the
+ * following authentication data.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc9575.html#section-3.2.3
+ * @see https://www.iana.org/assignments/drip/#drip-sam-types
+ */
 typedef enum {
     DRIP_SAM_TYPE_LINK = 0x01,
     DRIP_SAM_TYPE_WRAPPER = 0x02,
@@ -42,7 +81,7 @@ typedef enum {
 } drip_ssi_type_t;
 
 /**
- * @brief HHIT Entity Type values per RFC 9886.
+ * @brief Hierarchical Host Identity Tag (HHIT) Entity Type values per RFC 9886.
  *
  * Numeric field of the HHIT DNS resource record.
  *
