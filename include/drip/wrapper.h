@@ -228,9 +228,6 @@ int drip_wrapper_add_evidence(
  * @param callback Callback function used to generate the signature.
  * @param context Opaque context passed to the callback.
  *
- * @pre You must call drip_wrapper_update_current_hash() atleast once
- *      before calling this function.
- *
  * @retval DRIP_SUCCESS if signing succeeded.
  * @retval DRIP_ERROR_NULL_POINTER if wrapper or callback is NULL.
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
@@ -260,7 +257,7 @@ int drip_wrapper_encode(
  * @retval DRIP_SUCCESS on success.
  * @retval DRIP_ERROR_NULL_POINTER if wrapper or buffer is NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is less than DRIP_WRAPPER_MIN_SIZE.
- * @retval DRIP_ERROR_INVALID_LENGTH if the evidence payload length is not a multiple of DRIP_HASH_SIZE.
+ * @retval DRIP_ERROR_INVALID_LENGTH if the evidence payload length is not a multiple of RID_MESSAGE_SIZE.
  * @retval DRIP_ERROR_ARRAY_OVERFLOW if the evidence count would exceed DRIP_wrapper_EVIDENCE_MAX.
  * @retval DRIP_ERROR_INVALID_SAM_TYPE if the decoded SAM type is not DRIP_SAM_TYPE_WRAPPER.
  */
@@ -275,14 +272,14 @@ int drip_wrapper_decode(
  * too small the output is truncated and DRIP_ERROR_BUFFER_TOO_SMALL is returned.
  * The truncated buffer is still NULL terminated.
  *
- * @param link Pointer to the wrapper to serialize.
+ * @param wrapper Pointer to the wrapper to serialize.
  * @param buffer Output buffer for the JSON representation.
  * @param buffer_size Size of buffer in bytes.
  * @param json_length Optional. Receives receives the number of characters
  *        for the full non truncated output. Ignored if NULL.
  *
  * @retval DRIP_SUCCESS on success.
- * @retval DRIP_ERROR_NULL_POINTER if link or buffer is NULL.
+ * @retval DRIP_ERROR_NULL_POINTER if wrapper or buffer is NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is too small.
  */
 int drip_wrapper_to_json(

@@ -287,14 +287,14 @@ int drip_manifest_decode(
  * too small the output is truncated and DRIP_ERROR_BUFFER_TOO_SMALL is returned.
  * The truncated buffer is still NULL terminated.
  *
- * @param link Pointer to the manifest to serialize.
+ * @param manifest Pointer to the manifest to serialize.
  * @param buffer Output buffer for the JSON representation.
  * @param buffer_size Size of @p buffer in bytes.
  * @param json_length Optional. Receives receives the number of characters
  *                    for the full non truncated output. Ignored if NULL.
  *
  * @retval DRIP_SUCCESS on success.
- * @retval DRIP_ERROR_NULL_POINTER if @p link or @p buffer is NULL.
+ * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p buffer is NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is too small.
  */
 int drip_manifest_to_json(
