@@ -11,6 +11,7 @@ int main(int argc, char **argv) {
     RUN_SUITE(hash_suite);
     RUN_SUITE(link_suite);
     RUN_SUITE(det_suite);
+    RUN_SUITE(wrapper_suite);
 
     GREATEST_MAIN_END();
 }

@@ -8,6 +8,7 @@ add_executable(test_runner
     test_hash.c
     test_link.c
     test_det.c
+    test_wrapper.c
     ${CMAKE_SOURCE_DIR}/examples/external/cSHAKE128-tiny/SP800-185.c
     ${CMAKE_SOURCE_DIR}/examples/external/cSHAKE128-tiny/KeccakSponge.c
     ${CMAKE_SOURCE_DIR}/examples/external/cSHAKE128-tiny/KeccakP-1600-inplace32BI.c
