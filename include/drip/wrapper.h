@@ -39,7 +39,7 @@ typedef struct drip_wrapper {
  * @param input_length Length of the payload in bytes.
  * @param buffer Output buffer for the signature.
  * @param buffer_size Size of the signature buffer in bytes.
- * @param output_length Receives resulting wrapper length written.
+ * @param output_length Receives resulting signature length written.
  *
  * @retval 0 on success.
  * @retval Non-zero on signing failure.
