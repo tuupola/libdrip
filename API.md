@@ -848,10 +848,10 @@ String representation of the error code. Returns "UNKNOWN" for invalid values.
 
 | Type | Name |
 | ---: | :--- |
-| enum  | [**drip\_hhit\_entity\_type\_t**](#enum-drip_hhit_entity_type_t)  <br>_HHIT Entity Type values per RFC 9886._ |
-| typedef uint8\_t | [**drip\_hi\_t**](#typedef-drip_hi_t)  <br> |
-| enum  | [**drip\_sam\_type\_t**](#enum-drip_sam_type_t)  <br> |
-| typedef uint8\_t | [**drip\_signature\_t**](#typedef-drip_signature_t)  <br> |
+| enum  | [**drip\_hhit\_entity\_type\_t**](#enum-drip_hhit_entity_type_t)  <br>_Hierarchical Host Identity Tag (HHIT) Entity Type values per RFC 9886._ |
+| typedef uint8\_t | [**drip\_hi\_t**](#typedef-drip_hi_t)  <br>_32-byte Host Identity (HI)._ |
+| enum  | [**drip\_sam\_type\_t**](#enum-drip_sam_type_t)  <br>_Specific Authentication Method (SAM) Type values per RFC 9575._ |
+| typedef uint8\_t | [**drip\_signature\_t**](#typedef-drip_signature_t)  <br>_64-byte signature._ |
 | enum  | [**drip\_ssi\_type\_t**](#enum-drip_ssi_type_t)  <br>_Specific Session ID (SSI) Type values per RFC 9374._ |
 
 
@@ -859,15 +859,15 @@ String representation of the error code. Returns "UNKNOWN" for invalid values.
 
 | Type | Name |
 | ---: | :--- |
-| define  | [**DRIP\_HI\_SIZE**](#define-drip_hi_size)  32<br> |
-| define  | [**DRIP\_SIGNATURE\_SIZE**](#define-drip_signature_size)  64<br> |
-| define  | [**DRIP\_TIMESTAMP\_EPOCH**](#define-drip_timestamp_epoch)  1546300800<br>_Timestamp epoch (2019-01-01 00:00:00 UTC as Unix timestamp)._ |
+| define  | [**DRIP\_HI\_SIZE**](#define-drip_hi_size)  32<br>_Size of a Host Identity in bytes._ |
+| define  | [**DRIP\_SIGNATURE\_SIZE**](#define-drip_signature_size)  64<br>_Size of a signature in bytes._ |
+| define  | [**DRIP\_TIMESTAMP\_EPOCH**](#define-drip_timestamp_epoch)  1546300800<br>_Timestamp epoch, 2019-01-01 00:00:00 UTC as Unix timestamp._ |
 
 ## Structures and Types Documentation
 
 ### enum `drip_hhit_entity_type_t`
 
-_HHIT Entity Type values per RFC 9886._
+_Hierarchical Host Identity Tag (HHIT) Entity Type values per RFC 9886._
 ```c
 enum drip_hhit_entity_type_t {
     DRIP_HHIT_ENTITY_TYPE_NOT_DEFINED = 0,
@@ -900,12 +900,16 @@ Numeric field of the HHIT DNS resource record.
 **See also:** [https://www.iana.org/assignments/drip/#hhit-entity-types](https://www.iana.org/assignments/drip/#hhit-entity-types)
 ### typedef `drip_hi_t`
 
+_32-byte Host Identity (HI)._
 ```c
 typedef uint8_t drip_hi_t[32];
 ```
 
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2](https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2)
 ### enum `drip_sam_type_t`
 
+_Specific Authentication Method (SAM) Type values per RFC 9575._
 ```c
 enum drip_sam_type_t {
     DRIP_SAM_TYPE_LINK = 0x01,
@@ -915,12 +919,23 @@ enum drip_sam_type_t {
 };
 ```
 
+
+First byte of SAM Authentication Data. Selects the format of the following authentication data.
+
+
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-3.2.3](https://www.rfc-editor.org/rfc/rfc9575.html#section-3.2.3)
+
+**See also:** [https://www.iana.org/assignments/drip/#drip-sam-types](https://www.iana.org/assignments/drip/#drip-sam-types)
 ### typedef `drip_signature_t`
 
+_64-byte signature._
 ```c
 typedef uint8_t drip_signature_t[64];
 ```
 
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-4.1](https://www.rfc-editor.org/rfc/rfc9575.html#section-4.1)
 ### enum `drip_ssi_type_t`
 
 _Specific Session ID (SSI) Type values per RFC 9374._
@@ -945,23 +960,35 @@ First byte of the 20-byte Remote ID UAS ID when ID type is 4 (SSI).
 
 ### define `DRIP_HI_SIZE`
 
+_Size of a Host Identity in bytes._
 ```c
 #define DRIP_HI_SIZE 32
 ```
 
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2](https://www.rfc-editor.org/rfc/rfc9575.html#section-4.2)
 ### define `DRIP_SIGNATURE_SIZE`
 
+_Size of a signature in bytes._
 ```c
 #define DRIP_SIGNATURE_SIZE 64
 ```
 
+
+RFC 9575 defines the field size to be 64 bytes. Algorithm is defined by the HHIT Suite ID (HHSI). The only algorithm which fits to 64 bytes Ed25519 i.e. HHSI 5. Not sure how other algorithms should be handled.
+
+
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-4.1](https://www.rfc-editor.org/rfc/rfc9575.html#section-4.1)
 ### define `DRIP_TIMESTAMP_EPOCH`
 
-_Timestamp epoch (2019-01-01 00:00:00 UTC as Unix timestamp)._
+_Timestamp epoch, 2019-01-01 00:00:00 UTC as Unix timestamp._
 ```c
 #define DRIP_TIMESTAMP_EPOCH 1546300800
 ```
 
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-3.2.4.3](https://www.rfc-editor.org/rfc/rfc9575.html#section-3.2.4.3)
 
 ## File include/drip/hash.h
 
@@ -1913,7 +1940,7 @@ Called by [**drip\_manifest\_sign()**](#function-drip_manifest_sign) to perform 
 * `input_length` Length of the payload in bytes. 
 * `buffer` Output buffer for the signature. 
 * `buffer_size` Size of the signature buffer in bytes. 
-* `output_length` Receives resulting manifest length written.
+* `output_length` Receives resulting signature length written.
 
 
 **Return value:**
@@ -2381,7 +2408,7 @@ On success writes a NULL terminated JSON to `buffer`. When`buffer_size` is too s
 **Parameters:**
 
 
-* `link` Pointer to the manifest to serialize. 
+* `manifest` Pointer to the manifest to serialize. 
 * `buffer` Output buffer for the JSON representation. 
 * `buffer_size` Size of `buffer` in bytes.
 * `json_length` Optional. Receives receives the number of characters for the full non truncated output. Ignored if NULL.
@@ -2391,7 +2418,7 @@ On success writes a NULL terminated JSON to `buffer`. When`buffer_size` is too s
 
 
 * `DRIP_SUCCESS` on success. 
-* `DRIP_ERROR_NULL_POINTER` if `link` or`buffer` is NULL.
+* `DRIP_ERROR_NULL_POINTER` if `manifest` or`buffer` is NULL.
 * `DRIP_ERROR_BUFFER_TOO_SMALL` if `buffer_size` is too small.
 ### function `drip_manifest_update_current_hash`
 
@@ -2581,7 +2608,7 @@ Called by [**drip\_wrapper\_sign()**](#function-drip_wrapper_sign) to perform th
 * `input_length` Length of the payload in bytes. 
 * `buffer` Output buffer for the signature. 
 * `buffer_size` Size of the signature buffer in bytes. 
-* `output_length` Receives resulting wrapper length written.
+* `output_length` Receives resulting signature length written.
 
 
 **Return value:**
@@ -2703,7 +2730,7 @@ The buffer must contain only the bytes for the wrapper and nothing else.
 * `DRIP_SUCCESS` on success. 
 * `DRIP_ERROR_NULL_POINTER` if wrapper or buffer is NULL. 
 * `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is less than DRIP\_WRAPPER\_MIN\_SIZE. 
-* `DRIP_ERROR_INVALID_LENGTH` if the evidence payload length is not a multiple of DRIP\_HASH\_SIZE. 
+* `DRIP_ERROR_INVALID_LENGTH` if the evidence payload length is not a multiple of RID\_MESSAGE\_SIZE. 
 * `DRIP_ERROR_ARRAY_OVERFLOW` if the evidence count would exceed DRIP\_wrapper\_EVIDENCE\_MAX. 
 * `DRIP_ERROR_INVALID_SAM_TYPE` if the decoded SAM type is not DRIP\_SAM\_TYPE\_WRAPPER.
 ### function `drip_wrapper_encode`
@@ -2995,12 +3022,6 @@ int drip_wrapper_sign (
 * `context` Opaque context passed to the callback.
 
 
-**Precondition:**
-
-You must call drip\_wrapper\_update\_current\_hash() atleast once before calling this function.
-
-
-
 **Return value:**
 
 
@@ -3027,7 +3048,7 @@ On success writes a NULL terminated JSON to buffer. When buffer\_size is too sma
 **Parameters:**
 
 
-* `link` Pointer to the wrapper to serialize. 
+* `wrapper` Pointer to the wrapper to serialize. 
 * `buffer` Output buffer for the JSON representation. 
 * `buffer_size` Size of buffer in bytes. 
 * `json_length` Optional. Receives receives the number of characters for the full non truncated output. Ignored if NULL.
@@ -3037,7 +3058,7 @@ On success writes a NULL terminated JSON to buffer. When buffer\_size is too sma
 
 
 * `DRIP_SUCCESS` on success. 
-* `DRIP_ERROR_NULL_POINTER` if link or buffer is NULL. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper or buffer is NULL. 
 * `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is too small.
 ### function `drip_wrapper_validate`
 
