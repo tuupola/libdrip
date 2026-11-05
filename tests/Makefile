@@ -4,13 +4,13 @@ CFLAGS = -Wall -Wextra -Wdouble-promotion -Werror=double-promotion -std=c11 -Wno
 LDFLAGS = -lsodium
 
 SRC_DIR = ../src
-SRC = $(SRC_DIR)/manifest.c $(SRC_DIR)/hash.c $(SRC_DIR)/link.c $(SRC_DIR)/det.c
+SRC = $(SRC_DIR)/manifest.c $(SRC_DIR)/hash.c $(SRC_DIR)/link.c $(SRC_DIR)/det.c $(SRC_DIR)/error.c $(SRC_DIR)/wrapper.c
 
 CSHAKE_SRC = $(CSHAKE_DIR)/SP800-185.c \
              $(CSHAKE_DIR)/KeccakSponge.c \
              $(CSHAKE_DIR)/KeccakP-1600-inplace32BI.c
 
-TEST_SRC = unit.c test_manifest.c test_hash.c test_link.c test_det.c
+TEST_SRC = unit.c test_error.c test_manifest.c test_hash.c test_link.c test_det.c test_wrapper.c
 
 OBJ = $(SRC:.c=.o)
 CSHAKE_OBJ = $(CSHAKE_SRC:.c=.o)
