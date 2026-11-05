@@ -803,6 +803,7 @@ enum drip_error_t {
     DRIP_ERROR_INVALID_TIMESTAMP = -12,
     DRIP_ERROR_INVALID_CHILD_DET = -13,
     DRIP_ERROR_INVALID_PARENT_DET = -14,
+    DRIP_ERROR_INVALID_MESSAGE_TYPE = -15,
     DRIP_ERROR_INVALID_IPV6_STRING = -16,
     DRIP_ERROR_INVALID_DET = -18,
     DRIP_ERROR_TIMESTAMP_NOT_YET_VALID = -19,
@@ -1853,6 +1854,7 @@ int drip_link_verify_chain (
 |  int | [**drip\_manifest\_add\_evidence**](#function-drip_manifest_add_evidence) ([**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, const [**drip\_hash\_t**](#typedef-drip_hash_t) \*hash) <br> |
 |  int | [**drip\_manifest\_decode**](#function-drip_manifest_decode) ([**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, const uint8\_t \*buffer, size\_t buffer\_size) <br>_Decode a manifest from its wire format._ |
 |  int | [**drip\_manifest\_encode**](#function-drip_manifest_encode) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, uint8\_t \*buffer, size\_t buffer\_size, size\_t \*encoded\_length) <br> |
+|  uint8\_t | [**drip\_manifest\_evidence\_count**](#function-drip_manifest_evidence_count) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest) <br>_Get the evidence count._ |
 |  const [**drip\_hash\_t**](#typedef-drip_hash_t) \* | [**drip\_manifest\_get\_current\_hash**](#function-drip_manifest_get_current_hash) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest) <br> |
 |  const [**drip\_det\_t**](#typedef-drip_det_t) \* | [**drip\_manifest\_get\_det**](#function-drip_manifest_get_det) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest) <br> |
 |  const [**drip\_hash\_t**](#typedef-drip_hash_t) \* | [**drip\_manifest\_get\_evidence\_at**](#function-drip_manifest_get_evidence_at) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, uint8\_t index) <br> |
@@ -2027,6 +2029,25 @@ int drip_manifest_encode (
 ) 
 ```
 
+### function `drip_manifest_evidence_count`
+
+_Get the evidence count._
+```c
+uint8_t drip_manifest_evidence_count (
+    const drip_manifest_t *manifest
+) 
+```
+
+
+**Parameters:**
+
+
+* `manifest` Pointer to the manifest.
+
+
+**Returns:**
+
+The evidence count or 0 if manifest is NULL.
 ### function `drip_manifest_get_current_hash`
 
 ```c
@@ -2503,9 +2524,10 @@ int drip_manifest_verify (
 
 | Type | Name |
 | ---: | :--- |
-|  int | [**drip\_wrapper\_add\_evidence**](#function-drip_wrapper_add_evidence) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const uint8\_t \*buffer, size\_t buffer\_size) <br> |
+|  int | [**drip\_wrapper\_add\_evidence**](#function-drip_wrapper_add_evidence) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const uint8\_t \*buffer, size\_t buffer\_size) <br>_Add a 25-byte ASTM message to the wrapper evidence._ |
 |  int | [**drip\_wrapper\_decode**](#function-drip_wrapper_decode) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const uint8\_t \*buffer, size\_t buffer\_size) <br>_Decode a wrapper from its wire format._ |
 |  int | [**drip\_wrapper\_encode**](#function-drip_wrapper_encode) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint8\_t \*buffer, size\_t buffer\_size, size\_t \*encoded\_length) <br> |
+|  uint8\_t | [**drip\_wrapper\_evidence\_count**](#function-drip_wrapper_evidence_count) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the evidence count._ |
 |  const [**drip\_det\_t**](#typedef-drip_det_t) \* | [**drip\_wrapper\_get\_det**](#function-drip_wrapper_get_det) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br> |
 |  const uint8\_t \* | [**drip\_wrapper\_get\_evidence\_at**](#function-drip_wrapper_get_evidence_at) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint8\_t index) <br> |
 |  const [**drip\_signature\_t**](#typedef-drip_signature_t) \* | [**drip\_wrapper\_get\_signature**](#function-drip_wrapper_get_signature) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br> |
@@ -2618,6 +2640,7 @@ Called by [**drip\_wrapper\_verify()**](#function-drip_wrapper_verify) to perfor
 
 ### function `drip_wrapper_add_evidence`
 
+_Add a 25-byte ASTM message to the wrapper evidence._
 ```c
 int drip_wrapper_add_evidence (
     drip_wrapper_t *wrapper,
@@ -2626,6 +2649,30 @@ int drip_wrapper_add_evidence (
 ) 
 ```
 
+
+Only ASTM Message Types 0x0 0x1 0x3 0x4 and 0x5 are allowed.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to modify. 
+* `buffer` Pointer to a 25-byte ASTM message. 
+* `buffer_size` Size of buffer in bytes. Must be RID\_MESSAGE\_SIZE.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if the message was added to the wrapper. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper or buffer is NULL. 
+* `DRIP_ERROR_INVALID_LENGTH` if buffer\_size is not RID\_MESSAGE\_SIZE. 
+* `DRIP_ERROR_INVALID_MESSAGE_TYPE` if the given ASTM message type is not allowed. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count would exceed DRIP\_WRAPPER\_EVIDENCE\_MAX.
+
+
+**See also:** [https://www.rfc-editor.org/rfc/rfc9575.html#section-4.3](https://www.rfc-editor.org/rfc/rfc9575.html#section-4.3)
 ### function `drip_wrapper_decode`
 
 _Decode a wrapper from its wire format._
@@ -2670,6 +2717,25 @@ int drip_wrapper_encode (
 ) 
 ```
 
+### function `drip_wrapper_evidence_count`
+
+_Get the evidence count._
+```c
+uint8_t drip_wrapper_evidence_count (
+    const drip_wrapper_t *wrapper
+) 
+```
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper.
+
+
+**Returns:**
+
+The evidence count or 0 if wrapper is NULL.
 ### function `drip_wrapper_get_det`
 
 ```c
@@ -2998,9 +3064,10 @@ Performs structural checks only. Does not verify the signature.
 
 * `DRIP_SUCCESS` if wrapper is structurally valid. 
 * `DRIP_ERROR_NULL_POINTER` if wrapper is NULL. 
-* `DRIP_ERROR_INVALID_SAM_TYPE` if sam\_type is not DRIP\_SAM\_TYPE\_wrapper. 
+* `DRIP_ERROR_INVALID_SAM_TYPE` if sam\_type is not DRIP\_SAM\_TYPE\_WRAPPER. 
 * `DRIP_ERROR_INVALID_TIMESTAMP` if vnb &gt; vna. 
-* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_wrapper\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_WRAPPER\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_INVALID_MESSAGE_TYPE` if an evidence message type is not 0x0 0x1 0x3 0x4 or 0x5. 
 * `DRIP_ERROR_INVALID_DET` if det fails [**drip\_det\_validate()**](#function-drip_det_validate).
 ### function `drip_wrapper_verify`
 
