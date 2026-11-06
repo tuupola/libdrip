@@ -209,14 +209,14 @@ int drip_manifest_set_signature(
  *
  * @param manifest Pointer to the manifest to validate.
  *
- * @retval DRIP_SUCCESS if @p manifest is structurally valid.
- * @retval DRIP_ERROR_NULL_POINTER if @p manifest is NULL.
- * @retval DRIP_ERROR_INVALID_SAM_TYPE if @p sam_type is not
+ * @retval DRIP_SUCCESS if manifest is structurally valid.
+ * @retval DRIP_ERROR_NULL_POINTER if manifest is NULL.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not
  *         DRIP_SAM_TYPE_MANIFEST.
- * @retval DRIP_ERROR_INVALID_TIMESTAMP if @p vnb > @p vna.
- * @retval DRIP_ERROR_ARRAY_OVERFLOW if @p evidence_count exceeds
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if vnb > vna.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if evidence_count exceeds
  *         DRIP_MANIFEST_EVIDENCE_MAX.
- * @retval DRIP_ERROR_INVALID_DET if @p det fails drip_det_validate().
+ * @retval DRIP_ERROR_INVALID_DET if det fails drip_det_validate().
  */
 int drip_manifest_validate(const drip_manifest_t *manifest);
 
@@ -247,13 +247,13 @@ int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *has
  *      before calling this function.
  *
  * @retval DRIP_SUCCESS if signing succeeded.
- * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p callback is NULL.
- * @retval DRIP_ERROR_INVALID_SAM_TYPE if @p sam_type is not DRIP_SAM_TYPE_MANIFEST.
- * @retval DRIP_ERROR_INVALID_TIMESTAMP if @p vnb > @p vna.
- * @retval DRIP_ERROR_ARRAY_OVERFLOW if @p evidence_count exceeds
+ * @retval DRIP_ERROR_NULL_POINTER if manifest or callback is NULL.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not DRIP_SAM_TYPE_MANIFEST.
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if vnb > vna.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if evidence_count exceeds
  *         DRIP_MANIFEST_EVIDENCE_MAX.
- * @retval DRIP_ERROR_INVALID_DET if @p det fails drip_det_validate().
- * @retval DRIP_ERROR_CALLBACK_FAILED if @p callback returned non-zero.
+ * @retval DRIP_ERROR_INVALID_DET if det fails drip_det_validate().
+ * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
  * @retval DRIP_ERROR_INVALID_LENGTH if the signature is not DRIP_SIGNATURE_SIZE.
  */
 int drip_manifest_sign(
@@ -271,13 +271,13 @@ int drip_manifest_sign(
  * @param context Opaque context passed to the callback.
  *
  * @retval DRIP_SUCCESS if verification succeeded.
- * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p callback is NULL.
- * @retval DRIP_ERROR_INVALID_SAM_TYPE if @p sam_type is not DRIP_SAM_TYPE_MANIFEST.
- * @retval DRIP_ERROR_INVALID_TIMESTAMP if @p vnb > @p vna.
- * @retval DRIP_ERROR_ARRAY_OVERFLOW if @p evidence_count exceeds
+ * @retval DRIP_ERROR_NULL_POINTER if manifest or callback is NULL.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not DRIP_SAM_TYPE_MANIFEST.
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if vnb > vna.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if evidence_count exceeds
  *         DRIP_MANIFEST_EVIDENCE_MAX.
- * @retval DRIP_ERROR_INVALID_DET if @p det fails drip_det_validate().
- * @retval DRIP_ERROR_CALLBACK_FAILED if @p callback returned non-zero.
+ * @retval DRIP_ERROR_INVALID_DET if det fails drip_det_validate().
+ * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
  */
 int drip_manifest_verify(
     drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
@@ -291,15 +291,15 @@ int drip_manifest_encode(
 /**
  * @brief Decode a manifest from its wire format.
  *
- * The @p buffer must contain only the bytes for the manifest and nothing else.
+ * The buffer must contain only the bytes for the manifest and nothing else.
  *
  * @param manifest Pointer to the manifest that receives the decoded data.
  * @param buffer Input buffer holding the wire format bytes.
- * @param buffer_size Size of @p buffer in bytes.
+ * @param buffer_size Size of buffer in bytes.
  *
  * @retval DRIP_SUCCESS on success.
- * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p buffer is NULL.
- * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is less than DRIP_MANIFEST_MIN_SIZE.
+ * @retval DRIP_ERROR_NULL_POINTER if manifest or buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is less than DRIP_MANIFEST_MIN_SIZE.
  * @retval DRIP_ERROR_INVALID_LENGTH if the evidence payload length is not a multiple of DRIP_HASH_SIZE.
  * @retval DRIP_ERROR_ARRAY_OVERFLOW if the evidence count would exceed DRIP_MANIFEST_EVIDENCE_MAX.
  * @retval DRIP_ERROR_INVALID_SAM_TYPE if the decoded SAM type is not DRIP_SAM_TYPE_MANIFEST.
@@ -311,19 +311,19 @@ int drip_manifest_decode(
 /**
  * @brief Serialize a DRIP manifest to a JSON string.
  *
- * On success writes a NULL terminated JSON to @p buffer. When @p buffer_size is
+ * On success writes a NULL terminated JSON to buffer. When buffer_size is
  * too small the output is truncated and DRIP_ERROR_BUFFER_TOO_SMALL is returned.
  * The truncated buffer is still NULL terminated.
  *
  * @param manifest Pointer to the manifest to serialize.
  * @param buffer Output buffer for the JSON representation.
- * @param buffer_size Size of @p buffer in bytes.
+ * @param buffer_size Size of buffer in bytes.
  * @param json_length Optional. Receives receives the number of characters
  *                    for the full non truncated output. Ignored if NULL.
  *
  * @retval DRIP_SUCCESS on success.
- * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p buffer is NULL.
- * @retval DRIP_ERROR_BUFFER_TOO_SMALL if @p buffer_size is too small.
+ * @retval DRIP_ERROR_NULL_POINTER if manifest or buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is too small.
  */
 int drip_manifest_to_json(
     const drip_manifest_t *manifest, char *buffer, size_t buffer_size, size_t *json_length
