@@ -315,6 +315,11 @@ int drip_manifest_verify(
         return DRIP_ERROR_NULL_POINTER;
     }
 
+    rc = drip_manifest_validate(manifest);
+    if (rc != DRIP_SUCCESS) {
+        return rc;
+    }
+
     payload_length = 48 + (manifest->evidence_count * 8);
 
     memcpy(payload + offset, &manifest->vnb, sizeof(manifest->vnb));

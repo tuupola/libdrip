@@ -634,6 +634,34 @@ TEST test_sign_and_verify_success(void) {
     PASS();
 }
 
+static int verify_mark_called(
+    void *context, const uint8_t *input, size_t input_length, const uint8_t *signature,
+    size_t signature_length
+) {
+    int *called = context;
+
+    (void)input;
+    (void)input_length;
+    (void)signature;
+    (void)signature_length;
+    *called = 1;
+    return 0;
+}
+
+/* Do not call the callback if validation fails. */
+TEST test_verify_invalid_input(void) {
+    drip_manifest_t manifest;
+    int called = 0;
+
+    drip_manifest_init(&manifest);
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_DET,
+        drip_manifest_verify(&manifest, verify_mark_called, &called)
+    );
+    ASSERT_EQ(0, called);
+    PASS();
+}
+
 TEST test_encode_null_ptr_manifest(void) {
     uint8_t buffer[256];
     size_t encoded_length = 0;
@@ -867,6 +895,7 @@ SUITE(manifest_suite) {
     RUN_TEST(test_sign_evidence_overflow);
     RUN_TEST(test_sign_invalid_det);
     RUN_TEST(test_sign_and_verify_success);
+    RUN_TEST(test_verify_invalid_input);
     RUN_TEST(test_encode_null_ptr_manifest);
     RUN_TEST(test_encode_null_ptr_buffer);
     RUN_TEST(test_encode_null_ptr_encoded_length);

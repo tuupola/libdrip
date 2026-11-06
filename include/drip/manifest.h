@@ -260,6 +260,25 @@ int drip_manifest_sign(
     drip_manifest_t *manifest, drip_manifest_sign_cb_t callback, void *context
 );
 
+/**
+ * @brief Verify a manifest with caller supplied callback.
+ *
+ * Validates the manifest with drip_manifest_validate() before verifying.
+ * The callback is not called if validation fails.
+ *
+ * @param manifest Pointer to the manifest to be verified.
+ * @param callback Callback function used to verify the signature.
+ * @param context Opaque context passed to the callback.
+ *
+ * @retval DRIP_SUCCESS if verification succeeded.
+ * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p callback is NULL.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if @p sam_type is not DRIP_SAM_TYPE_MANIFEST.
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if @p vnb > @p vna.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if @p evidence_count exceeds
+ *         DRIP_MANIFEST_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_INVALID_DET if @p det fails drip_det_validate().
+ * @retval DRIP_ERROR_CALLBACK_FAILED if @p callback returned non-zero.
+ */
 int drip_manifest_verify(
     drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
 );
