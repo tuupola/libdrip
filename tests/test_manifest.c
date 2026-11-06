@@ -24,6 +24,12 @@ static const uint8_t secret_key[64] = {
     0x5e, 0xa8, 0xaa, 0x4b, 0x15, 0xfb, 0x2e, 0x5e
 };
 
+/* RFC 9374 example DET 2001:30:280:1405:a3ad:1952:ad0:a69e */
+static const drip_det_t valid_det = {
+    0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+    0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e
+};
+
 /* Callback wrapper for libsodium for testing */
 static int sign_ed25519(
     void *context,
@@ -563,8 +569,48 @@ TEST test_sign_invalid_output_length(void) {
     drip_manifest_t manifest;
 
     drip_manifest_init(&manifest);
+    drip_manifest_set_det(&manifest, &valid_det);
     int rc = drip_manifest_sign(&manifest, sign_wrong_length, NULL);
     ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
+    PASS();
+}
+
+TEST test_sign_invalid_sam_type(void) {
+    drip_manifest_t manifest;
+
+    drip_manifest_init(&manifest);
+    drip_manifest_set_det(&manifest, &valid_det);
+    manifest.sam_type = DRIP_SAM_TYPE_LINK;
+    ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, drip_manifest_sign(&manifest, sign_wrong_length, NULL));
+    PASS();
+}
+
+TEST test_sign_invalid_timestamp(void) {
+    drip_manifest_t manifest;
+
+    drip_manifest_init(&manifest);
+    drip_manifest_set_det(&manifest, &valid_det);
+    drip_manifest_set_vnb(&manifest, 2);
+    drip_manifest_set_vna(&manifest, 1);
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, drip_manifest_sign(&manifest, sign_wrong_length, NULL));
+    PASS();
+}
+
+TEST test_sign_evidence_overflow(void) {
+    drip_manifest_t manifest;
+
+    drip_manifest_init(&manifest);
+    drip_manifest_set_det(&manifest, &valid_det);
+    manifest.evidence_count = DRIP_MANIFEST_EVIDENCE_MAX + 1;
+    ASSERT_EQ(DRIP_ERROR_ARRAY_OVERFLOW, drip_manifest_sign(&manifest, sign_wrong_length, NULL));
+    PASS();
+}
+
+TEST test_sign_invalid_det(void) {
+    drip_manifest_t manifest;
+
+    drip_manifest_init(&manifest);
+    ASSERT_EQ(DRIP_ERROR_INVALID_DET, drip_manifest_sign(&manifest, sign_wrong_length, NULL));
     PASS();
 }
 
@@ -572,14 +618,13 @@ TEST test_sign_and_verify_success(void) {
     drip_manifest_t manifest;
     drip_hash_t previous_hash = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
     drip_hash_t link_hash = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02};
-    drip_det_t det = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
 
     drip_manifest_init(&manifest);
     drip_manifest_set_vnb(&manifest, 100000000);
     drip_manifest_set_vna(&manifest, 100000120);
     drip_manifest_set_previous_hash(&manifest, &previous_hash);
     drip_manifest_set_link_hash(&manifest, &link_hash);
-    drip_manifest_set_det(&manifest, &det);
+    drip_manifest_set_det(&manifest, &valid_det);
 
     int rc = drip_manifest_sign(&manifest, sign_ed25519, (void *)secret_key);
     ASSERT_EQ(DRIP_SUCCESS, rc);
@@ -817,6 +862,10 @@ SUITE(manifest_suite) {
     RUN_TEST(test_sign_null_ptr_manifest);
     RUN_TEST(test_sign_null_ptr_callback);
     RUN_TEST(test_sign_invalid_output_length);
+    RUN_TEST(test_sign_invalid_sam_type);
+    RUN_TEST(test_sign_invalid_timestamp);
+    RUN_TEST(test_sign_evidence_overflow);
+    RUN_TEST(test_sign_invalid_det);
     RUN_TEST(test_sign_and_verify_success);
     RUN_TEST(test_encode_null_ptr_manifest);
     RUN_TEST(test_encode_null_ptr_buffer);

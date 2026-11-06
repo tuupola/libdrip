@@ -236,6 +236,9 @@ int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *has
 /**
  * @brief Sign a manifest with caller supplied callback.
  *
+ * Validates the manifest with drip_manifest_validate() before signing.
+ * The callback is not called if validation fails.
+ *
  * @param manifest Pointer to the manifest to be signed.
  * @param callback Callback function used to generate the signature.
  * @param context Opaque context passed to the callback.
@@ -245,6 +248,11 @@ int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *has
  *
  * @retval DRIP_SUCCESS if signing succeeded.
  * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p callback is NULL.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if @p sam_type is not DRIP_SAM_TYPE_MANIFEST.
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if @p vnb > @p vna.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if @p evidence_count exceeds
+ *         DRIP_MANIFEST_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_INVALID_DET if @p det fails drip_det_validate().
  * @retval DRIP_ERROR_CALLBACK_FAILED if @p callback returned non-zero.
  * @retval DRIP_ERROR_INVALID_LENGTH if the signature is not DRIP_SIGNATURE_SIZE.
  */

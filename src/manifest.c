@@ -252,6 +252,11 @@ int drip_manifest_sign(
         return DRIP_ERROR_NULL_POINTER;
     }
 
+    int rc = drip_manifest_validate(manifest);
+    if (rc != DRIP_SUCCESS) {
+        return rc;
+    }
+
     size_t payload_length = 48 + (manifest->evidence_count * 8);
     uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
     size_t offset = 0;
@@ -284,7 +289,7 @@ int drip_manifest_sign(
     offset += sizeof(manifest->det);
 
     size_t output_length = 0;
-    int rc = callback(
+    rc = callback(
         context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE,
         &output_length
     );
