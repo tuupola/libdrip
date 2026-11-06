@@ -157,19 +157,22 @@ int drip_wrapper_validate(const drip_wrapper_t *wrapper) {
 int drip_wrapper_add_evidence(
     drip_wrapper_t *wrapper, const uint8_t *buffer, size_t buffer_size
 ) {
+    int rc;
+
     if (wrapper == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
     if (buffer_size != RID_MESSAGE_SIZE) {
         return DRIP_ERROR_INVALID_LENGTH;
     }
-    int rc = check_evidence_type(buffer);
+    rc = check_evidence_type(buffer);
     if (rc != DRIP_SUCCESS) {
         return rc;
     }
     if (wrapper->evidence_count >= DRIP_WRAPPER_EVIDENCE_MAX) {
         return DRIP_ERROR_ARRAY_OVERFLOW;
     }
+
     memcpy(wrapper->evidence[wrapper->evidence_count], buffer, RID_MESSAGE_SIZE);
     wrapper->evidence_count++;
     return DRIP_SUCCESS;
@@ -196,19 +199,21 @@ drip_wrapper_get_evidence_at(const drip_wrapper_t *wrapper, uint8_t index) {
 int drip_wrapper_sign(
     drip_wrapper_t *wrapper, drip_wrapper_sign_cb_t callback, void *context
 ) {
+    uint8_t payload[DRIP_WRAPPER_MAX_SIZE];
+    size_t payload_length = 0, offset = 0, output_length = 0;
+    int rc;
+
     if (wrapper == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    int rc = drip_wrapper_validate(wrapper);
+    rc = drip_wrapper_validate(wrapper);
     if (rc != DRIP_SUCCESS) {
         return rc;
     }
 
-    size_t payload_length = (DRIP_TIMESTAMP_SIZE * 2) +
+    payload_length = (DRIP_TIMESTAMP_SIZE * 2) +
         (wrapper->evidence_count * RID_MESSAGE_SIZE) + DRIP_DET_SIZE;
-    uint8_t payload[DRIP_WRAPPER_MAX_SIZE];
-    size_t offset = 0;
 
     /* vnb || vna || evidence || det */
     memcpy(payload + offset, &wrapper->vnb, sizeof(wrapper->vnb));
@@ -225,7 +230,6 @@ int drip_wrapper_sign(
     memcpy(payload + offset, wrapper->det, sizeof(wrapper->det));
     offset += sizeof(wrapper->det);
 
-    size_t output_length = 0;
     rc = callback(
         context, payload, payload_length, wrapper->signature, DRIP_SIGNATURE_SIZE,
         &output_length
@@ -243,14 +247,16 @@ int drip_wrapper_sign(
 int drip_wrapper_verify(
     drip_wrapper_t *wrapper, drip_wrapper_verify_cb_t callback, void *context
 ) {
+    uint8_t payload[DRIP_WRAPPER_MAX_SIZE];
+    size_t payload_length = 0, offset = 0;
+    int rc;
+
     if (wrapper == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t payload_length = (DRIP_TIMESTAMP_SIZE * 2) +
+    payload_length = (DRIP_TIMESTAMP_SIZE * 2) +
         (wrapper->evidence_count * RID_MESSAGE_SIZE) + DRIP_DET_SIZE;
-    uint8_t payload[DRIP_WRAPPER_MAX_SIZE];
-    size_t offset = 0;
 
     memcpy(payload + offset, &wrapper->vnb, sizeof(wrapper->vnb));
     offset += sizeof(wrapper->vnb);
@@ -265,7 +271,7 @@ int drip_wrapper_verify(
 
     memcpy(payload + offset, wrapper->det, sizeof(wrapper->det));
 
-    int rc = callback(
+    rc = callback(
         context, payload, payload_length, wrapper->signature, DRIP_SIGNATURE_SIZE
     );
     if (rc != 0) {
@@ -279,18 +285,17 @@ int drip_wrapper_encode(
     const drip_wrapper_t *wrapper, uint8_t *buffer, size_t buffer_size,
     size_t *encoded_length
 ) {
+    size_t required_length = 0, offset = 0;
+
     if (wrapper == NULL || buffer == NULL || encoded_length == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t required_length =
-        DRIP_WRAPPER_MIN_SIZE + wrapper->evidence_count * RID_MESSAGE_SIZE;
+    required_length = DRIP_WRAPPER_MIN_SIZE + wrapper->evidence_count * RID_MESSAGE_SIZE;
 
     if (buffer_size < required_length) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
-
-    size_t offset = 0;
 
     memcpy(buffer + offset, &wrapper->sam_type, DRIP_SAM_TYPE_SIZE);
     offset += DRIP_SAM_TYPE_SIZE;
@@ -323,6 +328,9 @@ int drip_wrapper_encode(
 int drip_wrapper_decode(
     drip_wrapper_t *wrapper, const uint8_t *buffer, size_t buffer_size
 ) {
+    uint8_t evidence_count;
+    size_t evidence_size = 0, offset = 0;
+
     if (wrapper == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -333,20 +341,18 @@ int drip_wrapper_decode(
     }
 
     /* Evidence must be multiples of 25 bytes. */
-    size_t evidence_size = buffer_size - DRIP_WRAPPER_MIN_SIZE;
+    evidence_size = buffer_size - DRIP_WRAPPER_MIN_SIZE;
     if (evidence_size % RID_MESSAGE_SIZE != 0) {
         return DRIP_ERROR_INVALID_LENGTH;
     }
 
     /* There can be maximum 4 evidence. */
-    uint8_t evidence_count = (uint8_t)(evidence_size / RID_MESSAGE_SIZE);
+    evidence_count = (uint8_t)(evidence_size / RID_MESSAGE_SIZE);
     if (evidence_count > DRIP_WRAPPER_EVIDENCE_MAX) {
         return DRIP_ERROR_ARRAY_OVERFLOW;
     }
 
     drip_wrapper_init(wrapper);
-
-    size_t offset = 0;
 
     memcpy(&wrapper->sam_type, buffer + offset, DRIP_SAM_TYPE_SIZE);
     offset += DRIP_SAM_TYPE_SIZE;
