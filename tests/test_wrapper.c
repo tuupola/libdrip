@@ -231,6 +231,56 @@ TEST test_sign_evidence_overflow(void) {
     PASS();
 }
 
+static int verify_success(
+    void *context, const uint8_t *input, size_t input_length, const uint8_t *signature,
+    size_t signature_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)signature;
+    (void)signature_length;
+    return 0;
+}
+
+static int verify_mark_called(
+    void *context, const uint8_t *input, size_t input_length, const uint8_t *signature,
+    size_t signature_length
+) {
+    int *called = context;
+
+    (void)input;
+    (void)input_length;
+    (void)signature;
+    (void)signature_length;
+    *called = 1;
+    return 0;
+}
+
+/* Do not call the callback if validation fails. */
+TEST test_verify_invalid_input(void) {
+    drip_wrapper_t wrapper;
+    int called = 0;
+
+    drip_wrapper_init(&wrapper);
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_DET,
+        drip_wrapper_verify(&wrapper, verify_mark_called, &called)
+    );
+    ASSERT_EQ(0, called);
+    PASS();
+}
+
+/* Verify a structurally valid wrapper. */
+TEST test_verify_success(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    ASSERT_EQ(DRIP_SUCCESS, drip_wrapper_verify(&wrapper, verify_success, NULL));
+    PASS();
+}
+
 /* Validate a valid wrapper. */
 TEST test_validate_success(void) {
     drip_wrapper_t wrapper;
@@ -257,4 +307,6 @@ SUITE(wrapper_suite) {
     RUN_TEST(test_sign_invalid_message_type);
     RUN_TEST(test_sign_invalid_det);
     RUN_TEST(test_sign_evidence_overflow);
+    RUN_TEST(test_verify_invalid_input);
+    RUN_TEST(test_verify_success);
 }

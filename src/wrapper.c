@@ -255,6 +255,11 @@ int drip_wrapper_verify(
         return DRIP_ERROR_NULL_POINTER;
     }
 
+    rc = drip_wrapper_validate(wrapper);
+    if (rc != DRIP_SUCCESS) {
+        return rc;
+    }
+
     payload_length = (DRIP_TIMESTAMP_SIZE * 2) +
         (wrapper->evidence_count * RID_MESSAGE_SIZE) + DRIP_DET_SIZE;
 
