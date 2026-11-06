@@ -575,42 +575,31 @@ TEST test_sign_invalid_output_length(void) {
     PASS();
 }
 
-TEST test_sign_invalid_sam_type(void) {
-    drip_manifest_t manifest;
+static int sign_mark_called(
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
+) {
+    int *called = context;
 
-    drip_manifest_init(&manifest);
-    drip_manifest_set_det(&manifest, &valid_det);
-    manifest.sam_type = DRIP_SAM_TYPE_LINK;
-    ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, drip_manifest_sign(&manifest, sign_wrong_length, NULL));
-    PASS();
+    (void)input;
+    (void)input_length;
+    (void)buffer;
+    (void)buffer_size;
+    (void)output_length;
+    *called = 1;
+    return 0;
 }
 
-TEST test_sign_invalid_timestamp(void) {
+/* Do not call the callback if validation fails. */
+TEST test_sign_invalid_input(void) {
     drip_manifest_t manifest;
+    int called = 0;
 
     drip_manifest_init(&manifest);
-    drip_manifest_set_det(&manifest, &valid_det);
-    drip_manifest_set_vnb(&manifest, 2);
-    drip_manifest_set_vna(&manifest, 1);
-    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, drip_manifest_sign(&manifest, sign_wrong_length, NULL));
-    PASS();
-}
-
-TEST test_sign_evidence_overflow(void) {
-    drip_manifest_t manifest;
-
-    drip_manifest_init(&manifest);
-    drip_manifest_set_det(&manifest, &valid_det);
-    manifest.evidence_count = DRIP_MANIFEST_EVIDENCE_MAX + 1;
-    ASSERT_EQ(DRIP_ERROR_ARRAY_OVERFLOW, drip_manifest_sign(&manifest, sign_wrong_length, NULL));
-    PASS();
-}
-
-TEST test_sign_invalid_det(void) {
-    drip_manifest_t manifest;
-
-    drip_manifest_init(&manifest);
-    ASSERT_EQ(DRIP_ERROR_INVALID_DET, drip_manifest_sign(&manifest, sign_wrong_length, NULL));
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_DET, drip_manifest_sign(&manifest, sign_mark_called, &called)
+    );
+    ASSERT_EQ(0, called);
     PASS();
 }
 
@@ -890,10 +879,7 @@ SUITE(manifest_suite) {
     RUN_TEST(test_sign_null_ptr_manifest);
     RUN_TEST(test_sign_null_ptr_callback);
     RUN_TEST(test_sign_invalid_output_length);
-    RUN_TEST(test_sign_invalid_sam_type);
-    RUN_TEST(test_sign_invalid_timestamp);
-    RUN_TEST(test_sign_evidence_overflow);
-    RUN_TEST(test_sign_invalid_det);
+    RUN_TEST(test_sign_invalid_input);
     RUN_TEST(test_sign_and_verify_success);
     RUN_TEST(test_verify_invalid_input);
     RUN_TEST(test_encode_null_ptr_manifest);

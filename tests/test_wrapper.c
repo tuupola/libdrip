@@ -138,6 +138,49 @@ TEST test_validate_invalid_message_type(void) {
     PASS();
 }
 
+/* Reject a wrapper if sam_type is not a wrapper. */
+TEST test_validate_invalid_sam_type(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    wrapper.sam_type = 0;
+    ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, drip_wrapper_validate(&wrapper));
+    PASS();
+}
+
+/* Reject a wrapper if vnb is after vna. */
+TEST test_validate_invalid_timestamp(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    drip_wrapper_set_vnb(&wrapper, 2);
+    drip_wrapper_set_vna(&wrapper, 1);
+    ASSERT_EQ(DRIP_ERROR_INVALID_TIMESTAMP, drip_wrapper_validate(&wrapper));
+    PASS();
+}
+
+/* Reject a wrapper with an invalid det. */
+TEST test_validate_invalid_det(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    ASSERT_EQ(DRIP_ERROR_INVALID_DET, drip_wrapper_validate(&wrapper));
+    PASS();
+}
+
+/* Reject a wrapper if evidence_count exceeds the maximum. */
+TEST test_validate_evidence_overflow(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    wrapper.evidence_count = DRIP_WRAPPER_EVIDENCE_MAX + 1;
+    ASSERT_EQ(DRIP_ERROR_ARRAY_OVERFLOW, drip_wrapper_validate(&wrapper));
+    PASS();
+}
+
 static int sign_wrong_length(
     void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
     size_t buffer_size, size_t *output_length
@@ -162,72 +205,31 @@ TEST test_sign_invalid_output_length(void) {
     PASS();
 }
 
-/* Reject signing if sam_type is not a wrapper. */
-TEST test_sign_invalid_sam_type(void) {
-    drip_wrapper_t wrapper;
+static int sign_mark_called(
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
+) {
+    int *called = context;
 
-    drip_wrapper_init(&wrapper);
-    drip_wrapper_set_det(&wrapper, &valid_det);
-    wrapper.sam_type = 0;
-    ASSERT_EQ(
-        DRIP_ERROR_INVALID_SAM_TYPE, drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
-    );
-    PASS();
+    (void)input;
+    (void)input_length;
+    (void)buffer;
+    (void)buffer_size;
+    (void)output_length;
+    *called = 1;
+    return 0;
 }
 
-/* Reject signing if vnb is after vna. */
-TEST test_sign_invalid_timestamp(void) {
+/* Do not call the callback if validation fails. */
+TEST test_sign_invalid_input(void) {
     drip_wrapper_t wrapper;
-
-    drip_wrapper_init(&wrapper);
-    drip_wrapper_set_det(&wrapper, &valid_det);
-    drip_wrapper_set_vnb(&wrapper, 2);
-    drip_wrapper_set_vna(&wrapper, 1);
-    ASSERT_EQ(
-        DRIP_ERROR_INVALID_TIMESTAMP, drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
-    );
-    PASS();
-}
-
-/* Reject signing with invalid evidence type. */
-TEST test_sign_invalid_message_type(void) {
-    drip_wrapper_t wrapper;
-    uint8_t message[RID_MESSAGE_SIZE];
-
-    drip_wrapper_init(&wrapper);
-    drip_wrapper_set_det(&wrapper, &valid_det);
-    memset(message, 0, RID_MESSAGE_SIZE);
-    message[0] = (uint8_t)(RID_MESSAGE_TYPE_AUTH << 4);
-    memcpy(wrapper.evidence[0], message, RID_MESSAGE_SIZE);
-    wrapper.evidence_count = 1;
-    ASSERT_EQ(
-        DRIP_ERROR_INVALID_MESSAGE_TYPE,
-        drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
-    );
-    PASS();
-}
-
-/* Reject signing with invalid det. */
-TEST test_sign_invalid_det(void) {
-    drip_wrapper_t wrapper;
+    int called = 0;
 
     drip_wrapper_init(&wrapper);
     ASSERT_EQ(
-        DRIP_ERROR_INVALID_DET, drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
+        DRIP_ERROR_INVALID_DET, drip_wrapper_sign(&wrapper, sign_mark_called, &called)
     );
-    PASS();
-}
-
-/* Reject signing if evidence_count exceeds the maximum. */
-TEST test_sign_evidence_overflow(void) {
-    drip_wrapper_t wrapper;
-
-    drip_wrapper_init(&wrapper);
-    drip_wrapper_set_det(&wrapper, &valid_det);
-    wrapper.evidence_count = DRIP_WRAPPER_EVIDENCE_MAX + 1;
-    ASSERT_EQ(
-        DRIP_ERROR_ARRAY_OVERFLOW, drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
-    );
+    ASSERT_EQ(0, called);
     PASS();
 }
 
@@ -264,8 +266,7 @@ TEST test_verify_invalid_input(void) {
 
     drip_wrapper_init(&wrapper);
     ASSERT_EQ(
-        DRIP_ERROR_INVALID_DET,
-        drip_wrapper_verify(&wrapper, verify_mark_called, &called)
+        DRIP_ERROR_INVALID_DET, drip_wrapper_verify(&wrapper, verify_mark_called, &called)
     );
     ASSERT_EQ(0, called);
     PASS();
@@ -300,13 +301,13 @@ SUITE(wrapper_suite) {
     RUN_TEST(test_add_evidence_all_allowed_types);
     RUN_TEST(test_validate_null_pointer);
     RUN_TEST(test_validate_invalid_message_type);
+    RUN_TEST(test_validate_invalid_sam_type);
+    RUN_TEST(test_validate_invalid_timestamp);
+    RUN_TEST(test_validate_invalid_det);
+    RUN_TEST(test_validate_evidence_overflow);
     RUN_TEST(test_validate_success);
     RUN_TEST(test_sign_invalid_output_length);
-    RUN_TEST(test_sign_invalid_sam_type);
-    RUN_TEST(test_sign_invalid_timestamp);
-    RUN_TEST(test_sign_invalid_message_type);
-    RUN_TEST(test_sign_invalid_det);
-    RUN_TEST(test_sign_evidence_overflow);
+    RUN_TEST(test_sign_invalid_input);
     RUN_TEST(test_verify_invalid_input);
     RUN_TEST(test_verify_success);
 }
