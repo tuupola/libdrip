@@ -181,6 +181,22 @@ TEST test_validate_evidence_overflow(void) {
     PASS();
 }
 
+/* Reject encoding a wrapper if evidence_count exceeds the maximum. */
+TEST test_encode_evidence_overflow(void) {
+    drip_wrapper_t wrapper;
+    uint8_t buffer[DRIP_WRAPPER_MAX_SIZE];
+    size_t encoded_length;
+
+    drip_wrapper_init(&wrapper);
+    wrapper.evidence_count = DRIP_WRAPPER_EVIDENCE_MAX + 1;
+    encoded_length = 0;
+    ASSERT_EQ(
+        DRIP_ERROR_ARRAY_OVERFLOW,
+        drip_wrapper_encode(&wrapper, buffer, sizeof(buffer), &encoded_length)
+    );
+    PASS();
+}
+
 static int sign_wrong_length(
     void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
     size_t buffer_size, size_t *output_length
@@ -305,6 +321,7 @@ SUITE(wrapper_suite) {
     RUN_TEST(test_validate_invalid_timestamp);
     RUN_TEST(test_validate_invalid_det);
     RUN_TEST(test_validate_evidence_overflow);
+    RUN_TEST(test_encode_evidence_overflow);
     RUN_TEST(test_validate_success);
     RUN_TEST(test_sign_invalid_output_length);
     RUN_TEST(test_sign_invalid_input);

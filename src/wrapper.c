@@ -295,6 +295,9 @@ int drip_wrapper_encode(
     if (wrapper == NULL || buffer == NULL || encoded_length == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
+    if (wrapper->evidence_count > DRIP_WRAPPER_EVIDENCE_MAX) {
+        return DRIP_ERROR_ARRAY_OVERFLOW;
+    }
 
     required_length = DRIP_WRAPPER_MIN_SIZE + wrapper->evidence_count * RID_MESSAGE_SIZE;
 
