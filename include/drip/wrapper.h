@@ -250,9 +250,10 @@ int drip_wrapper_sign(
  * @brief Verify a wrapper with caller supplied callback.
  *
  * Validates the wrapper with drip_wrapper_validate() before verifying.
- * The callback is not called if validation fails.
+ * The callback is not called if validation or the time window check fails.
  *
  * @param wrapper Pointer to the wrapper to be verified.
+ * @param unixtime Unix time in seconds or 0 to ignore.
  * @param callback Callback function used to verify the signature.
  * @param context Opaque context passed to the callback.
  *
@@ -264,10 +265,13 @@ int drip_wrapper_sign(
  * @retval DRIP_ERROR_INVALID_MESSAGE_TYPE if an evidence message type is not
  *         0x0 0x1 0x3 0x4 or 0x5.
  * @retval DRIP_ERROR_INVALID_DET if det fails drip_det_validate().
+ * @retval DRIP_ERROR_TIMESTAMP_NOT_YET_VALID if unixtime is before vnb.
+ * @retval DRIP_ERROR_TIMESTAMP_EXPIRED if unixtime is after vna.
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
  */
 int drip_wrapper_verify(
-    drip_wrapper_t *wrapper, drip_wrapper_verify_cb_t callback, void *context
+    drip_wrapper_t *wrapper, uint32_t unixtime, drip_wrapper_verify_cb_t callback,
+    void *context
 );
 
 int drip_wrapper_encode(

@@ -245,9 +245,11 @@ int drip_wrapper_sign(
 }
 
 int drip_wrapper_verify(
-    drip_wrapper_t *wrapper, drip_wrapper_verify_cb_t callback, void *context
+    drip_wrapper_t *wrapper, uint32_t unixtime, drip_wrapper_verify_cb_t callback,
+    void *context
 ) {
     uint8_t payload[DRIP_WRAPPER_MAX_SIZE];
+    uint32_t vnb, vna;
     size_t payload_length = 0, offset = 0;
     int rc;
 
@@ -258,6 +260,17 @@ int drip_wrapper_verify(
     rc = drip_wrapper_validate(wrapper);
     if (rc != DRIP_SUCCESS) {
         return rc;
+    }
+
+    if (unixtime) {
+        vnb = drip_wrapper_get_vnb_unixtime(wrapper);
+        vna = drip_wrapper_get_vna_unixtime(wrapper);
+        if (unixtime < vnb) {
+            return DRIP_ERROR_TIMESTAMP_NOT_YET_VALID;
+        }
+        if (unixtime > vna) {
+            return DRIP_ERROR_TIMESTAMP_EXPIRED;
+        }
     }
 
     payload_length = (DRIP_TIMESTAMP_SIZE * 2) +

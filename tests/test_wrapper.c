@@ -282,7 +282,8 @@ TEST test_verify_invalid_input(void) {
 
     drip_wrapper_init(&wrapper);
     ASSERT_EQ(
-        DRIP_ERROR_INVALID_DET, drip_wrapper_verify(&wrapper, verify_mark_called, &called)
+        DRIP_ERROR_INVALID_DET,
+        drip_wrapper_verify(&wrapper, 0, verify_mark_called, &called)
     );
     ASSERT_EQ(0, called);
     PASS();
@@ -294,7 +295,80 @@ TEST test_verify_success(void) {
 
     drip_wrapper_init(&wrapper);
     drip_wrapper_set_det(&wrapper, &valid_det);
-    ASSERT_EQ(DRIP_SUCCESS, drip_wrapper_verify(&wrapper, verify_success, NULL));
+    ASSERT_EQ(DRIP_SUCCESS, drip_wrapper_verify(&wrapper, 0, verify_success, NULL));
+    PASS();
+}
+
+/* Ignore the time window when unixtime is 0. */
+TEST test_verify_unixtime_skipped(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    drip_wrapper_set_vnb_unixtime(&wrapper, 1546300800);
+    drip_wrapper_set_vna_unixtime(&wrapper, 1546300900);
+    ASSERT_EQ(DRIP_SUCCESS, drip_wrapper_verify(&wrapper, 0, verify_success, NULL));
+    PASS();
+}
+
+/* Accept unixtime at vnb, inside the window and at vna. */
+TEST test_verify_unixtime_success(void) {
+    drip_wrapper_t wrapper;
+    uint32_t vnb, vna;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    drip_wrapper_set_vnb_unixtime(&wrapper, 1546300800);
+    drip_wrapper_set_vna_unixtime(&wrapper, 1546300900);
+    vnb = drip_wrapper_get_vnb_unixtime(&wrapper);
+    vna = drip_wrapper_get_vna_unixtime(&wrapper);
+
+    ASSERT_EQ(DRIP_SUCCESS, drip_wrapper_verify(&wrapper, vnb, verify_success, NULL));
+    ASSERT_EQ(
+        DRIP_SUCCESS,
+        drip_wrapper_verify(&wrapper, vnb + (vna - vnb) / 2, verify_success, NULL)
+    );
+    ASSERT_EQ(DRIP_SUCCESS, drip_wrapper_verify(&wrapper, vna, verify_success, NULL));
+    PASS();
+}
+
+/* Reject unixtime before vnb and do not call the callback. */
+TEST test_verify_unixtime_not_yet_valid(void) {
+    drip_wrapper_t wrapper;
+    uint32_t vnb;
+    int called;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    drip_wrapper_set_vnb_unixtime(&wrapper, 1546300800);
+    drip_wrapper_set_vna_unixtime(&wrapper, 1546300900);
+    vnb = drip_wrapper_get_vnb_unixtime(&wrapper);
+    called = 0;
+    ASSERT_EQ(
+        DRIP_ERROR_TIMESTAMP_NOT_YET_VALID,
+        drip_wrapper_verify(&wrapper, vnb - 1, verify_mark_called, &called)
+    );
+    ASSERT_EQ(0, called);
+    PASS();
+}
+
+/* Reject unixtime after vna and do not call the callback. */
+TEST test_verify_unixtime_expired(void) {
+    drip_wrapper_t wrapper;
+    uint32_t vna;
+    int called;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    drip_wrapper_set_vnb_unixtime(&wrapper, 1546300800);
+    drip_wrapper_set_vna_unixtime(&wrapper, 1546300900);
+    vna = drip_wrapper_get_vna_unixtime(&wrapper);
+    called = 0;
+    ASSERT_EQ(
+        DRIP_ERROR_TIMESTAMP_EXPIRED,
+        drip_wrapper_verify(&wrapper, vna + 1, verify_mark_called, &called)
+    );
+    ASSERT_EQ(0, called);
     PASS();
 }
 
@@ -327,4 +401,8 @@ SUITE(wrapper_suite) {
     RUN_TEST(test_sign_invalid_input);
     RUN_TEST(test_verify_invalid_input);
     RUN_TEST(test_verify_success);
+    RUN_TEST(test_verify_unixtime_skipped);
+    RUN_TEST(test_verify_unixtime_success);
+    RUN_TEST(test_verify_unixtime_not_yet_valid);
+    RUN_TEST(test_verify_unixtime_expired);
 }
