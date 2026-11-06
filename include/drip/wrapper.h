@@ -270,7 +270,7 @@ int drip_wrapper_sign(
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
  */
 int drip_wrapper_verify(
-    drip_wrapper_t *wrapper, uint32_t unixtime, drip_wrapper_verify_cb_t callback,
+    const drip_wrapper_t *wrapper, uint32_t unixtime, drip_wrapper_verify_cb_t callback,
     void *context
 );
 

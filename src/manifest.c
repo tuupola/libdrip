@@ -305,7 +305,7 @@ int drip_manifest_sign(
 }
 
 int drip_manifest_verify(
-    drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
+    const drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
 ) {
     uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
     size_t payload_length = 0, offset = 0;

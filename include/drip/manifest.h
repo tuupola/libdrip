@@ -280,7 +280,7 @@ int drip_manifest_sign(
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
  */
 int drip_manifest_verify(
-    drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
+    const drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
 );
 
 int drip_manifest_encode(
