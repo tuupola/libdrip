@@ -1,6 +1,6 @@
 # [WIP] libdrip
 
-[Drone Remote Identification Protocol (DRIP)](https://www.rfc-editor.org/info/rfc9575) message encoding and decoding library written in C programming language.
+[Drone Remote Identification Protocol (DRIP)](https://datatracker.ietf.org/group/drip/documents/) message encoding and decoding library written in C programming language.
 
 ## Build
 
