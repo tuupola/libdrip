@@ -248,18 +248,20 @@ drip_manifest_get_evidence_at(const drip_manifest_t *manifest, uint8_t index) {
 int drip_manifest_sign(
     drip_manifest_t *manifest, drip_manifest_sign_cb_t callback, void *context
 ) {
+    uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
+    size_t payload_length = 0, offset = 0, output_length = 0;
+    int rc;
+
     if (manifest == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    int rc = drip_manifest_validate(manifest);
+    rc = drip_manifest_validate(manifest);
     if (rc != DRIP_SUCCESS) {
         return rc;
     }
 
-    size_t payload_length = 48 + (manifest->evidence_count * 8);
-    uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
-    size_t offset = 0;
+    payload_length = 48 + (manifest->evidence_count * 8);
 
     /* Build the payload to be signed. */
     /* vnb || vna || previous || current | link || messages || det */
@@ -288,7 +290,6 @@ int drip_manifest_sign(
     memcpy(payload + offset, manifest->det, sizeof(manifest->det));
     offset += sizeof(manifest->det);
 
-    size_t output_length = 0;
     rc = callback(
         context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE,
         &output_length
@@ -306,13 +307,15 @@ int drip_manifest_sign(
 int drip_manifest_verify(
     drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
 ) {
+    uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
+    size_t payload_length = 0, offset = 0;
+    int rc;
+
     if (manifest == NULL || callback == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t payload_length = 48 + (manifest->evidence_count * 8);
-    uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
-    size_t offset = 0;
+    payload_length = 48 + (manifest->evidence_count * 8);
 
     memcpy(payload + offset, &manifest->vnb, sizeof(manifest->vnb));
     offset += sizeof(manifest->vnb);
@@ -336,7 +339,7 @@ int drip_manifest_verify(
 
     memcpy(payload + offset, manifest->det, sizeof(manifest->det));
 
-    int rc = callback(
+    rc = callback(
         context, payload, payload_length, manifest->signature, DRIP_SIGNATURE_SIZE
     );
     if (rc != 0) {
@@ -350,18 +353,17 @@ int drip_manifest_encode(
     const drip_manifest_t *manifest, uint8_t *buffer, size_t buffer_size,
     size_t *encoded_length
 ) {
+    size_t required_length = 0, offset = 0;
+
     if (manifest == NULL || buffer == NULL || encoded_length == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    size_t required_length =
-        DRIP_MANIFEST_MIN_SIZE + manifest->evidence_count * DRIP_HASH_SIZE;
+    required_length = DRIP_MANIFEST_MIN_SIZE + manifest->evidence_count * DRIP_HASH_SIZE;
 
     if (buffer_size < required_length) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
-
-    size_t offset = 0;
 
     memcpy(buffer + offset, &manifest->sam_type, DRIP_SAM_TYPE_SIZE);
     offset += DRIP_SAM_TYPE_SIZE;
@@ -404,6 +406,9 @@ int drip_manifest_encode(
 int drip_manifest_decode(
     drip_manifest_t *manifest, const uint8_t *buffer, size_t buffer_size
 ) {
+    uint8_t evidence_count;
+    size_t evidence_size = 0, offset = 0;
+
     if (manifest == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
@@ -414,21 +419,19 @@ int drip_manifest_decode(
     }
 
     /* Evidence must be multiples of 8 bytes. */
-    size_t evidence_size = buffer_size - DRIP_MANIFEST_MIN_SIZE;
+    evidence_size = buffer_size - DRIP_MANIFEST_MIN_SIZE;
     if (evidence_size % DRIP_HASH_SIZE != 0) {
         return DRIP_ERROR_INVALID_LENGTH;
     }
 
     /* There can be maximum 11 evidence. */
     /* TODO: Maybe just check DRIP_MANIFEST_MAX_SIZE? */
-    uint8_t evidence_count = (uint8_t)(evidence_size / DRIP_HASH_SIZE);
+    evidence_count = (uint8_t)(evidence_size / DRIP_HASH_SIZE);
     if (evidence_count > DRIP_MANIFEST_EVIDENCE_MAX) {
         return DRIP_ERROR_ARRAY_OVERFLOW;
     }
 
     drip_manifest_init(manifest);
-
-    size_t offset = 0;
 
     memcpy(&manifest->sam_type, buffer + offset, DRIP_SAM_TYPE_SIZE);
     offset += DRIP_SAM_TYPE_SIZE;
@@ -474,35 +477,38 @@ int drip_manifest_decode(
 int drip_manifest_to_json(
     const drip_manifest_t *manifest, char *buffer, size_t buffer_size, size_t *json_length
 ) {
+    const drip_hash_t *previous_hash, *current_hash, *link_hash;
+    const drip_det_t *det;
+    const drip_signature_t *signature;
+    char det_hex[33];
+    char previous_hex[17], current_hex[17], link_hex[17];
+    char sig_hex[129];
+    char evidence_json[256] = "[";
+    size_t sig_pos = 0;
+    int needed;
+
     if (manifest == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    const drip_hash_t *previous_hash = drip_manifest_get_previous_hash(manifest);
-    const drip_hash_t *current_hash = drip_manifest_get_current_hash(manifest);
-    const drip_hash_t *link_hash = drip_manifest_get_link_hash(manifest);
+    previous_hash = drip_manifest_get_previous_hash(manifest);
+    current_hash = drip_manifest_get_current_hash(manifest);
+    link_hash = drip_manifest_get_link_hash(manifest);
+    det = drip_manifest_get_det(manifest);
+    signature = drip_manifest_get_signature(manifest);
 
-    const drip_det_t *det = drip_manifest_get_det(manifest);
-
-    char det_hex[33];
     for (uint8_t i = 0; i < 16; i++) {
         snprintf(det_hex + i * 2, 3, "%02x", (*det)[i]);
     }
 
-    const drip_signature_t *signature = drip_manifest_get_signature(manifest);
-
-    char previous_hex[17], current_hex[17], link_hex[17];
     drip_hash_to_hex(previous_hash, previous_hex, sizeof(previous_hex));
     drip_hash_to_hex(current_hash, current_hex, sizeof(current_hex));
     drip_hash_to_hex(link_hash, link_hex, sizeof(link_hex));
 
-    char sig_hex[129];
-    size_t sig_pos = 0;
     for (uint8_t i = 0; i < 64; i++) {
         sig_pos += snprintf(sig_hex + sig_pos, 3, "%02x", (*signature)[i]);
     }
 
-    char evidence_json[256] = "[";
     for (uint8_t i = 0; i < manifest->evidence_count; i++) {
         if (i > 0) {
             strcat(evidence_json, ",");
@@ -515,7 +521,7 @@ int drip_manifest_to_json(
     }
     strcat(evidence_json, "]");
 
-    int needed = snprintf(
+    needed = snprintf(
         buffer, buffer_size,
         "{"
         "\"sam_type\": %u, "
