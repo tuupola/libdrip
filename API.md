@@ -1905,7 +1905,7 @@ int drip_link_verify_chain (
 |  int | [**drip\_manifest\_to\_json**](#function-drip_manifest_to_json) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, char \*buffer, size\_t buffer\_size, size\_t \*json\_length) <br>_Serialize a DRIP manifest to a JSON string._ |
 |  int | [**drip\_manifest\_update\_current\_hash**](#function-drip_manifest_update_current_hash) ([**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, [**drip\_hash\_cb\_t**](#typedef-drip_hash_cb_t) callback, void \*context) <br>_Update the current hash of a manifest._ |
 |  int | [**drip\_manifest\_validate**](#function-drip_manifest_validate) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest) <br>_Validate the structural state of a manifest._ |
-|  int | [**drip\_manifest\_verify**](#function-drip_manifest_verify) ([**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, [**drip\_manifest\_verify\_cb\_t**](#typedef-drip_manifest_verify_cb_t) callback, void \*context) <br> |
+|  int | [**drip\_manifest\_verify**](#function-drip_manifest_verify) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, [**drip\_manifest\_verify\_cb\_t**](#typedef-drip_manifest_verify_cb_t) callback, void \*context) <br>_Verify a manifest with caller supplied callback._ |
 
 ## Macros
 
@@ -2024,7 +2024,7 @@ int drip_manifest_decode (
 ```
 
 
-The `buffer` must contain only the bytes for the manifest and nothing else.
+The buffer must contain only the bytes for the manifest and nothing else.
 
 
 
@@ -2033,15 +2033,15 @@ The `buffer` must contain only the bytes for the manifest and nothing else.
 
 * `manifest` Pointer to the manifest that receives the decoded data. 
 * `buffer` Input buffer holding the wire format bytes. 
-* `buffer_size` Size of `buffer` in bytes.
+* `buffer_size` Size of buffer in bytes.
 
 
 **Return value:**
 
 
 * `DRIP_SUCCESS` on success. 
-* `DRIP_ERROR_NULL_POINTER` if `manifest` or`buffer` is NULL.
-* `DRIP_ERROR_BUFFER_TOO_SMALL` if `buffer_size` is less than DRIP\_MANIFEST\_MIN\_SIZE.
+* `DRIP_ERROR_NULL_POINTER` if manifest or buffer is NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is less than DRIP\_MANIFEST\_MIN\_SIZE. 
 * `DRIP_ERROR_INVALID_LENGTH` if the evidence payload length is not a multiple of DRIP\_HASH\_SIZE. 
 * `DRIP_ERROR_ARRAY_OVERFLOW` if the evidence count would exceed DRIP\_MANIFEST\_EVIDENCE\_MAX. 
 * `DRIP_ERROR_INVALID_SAM_TYPE` if the decoded SAM type is not DRIP\_SAM\_TYPE\_MANIFEST.
@@ -2368,6 +2368,10 @@ int drip_manifest_sign (
 ```
 
 
+Validates the manifest with [**drip\_manifest\_validate()**](#function-drip_manifest_validate) before signing. The callback is not called if validation fails.
+
+
+
 **Parameters:**
 
 
@@ -2386,8 +2390,13 @@ You must call [**drip\_manifest\_update\_current\_hash()**](#function-drip_manif
 
 
 * `DRIP_SUCCESS` if signing succeeded. 
-* `DRIP_ERROR_NULL_POINTER` if `manifest` or`callback` is NULL.
-* `DRIP_ERROR_CALLBACK_FAILED` if `callback` returned non-zero.
+* `DRIP_ERROR_NULL_POINTER` if manifest or callback is NULL. 
+* `DRIP_ERROR_INVALID_SAM_TYPE` if sam\_type is not DRIP\_SAM\_TYPE\_MANIFEST. 
+* `DRIP_ERROR_INVALID_TIMESTAMP` if vnb &gt; vna. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_MANIFEST\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_INVALID_DET` if det fails [**drip\_det\_validate()**](#function-drip_det_validate).
+* `DRIP_ERROR_CALLBACK_FAILED` if callback returned non-zero. 
+* `DRIP_ERROR_INVALID_LENGTH` if the signature is not DRIP\_SIGNATURE\_SIZE.
 ### function `drip_manifest_to_json`
 
 _Serialize a DRIP manifest to a JSON string._
@@ -2401,7 +2410,7 @@ int drip_manifest_to_json (
 ```
 
 
-On success writes a NULL terminated JSON to `buffer`. When`buffer_size` is too small the output is truncated and DRIP\_ERROR\_BUFFER\_TOO\_SMALL is returned. The truncated buffer is still NULL terminated.
+On success writes a NULL terminated JSON to buffer. When buffer\_size is too small the output is truncated and DRIP\_ERROR\_BUFFER\_TOO\_SMALL is returned. The truncated buffer is still NULL terminated.
 
 
 
@@ -2410,7 +2419,7 @@ On success writes a NULL terminated JSON to `buffer`. When`buffer_size` is too s
 
 * `manifest` Pointer to the manifest to serialize. 
 * `buffer` Output buffer for the JSON representation. 
-* `buffer_size` Size of `buffer` in bytes.
+* `buffer_size` Size of buffer in bytes. 
 * `json_length` Optional. Receives receives the number of characters for the full non truncated output. Ignored if NULL.
 
 
@@ -2418,8 +2427,8 @@ On success writes a NULL terminated JSON to `buffer`. When`buffer_size` is too s
 
 
 * `DRIP_SUCCESS` on success. 
-* `DRIP_ERROR_NULL_POINTER` if `manifest` or`buffer` is NULL.
-* `DRIP_ERROR_BUFFER_TOO_SMALL` if `buffer_size` is too small.
+* `DRIP_ERROR_NULL_POINTER` if manifest or buffer is NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is too small.
 ### function `drip_manifest_update_current_hash`
 
 _Update the current hash of a manifest._
@@ -2477,22 +2486,46 @@ Performs structural checks only. Does not verify the signature.
 **Return value:**
 
 
-* `DRIP_SUCCESS` if `manifest` is structurally valid.
-* `DRIP_ERROR_NULL_POINTER` if `manifest` is NULL.
-* `DRIP_ERROR_INVALID_SAM_TYPE` if `sam_type` is not DRIP\_SAM\_TYPE\_MANIFEST.
-* `DRIP_ERROR_INVALID_TIMESTAMP` if `vnb` &gt;`vna`.
-* `DRIP_ERROR_ARRAY_OVERFLOW` if `evidence_count` exceeds DRIP\_MANIFEST\_EVIDENCE\_MAX.
-* `DRIP_ERROR_INVALID_DET` if `det` fails[**drip\_det\_validate()**](#function-drip_det_validate).
+* `DRIP_SUCCESS` if manifest is structurally valid. 
+* `DRIP_ERROR_NULL_POINTER` if manifest is NULL. 
+* `DRIP_ERROR_INVALID_SAM_TYPE` if sam\_type is not DRIP\_SAM\_TYPE\_MANIFEST. 
+* `DRIP_ERROR_INVALID_TIMESTAMP` if vnb &gt; vna. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_MANIFEST\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_INVALID_DET` if det fails [**drip\_det\_validate()**](#function-drip_det_validate).
 ### function `drip_manifest_verify`
 
+_Verify a manifest with caller supplied callback._
 ```c
 int drip_manifest_verify (
-    drip_manifest_t *manifest,
+    const drip_manifest_t *manifest,
     drip_manifest_verify_cb_t callback,
     void *context
 ) 
 ```
 
+
+Validates the manifest with [**drip\_manifest\_validate()**](#function-drip_manifest_validate) before verifying. The callback is not called if validation fails.
+
+
+
+**Parameters:**
+
+
+* `manifest` Pointer to the manifest to be verified. 
+* `callback` Callback function used to verify the signature. 
+* `context` Opaque context passed to the callback.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if verification succeeded. 
+* `DRIP_ERROR_NULL_POINTER` if manifest or callback is NULL. 
+* `DRIP_ERROR_INVALID_SAM_TYPE` if sam\_type is not DRIP\_SAM\_TYPE\_MANIFEST. 
+* `DRIP_ERROR_INVALID_TIMESTAMP` if vnb &gt; vna. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_MANIFEST\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_INVALID_DET` if det fails [**drip\_det\_validate()**](#function-drip_det_validate).
+* `DRIP_ERROR_CALLBACK_FAILED` if callback returned non-zero.
 
 ## Macros Documentation
 
@@ -2572,7 +2605,7 @@ int drip_manifest_verify (
 |  int | [**drip\_wrapper\_sign**](#function-drip_wrapper_sign) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, [**drip\_wrapper\_sign\_cb\_t**](#typedef-drip_wrapper_sign_cb_t) callback, void \*context) <br>_Sign a wrapper with caller supplied callback._ |
 |  int | [**drip\_wrapper\_to\_json**](#function-drip_wrapper_to_json) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, char \*buffer, size\_t buffer\_size, size\_t \*json\_length) <br>_Serialize a DRIP wrapper to a JSON string._ |
 |  int | [**drip\_wrapper\_validate**](#function-drip_wrapper_validate) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Validate the structural state of a wrapper._ |
-|  int | [**drip\_wrapper\_verify**](#function-drip_wrapper_verify) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, [**drip\_wrapper\_verify\_cb\_t**](#typedef-drip_wrapper_verify_cb_t) callback, void \*context) <br> |
+|  int | [**drip\_wrapper\_verify**](#function-drip_wrapper_verify) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint32\_t unixtime, [**drip\_wrapper\_verify\_cb\_t**](#typedef-drip_wrapper_verify_cb_t) callback, void \*context) <br>_Verify a wrapper with caller supplied callback._ |
 
 ## Macros
 
@@ -3014,6 +3047,10 @@ int drip_wrapper_sign (
 ```
 
 
+Validates the wrapper with [**drip\_wrapper\_validate()**](#function-drip_wrapper_validate) before signing. The callback is not called if validation fails.
+
+
+
 **Parameters:**
 
 
@@ -3027,7 +3064,13 @@ int drip_wrapper_sign (
 
 * `DRIP_SUCCESS` if signing succeeded. 
 * `DRIP_ERROR_NULL_POINTER` if wrapper or callback is NULL. 
-* `DRIP_ERROR_CALLBACK_FAILED` if callback returned non-zero.
+* `DRIP_ERROR_INVALID_SAM_TYPE` if sam\_type is not DRIP\_SAM\_TYPE\_WRAPPER. 
+* `DRIP_ERROR_INVALID_TIMESTAMP` if vnb &gt; vna. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_WRAPPER\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_INVALID_MESSAGE_TYPE` if an evidence message type is not 0x0 0x1 0x3 0x4 or 0x5. 
+* `DRIP_ERROR_INVALID_DET` if det fails [**drip\_det\_validate()**](#function-drip_det_validate).
+* `DRIP_ERROR_CALLBACK_FAILED` if callback returned non-zero. 
+* `DRIP_ERROR_INVALID_LENGTH` if the signature is not DRIP\_SIGNATURE\_SIZE.
 ### function `drip_wrapper_to_json`
 
 _Serialize a DRIP wrapper to a JSON string._
@@ -3092,14 +3135,43 @@ Performs structural checks only. Does not verify the signature.
 * `DRIP_ERROR_INVALID_DET` if det fails [**drip\_det\_validate()**](#function-drip_det_validate).
 ### function `drip_wrapper_verify`
 
+_Verify a wrapper with caller supplied callback._
 ```c
 int drip_wrapper_verify (
-    drip_wrapper_t *wrapper,
+    const drip_wrapper_t *wrapper,
+    uint32_t unixtime,
     drip_wrapper_verify_cb_t callback,
     void *context
 ) 
 ```
 
+
+Validates the wrapper with [**drip\_wrapper\_validate()**](#function-drip_wrapper_validate) before verifying. The callback is not called if validation or the time window check fails.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to be verified. 
+* `unixtime` Unix time in seconds or 0 to ignore. 
+* `callback` Callback function used to verify the signature. 
+* `context` Opaque context passed to the callback.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if verification succeeded. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper or callback is NULL. 
+* `DRIP_ERROR_INVALID_SAM_TYPE` if sam\_type is not DRIP\_SAM\_TYPE\_WRAPPER. 
+* `DRIP_ERROR_INVALID_TIMESTAMP` if vnb &gt; vna. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_WRAPPER\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_INVALID_MESSAGE_TYPE` if an evidence message type is not 0x0 0x1 0x3 0x4 or 0x5. 
+* `DRIP_ERROR_INVALID_DET` if det fails [**drip\_det\_validate()**](#function-drip_det_validate).
+* `DRIP_ERROR_TIMESTAMP_NOT_YET_VALID` if unixtime is before vnb. 
+* `DRIP_ERROR_TIMESTAMP_EXPIRED` if unixtime is after vna. 
+* `DRIP_ERROR_CALLBACK_FAILED` if callback returned non-zero.
 
 ## Macros Documentation
 
