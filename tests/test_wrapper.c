@@ -14,6 +14,11 @@ enum rid_message_type_t {
     RID_MESSAGE_TYPE_MESSAGE_PACK = 0x0F
 };
 
+static const drip_det_t valid_det = {
+    0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
+    0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e,
+};
+
 /* Try to add a Basic ID message as evidence to null wrapper. */
 TEST test_add_evidence_null_wrapper(void) {
     uint8_t message[RID_MESSAGE_SIZE];
@@ -119,10 +124,6 @@ TEST test_validate_null_pointer(void) {
 TEST test_validate_invalid_message_type(void) {
     drip_wrapper_t wrapper;
     uint8_t message[RID_MESSAGE_SIZE];
-    drip_det_t valid_det = {
-        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
-        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e,
-    };
     int rc;
 
     drip_wrapper_init(&wrapper);
@@ -155,18 +156,84 @@ TEST test_sign_invalid_output_length(void) {
     drip_wrapper_t wrapper;
 
     drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
     int rc = drip_wrapper_sign(&wrapper, sign_wrong_length, NULL);
     ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
+    PASS();
+}
+
+/* Reject signing if sam_type is not a wrapper. */
+TEST test_sign_invalid_sam_type(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    wrapper.sam_type = 0;
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_SAM_TYPE, drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
+    );
+    PASS();
+}
+
+/* Reject signing if vnb is after vna. */
+TEST test_sign_invalid_timestamp(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    drip_wrapper_set_vnb(&wrapper, 2);
+    drip_wrapper_set_vna(&wrapper, 1);
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_TIMESTAMP, drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
+    );
+    PASS();
+}
+
+/* Reject signing with invalid evidence type. */
+TEST test_sign_invalid_message_type(void) {
+    drip_wrapper_t wrapper;
+    uint8_t message[RID_MESSAGE_SIZE];
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    memset(message, 0, RID_MESSAGE_SIZE);
+    message[0] = (uint8_t)(RID_MESSAGE_TYPE_AUTH << 4);
+    memcpy(wrapper.evidence[0], message, RID_MESSAGE_SIZE);
+    wrapper.evidence_count = 1;
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_MESSAGE_TYPE,
+        drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
+    );
+    PASS();
+}
+
+/* Reject signing with invalid det. */
+TEST test_sign_invalid_det(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    ASSERT_EQ(
+        DRIP_ERROR_INVALID_DET, drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
+    );
+    PASS();
+}
+
+/* Reject signing if evidence_count exceeds the maximum. */
+TEST test_sign_evidence_overflow(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    wrapper.evidence_count = DRIP_WRAPPER_EVIDENCE_MAX + 1;
+    ASSERT_EQ(
+        DRIP_ERROR_ARRAY_OVERFLOW, drip_wrapper_sign(&wrapper, sign_wrong_length, NULL)
+    );
     PASS();
 }
 
 /* Validate a valid wrapper. */
 TEST test_validate_success(void) {
     drip_wrapper_t wrapper;
-    drip_det_t valid_det = {
-        0x20, 0x01, 0x00, 0x30, 0x02, 0x80, 0x14, 0x05,
-        0xa3, 0xad, 0x19, 0x52, 0x0a, 0xd0, 0xa6, 0x9e,
-    };
 
     drip_wrapper_init(&wrapper);
     drip_wrapper_set_det(&wrapper, &valid_det);
@@ -185,4 +252,9 @@ SUITE(wrapper_suite) {
     RUN_TEST(test_validate_invalid_message_type);
     RUN_TEST(test_validate_success);
     RUN_TEST(test_sign_invalid_output_length);
+    RUN_TEST(test_sign_invalid_sam_type);
+    RUN_TEST(test_sign_invalid_timestamp);
+    RUN_TEST(test_sign_invalid_message_type);
+    RUN_TEST(test_sign_invalid_det);
+    RUN_TEST(test_sign_evidence_overflow);
 }

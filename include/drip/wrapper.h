@@ -224,12 +224,21 @@ int drip_wrapper_add_evidence(
 /**
  * @brief Sign a wrapper with caller supplied callback.
  *
+ * Validates the wrapper with drip_wrapper_validate() before signing.
+ * The callback is not called if validation fails.
+ *
  * @param wrapper Pointer to the wrapper to be signed.
  * @param callback Callback function used to generate the signature.
  * @param context Opaque context passed to the callback.
  *
  * @retval DRIP_SUCCESS if signing succeeded.
  * @retval DRIP_ERROR_NULL_POINTER if wrapper or callback is NULL.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not DRIP_SAM_TYPE_WRAPPER.
+ * @retval DRIP_ERROR_INVALID_TIMESTAMP if vnb > vna.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if evidence_count exceeds DRIP_WRAPPER_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_INVALID_MESSAGE_TYPE if an evidence message type is not
+ *         0x0 0x1 0x3 0x4 or 0x5.
+ * @retval DRIP_ERROR_INVALID_DET if det fails drip_det_validate().
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
  * @retval DRIP_ERROR_INVALID_LENGTH if the signature is not DRIP_SIGNATURE_SIZE.
  */

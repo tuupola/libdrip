@@ -200,6 +200,11 @@ int drip_wrapper_sign(
         return DRIP_ERROR_NULL_POINTER;
     }
 
+    int rc = drip_wrapper_validate(wrapper);
+    if (rc != DRIP_SUCCESS) {
+        return rc;
+    }
+
     size_t payload_length = (DRIP_TIMESTAMP_SIZE * 2) +
         (wrapper->evidence_count * RID_MESSAGE_SIZE) + DRIP_DET_SIZE;
     uint8_t payload[DRIP_WRAPPER_MAX_SIZE];
@@ -221,7 +226,7 @@ int drip_wrapper_sign(
     offset += sizeof(wrapper->det);
 
     size_t output_length = 0;
-    int rc = callback(
+    rc = callback(
         context, payload, payload_length, wrapper->signature, DRIP_SIGNATURE_SIZE,
         &output_length
     );
