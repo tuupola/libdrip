@@ -290,7 +290,7 @@ int drip_link_verify(
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    if (unixtime != 0) {
+    if (unixtime) {
         uint32_t vnb = drip_link_get_vnb_unixtime(link);
         uint32_t vna = drip_link_get_vna_unixtime(link);
         if (unixtime < vnb) {
