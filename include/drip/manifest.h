@@ -246,6 +246,7 @@ int drip_manifest_add_evidence(drip_manifest_t *manifest, const drip_hash_t *has
  * @retval DRIP_SUCCESS if signing succeeded.
  * @retval DRIP_ERROR_NULL_POINTER if @p manifest or @p callback is NULL.
  * @retval DRIP_ERROR_CALLBACK_FAILED if @p callback returned non-zero.
+ * @retval DRIP_ERROR_INVALID_LENGTH if the signature is not DRIP_SIGNATURE_SIZE.
  */
 int drip_manifest_sign(
     drip_manifest_t *manifest, drip_manifest_sign_cb_t callback, void *context

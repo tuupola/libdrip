@@ -231,6 +231,7 @@ int drip_wrapper_add_evidence(
  * @retval DRIP_SUCCESS if signing succeeded.
  * @retval DRIP_ERROR_NULL_POINTER if wrapper or callback is NULL.
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
+ * @retval DRIP_ERROR_INVALID_LENGTH if the signature is not DRIP_SIGNATURE_SIZE.
  */
 int drip_wrapper_sign(
     drip_wrapper_t *wrapper, drip_wrapper_sign_cb_t callback, void *context

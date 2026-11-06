@@ -137,6 +137,29 @@ TEST test_validate_invalid_message_type(void) {
     PASS();
 }
 
+static int sign_wrong_length(
+    void *context, const uint8_t *input, size_t input_length, uint8_t *buffer,
+    size_t buffer_size, size_t *output_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)buffer;
+    (void)buffer_size;
+    *output_length = 32;
+    return 0;
+}
+
+/* Reject a signature whose reported length is not DRIP_SIGNATURE_SIZE. */
+TEST test_sign_invalid_output_length(void) {
+    drip_wrapper_t wrapper;
+
+    drip_wrapper_init(&wrapper);
+    int rc = drip_wrapper_sign(&wrapper, sign_wrong_length, NULL);
+    ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
+    PASS();
+}
+
 /* Validate a valid wrapper. */
 TEST test_validate_success(void) {
     drip_wrapper_t wrapper;
@@ -161,4 +184,5 @@ SUITE(wrapper_suite) {
     RUN_TEST(test_validate_null_pointer);
     RUN_TEST(test_validate_invalid_message_type);
     RUN_TEST(test_validate_success);
+    RUN_TEST(test_sign_invalid_output_length);
 }

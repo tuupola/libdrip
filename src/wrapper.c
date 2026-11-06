@@ -228,6 +228,9 @@ int drip_wrapper_sign(
     if (rc != 0) {
         return DRIP_ERROR_CALLBACK_FAILED;
     }
+    if (output_length != DRIP_SIGNATURE_SIZE) {
+        return DRIP_ERROR_INVALID_LENGTH;
+    }
 
     return DRIP_SUCCESS;
 }
