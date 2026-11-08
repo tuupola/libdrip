@@ -109,6 +109,18 @@ static int sign_ed25519(
     return rc;
 }
 
+static int verify_success(
+    void *context, const uint8_t *input, size_t input_length, const uint8_t *signature,
+    size_t signature_length
+) {
+    (void)context;
+    (void)input;
+    (void)input_length;
+    (void)signature;
+    (void)signature_length;
+    return 0;
+}
+
 static int verify_ed25519(
     void *context, const uint8_t *message, size_t message_len, const uint8_t *signature,
     size_t signature_length
@@ -835,6 +847,21 @@ TEST test_verify_unixtime_expired(void) {
 
     int rc = drip_link_verify(&child, vna + 1, verify_ed25519, (void *)parent_hi);
     ASSERT_EQ(DRIP_ERROR_TIMESTAMP_EXPIRED, rc);
+    PASS();
+}
+
+/* Test time window which wraps uint32 if converted to unixtime. */
+TEST test_verify_unixtime_no_wrap(void) {
+    drip_link_t link;
+    uint32_t unixtime;
+
+    drip_link_init(&link);
+    link.vnb = 100;
+    link.vna = UINT32_MAX;
+    unixtime = 100 + DRIP_TIMESTAMP_EPOCH;
+
+    int rc = drip_link_verify(&link, unixtime, verify_success, NULL);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
     PASS();
 }
 
@@ -1606,6 +1633,7 @@ SUITE(link_suite) {
     RUN_TEST(test_verify_unixtime_success);
     RUN_TEST(test_verify_unixtime_not_yet_valid);
     RUN_TEST(test_verify_unixtime_expired);
+    RUN_TEST(test_verify_unixtime_no_wrap);
     RUN_TEST(test_sign_invalid_output_length);
     RUN_TEST(test_validate_null_pointer);
     RUN_TEST(test_validate_invalid_sam_type);

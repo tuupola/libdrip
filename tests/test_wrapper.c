@@ -372,6 +372,25 @@ TEST test_verify_unixtime_expired(void) {
     PASS();
 }
 
+/* Test time window which wraps uint32 if converted to unixtime. */
+TEST test_verify_unixtime_no_wrap(void) {
+    drip_wrapper_t wrapper;
+    uint32_t unixtime;
+    int called;
+
+    drip_wrapper_init(&wrapper);
+    drip_wrapper_set_det(&wrapper, &valid_det);
+    wrapper.vnb = 100;
+    wrapper.vna = UINT32_MAX;
+    unixtime = 100 + DRIP_TIMESTAMP_EPOCH;
+    called = 0;
+    ASSERT_EQ(
+        DRIP_SUCCESS, drip_wrapper_verify(&wrapper, unixtime, verify_mark_called, &called)
+    );
+    ASSERT_EQ(1, called);
+    PASS();
+}
+
 /* Validate a valid wrapper. */
 TEST test_validate_success(void) {
     drip_wrapper_t wrapper;
@@ -405,4 +424,5 @@ SUITE(wrapper_suite) {
     RUN_TEST(test_verify_unixtime_success);
     RUN_TEST(test_verify_unixtime_not_yet_valid);
     RUN_TEST(test_verify_unixtime_expired);
+    RUN_TEST(test_verify_unixtime_no_wrap);
 }

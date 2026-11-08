@@ -249,7 +249,7 @@ int drip_wrapper_verify(
     void *context
 ) {
     uint8_t payload[DRIP_WRAPPER_MAX_SIZE];
-    uint32_t vnb, vna;
+    uint32_t now;
     size_t payload_length = 0, offset = 0;
     int rc;
 
@@ -263,12 +263,14 @@ int drip_wrapper_verify(
     }
 
     if (unixtime) {
-        vnb = drip_wrapper_get_vnb_unixtime(wrapper);
-        vna = drip_wrapper_get_vna_unixtime(wrapper);
-        if (unixtime < vnb) {
+        if (unixtime < DRIP_TIMESTAMP_EPOCH) {
             return DRIP_ERROR_TIMESTAMP_NOT_YET_VALID;
         }
-        if (unixtime > vna) {
+        now = unixtime - DRIP_TIMESTAMP_EPOCH;
+        if (now < drip_wrapper_get_vnb(wrapper)) {
+            return DRIP_ERROR_TIMESTAMP_NOT_YET_VALID;
+        }
+        if (now > drip_wrapper_get_vna(wrapper)) {
             return DRIP_ERROR_TIMESTAMP_EXPIRED;
         }
     }
