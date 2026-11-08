@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <sodium.h>
 
@@ -73,7 +74,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    rc = drip_manifest_verify(&manifest, verify_ed25519, (void *)public_key);
+    rc = drip_manifest_verify(
+        &manifest, (uint32_t)time(NULL), verify_ed25519, (void *)public_key
+    );
 
     if (0 == rc) {
         printf("\nSignature verified.\n\n");

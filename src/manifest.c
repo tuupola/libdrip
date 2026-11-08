@@ -305,9 +305,11 @@ int drip_manifest_sign(
 }
 
 int drip_manifest_verify(
-    const drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
+    const drip_manifest_t *manifest, uint32_t unixtime,
+    drip_manifest_verify_cb_t callback, void *context
 ) {
     uint8_t payload[DRIP_MANIFEST_MAX_SIZE];
+    uint32_t now;
     size_t payload_length = 0, offset = 0;
     int rc;
 
@@ -318,6 +320,19 @@ int drip_manifest_verify(
     rc = drip_manifest_validate(manifest);
     if (rc != DRIP_SUCCESS) {
         return rc;
+    }
+
+    if (unixtime) {
+        if (unixtime < DRIP_TIMESTAMP_EPOCH) {
+            return DRIP_ERROR_TIMESTAMP_NOT_YET_VALID;
+        }
+        now = unixtime - DRIP_TIMESTAMP_EPOCH;
+        if (now < drip_manifest_get_vnb(manifest)) {
+            return DRIP_ERROR_TIMESTAMP_NOT_YET_VALID;
+        }
+        if (now > drip_manifest_get_vna(manifest)) {
+            return DRIP_ERROR_TIMESTAMP_EXPIRED;
+        }
     }
 
     payload_length = 48 + (manifest->evidence_count * 8);

@@ -19,7 +19,9 @@ clean:
 	rm -f $(TARGETS)
 
 run: $(TARGETS)
-	./manifest_sign
-	./manifest_verify 036659010eee58010e000000000000000000000000000000000000000000000000deadbeefdeadbeef00000000000000000000000000000000ba542b7203b88c56e1bd81569714f45189dad1b17cd5aaea704cd0b1f674002d54d728c4236dd8cca43b5a98cffff8532887d2857f8d6162fbde3830dc34930d
+	set -e; \
+	out=$$(./manifest_sign); \
+	printf '%s\n' "$$out"; \
+	./manifest_verify "$$(printf '%s\n' "$$out" | sed -n 's/^.*manifest_verify //p')"
 
 .PHONY: all clean run

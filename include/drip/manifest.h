@@ -264,9 +264,10 @@ int drip_manifest_sign(
  * @brief Verify a manifest with caller supplied callback.
  *
  * Validates the manifest with drip_manifest_validate() before verifying.
- * The callback is not called if validation fails.
+ * The callback is not called if validation or the time window check fails.
  *
  * @param manifest Pointer to the manifest to be verified.
+ * @param unixtime Unix time in seconds or 0 to ignore.
  * @param callback Callback function used to verify the signature.
  * @param context Opaque context passed to the callback.
  *
@@ -277,10 +278,13 @@ int drip_manifest_sign(
  * @retval DRIP_ERROR_ARRAY_OVERFLOW if evidence_count exceeds
  *         DRIP_MANIFEST_EVIDENCE_MAX.
  * @retval DRIP_ERROR_INVALID_DET if det fails drip_det_validate().
+ * @retval DRIP_ERROR_TIMESTAMP_NOT_YET_VALID if unixtime is before vnb.
+ * @retval DRIP_ERROR_TIMESTAMP_EXPIRED if unixtime is after vna.
  * @retval DRIP_ERROR_CALLBACK_FAILED if callback returned non-zero.
  */
 int drip_manifest_verify(
-    const drip_manifest_t *manifest, drip_manifest_verify_cb_t callback, void *context
+    const drip_manifest_t *manifest, uint32_t unixtime,
+    drip_manifest_verify_cb_t callback, void *context
 );
 
 int drip_manifest_encode(
