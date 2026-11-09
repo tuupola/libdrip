@@ -328,6 +328,22 @@ int drip_wrapper_verify(
     void *context
 );
 
+/**
+ * @brief Encode a wrapper to its wire format.
+ *
+ * Writes the wrapper wire format to buffer and sets encoded_length.
+ *
+ * @param wrapper Pointer to the wrapper to encode.
+ * @param buffer Output buffer for the wire format bytes.
+ * @param buffer_size Size of buffer in bytes.
+ * @param encoded_length Receives the number of bytes written.
+ *
+ * @retval DRIP_SUCCESS on success.
+ * @retval DRIP_ERROR_NULL_POINTER if wrapper buffer or encoded_length is NULL.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if evidence_count exceeds DRIP_WRAPPER_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is less than
+ *         DRIP_WRAPPER_MIN_SIZE + evidence_count * RID_MESSAGE_SIZE.
+ */
 int drip_wrapper_encode(
     const drip_wrapper_t *wrapper, uint8_t *buffer, size_t buffer_size,
     size_t *encoded_length
