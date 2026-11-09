@@ -242,6 +242,15 @@ int drip_wrapper_validate(const drip_wrapper_t *wrapper);
  */
 uint8_t drip_wrapper_evidence_count(const drip_wrapper_t *wrapper);
 
+/**
+ * @brief Get evidence at the given index.
+ *
+ * @param wrapper Pointer to the wrapper.
+ * @param index Zero-based evidence index.
+ *
+ * @return Pointer to the stored 25-byte message or NULL if wrapper is NULL
+ *         or index >= evidence_count.
+ */
 const uint8_t *drip_wrapper_get_evidence_at(const drip_wrapper_t *wrapper, uint8_t index);
 
 /**
