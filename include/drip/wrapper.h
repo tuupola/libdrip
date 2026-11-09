@@ -181,6 +181,16 @@ uint32_t drip_wrapper_get_vnb_unixtime(const drip_wrapper_t *wrapper);
  * @return Pointer to the stored DET or NULL if wrapper is NULL.
  */
 const drip_det_t *drip_wrapper_get_det(const drip_wrapper_t *wrapper);
+
+/**
+ * @brief Set the DET.
+ *
+ * @param wrapper Pointer to the wrapper to modify.
+ * @param det Pointer to the DET to store.
+ *
+ * @retval DRIP_SUCCESS if the DET was stored.
+ * @retval DRIP_ERROR_NULL_POINTER if wrapper or det is NULL.
+ */
 int drip_wrapper_set_det(drip_wrapper_t *wrapper, const drip_det_t *det);
 const drip_signature_t *drip_wrapper_get_signature(const drip_wrapper_t *wrapper);
 int drip_wrapper_set_signature(
