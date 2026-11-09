@@ -1905,7 +1905,7 @@ int drip_link_verify_chain (
 |  int | [**drip\_manifest\_to\_json**](#function-drip_manifest_to_json) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, char \*buffer, size\_t buffer\_size, size\_t \*json\_length) <br>_Serialize a DRIP manifest to a JSON string._ |
 |  int | [**drip\_manifest\_update\_current\_hash**](#function-drip_manifest_update_current_hash) ([**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, [**drip\_hash\_cb\_t**](#typedef-drip_hash_cb_t) callback, void \*context) <br>_Update the current hash of a manifest._ |
 |  int | [**drip\_manifest\_validate**](#function-drip_manifest_validate) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest) <br>_Validate the structural state of a manifest._ |
-|  int | [**drip\_manifest\_verify**](#function-drip_manifest_verify) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, [**drip\_manifest\_verify\_cb\_t**](#typedef-drip_manifest_verify_cb_t) callback, void \*context) <br>_Verify a manifest with caller supplied callback._ |
+|  int | [**drip\_manifest\_verify**](#function-drip_manifest_verify) (const [**drip\_manifest\_t**](#struct-drip_manifest_t) \*manifest, uint32\_t unixtime, [**drip\_manifest\_verify\_cb\_t**](#typedef-drip_manifest_verify_cb_t) callback, void \*context) <br>_Verify a manifest with caller supplied callback._ |
 
 ## Macros
 
@@ -2498,13 +2498,14 @@ _Verify a manifest with caller supplied callback._
 ```c
 int drip_manifest_verify (
     const drip_manifest_t *manifest,
+    uint32_t unixtime,
     drip_manifest_verify_cb_t callback,
     void *context
 ) 
 ```
 
 
-Validates the manifest with [**drip\_manifest\_validate()**](#function-drip_manifest_validate) before verifying. The callback is not called if validation fails.
+Validates the manifest with [**drip\_manifest\_validate()**](#function-drip_manifest_validate) before verifying. The callback is not called if validation or the time window check fails.
 
 
 
@@ -2512,6 +2513,7 @@ Validates the manifest with [**drip\_manifest\_validate()**](#function-drip_mani
 
 
 * `manifest` Pointer to the manifest to be verified. 
+* `unixtime` Unix time in seconds or 0 to ignore. 
 * `callback` Callback function used to verify the signature. 
 * `context` Opaque context passed to the callback.
 
@@ -2525,6 +2527,8 @@ Validates the manifest with [**drip\_manifest\_validate()**](#function-drip_mani
 * `DRIP_ERROR_INVALID_TIMESTAMP` if vnb &gt; vna. 
 * `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_MANIFEST\_EVIDENCE\_MAX. 
 * `DRIP_ERROR_INVALID_DET` if det fails [**drip\_det\_validate()**](#function-drip_det_validate).
+* `DRIP_ERROR_TIMESTAMP_NOT_YET_VALID` if unixtime is before vnb. 
+* `DRIP_ERROR_TIMESTAMP_EXPIRED` if unixtime is after vna. 
 * `DRIP_ERROR_CALLBACK_FAILED` if callback returned non-zero.
 
 ## Macros Documentation
