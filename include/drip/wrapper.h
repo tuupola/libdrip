@@ -69,6 +69,16 @@ typedef int (*drip_wrapper_verify_cb_t)(
     size_t signature_length
 );
 
+/**
+ * @brief Initialize a wrapper.
+ *
+ * Zeroes the wrapper and sets sam_type to DRIP_SAM_TYPE_WRAPPER.
+ *
+ * @param wrapper Pointer to the wrapper to initialize.
+ *
+ * @retval DRIP_SUCCESS if the wrapper was initialized.
+ * @retval DRIP_ERROR_NULL_POINTER if wrapper is NULL.
+ */
 int drip_wrapper_init(drip_wrapper_t *wrapper);
 
 /**
