@@ -370,7 +370,7 @@ int drip_link_filter_chain(
  * @param link Pointer to the link to serialize.
  * @param buffer Output buffer for the JSON representation.
  * @param buffer_size Size of buffer in bytes.
- * @param json_length Optional. Receives receives the number of characters
+ * @param json_length Optional. Receives the number of characters
  *                    for the full non truncated output. Ignored if NULL.
  *
  * @retval DRIP_SUCCESS on success.

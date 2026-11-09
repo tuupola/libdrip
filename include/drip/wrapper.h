@@ -337,7 +337,7 @@ int drip_wrapper_encode(
  * @retval DRIP_ERROR_NULL_POINTER if wrapper or buffer is NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is less than DRIP_WRAPPER_MIN_SIZE.
  * @retval DRIP_ERROR_INVALID_LENGTH if the evidence payload length is not a multiple of RID_MESSAGE_SIZE.
- * @retval DRIP_ERROR_ARRAY_OVERFLOW if the evidence count would exceed DRIP_wrapper_EVIDENCE_MAX.
+ * @retval DRIP_ERROR_ARRAY_OVERFLOW if the evidence count would exceed DRIP_WRAPPER_EVIDENCE_MAX.
  * @retval DRIP_ERROR_INVALID_SAM_TYPE if the decoded SAM type is not DRIP_SAM_TYPE_WRAPPER.
  */
 int drip_wrapper_decode(
@@ -354,7 +354,7 @@ int drip_wrapper_decode(
  * @param wrapper Pointer to the wrapper to serialize.
  * @param buffer Output buffer for the JSON representation.
  * @param buffer_size Size of buffer in bytes.
- * @param json_length Optional. Receives receives the number of characters
+ * @param json_length Optional. Receives the number of characters
  *        for the full non truncated output. Ignored if NULL.
  *
  * @retval DRIP_SUCCESS on success.
