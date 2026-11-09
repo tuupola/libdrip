@@ -1706,7 +1706,7 @@ On success writes a NULL terminated JSON to buffer. When buffer\_size is too sma
 * `link` Pointer to the link to serialize. 
 * `buffer` Output buffer for the JSON representation. 
 * `buffer_size` Size of buffer in bytes. 
-* `json_length` Optional. Receives receives the number of characters for the full non truncated output. Ignored if NULL.
+* `json_length` Optional. Receives the number of characters for the full non truncated output. Ignored if NULL.
 
 
 **Return value:**
@@ -2420,7 +2420,7 @@ On success writes a NULL terminated JSON to buffer. When buffer\_size is too sma
 * `manifest` Pointer to the manifest to serialize. 
 * `buffer` Output buffer for the JSON representation. 
 * `buffer_size` Size of buffer in bytes. 
-* `json_length` Optional. Receives receives the number of characters for the full non truncated output. Ignored if NULL.
+* `json_length` Optional. Receives the number of characters for the full non truncated output. Ignored if NULL.
 
 
 **Return value:**
@@ -2590,18 +2590,18 @@ Validates the manifest with [**drip\_manifest\_validate()**](#function-drip_mani
 | ---: | :--- |
 |  int | [**drip\_wrapper\_add\_evidence**](#function-drip_wrapper_add_evidence) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const uint8\_t \*buffer, size\_t buffer\_size) <br>_Add a 25-byte ASTM message to the wrapper evidence._ |
 |  int | [**drip\_wrapper\_decode**](#function-drip_wrapper_decode) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const uint8\_t \*buffer, size\_t buffer\_size) <br>_Decode a wrapper from its wire format._ |
-|  int | [**drip\_wrapper\_encode**](#function-drip_wrapper_encode) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint8\_t \*buffer, size\_t buffer\_size, size\_t \*encoded\_length) <br> |
+|  int | [**drip\_wrapper\_encode**](#function-drip_wrapper_encode) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint8\_t \*buffer, size\_t buffer\_size, size\_t \*encoded\_length) <br>_Encode a wrapper to its wire format._ |
 |  uint8\_t | [**drip\_wrapper\_evidence\_count**](#function-drip_wrapper_evidence_count) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the evidence count._ |
-|  const [**drip\_det\_t**](#typedef-drip_det_t) \* | [**drip\_wrapper\_get\_det**](#function-drip_wrapper_get_det) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br> |
-|  const uint8\_t \* | [**drip\_wrapper\_get\_evidence\_at**](#function-drip_wrapper_get_evidence_at) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint8\_t index) <br> |
-|  const [**drip\_signature\_t**](#typedef-drip_signature_t) \* | [**drip\_wrapper\_get\_signature**](#function-drip_wrapper_get_signature) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br> |
+|  const [**drip\_det\_t**](#typedef-drip_det_t) \* | [**drip\_wrapper\_get\_det**](#function-drip_wrapper_get_det) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the DET._ |
+|  const uint8\_t \* | [**drip\_wrapper\_get\_evidence\_at**](#function-drip_wrapper_get_evidence_at) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint8\_t index) <br>_Get evidence at the given index._ |
+|  const [**drip\_signature\_t**](#typedef-drip_signature_t) \* | [**drip\_wrapper\_get\_signature**](#function-drip_wrapper_get_signature) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the signature._ |
 |  uint32\_t | [**drip\_wrapper\_get\_vna**](#function-drip_wrapper_get_vna) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the vna timestamp._ |
 |  uint32\_t | [**drip\_wrapper\_get\_vna\_unixtime**](#function-drip_wrapper_get_vna_unixtime) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the vna as a unix timestamp._ |
 |  uint32\_t | [**drip\_wrapper\_get\_vnb**](#function-drip_wrapper_get_vnb) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the vnb timestamp._ |
 |  uint32\_t | [**drip\_wrapper\_get\_vnb\_unixtime**](#function-drip_wrapper_get_vnb_unixtime) (const [**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Get the vnb as a unix timestamp._ |
-|  int | [**drip\_wrapper\_init**](#function-drip_wrapper_init) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br> |
-|  int | [**drip\_wrapper\_set\_det**](#function-drip_wrapper_set_det) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const [**drip\_det\_t**](#typedef-drip_det_t) \*det) <br> |
-|  int | [**drip\_wrapper\_set\_signature**](#function-drip_wrapper_set_signature) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const [**drip\_signature\_t**](#typedef-drip_signature_t) \*signature) <br> |
+|  int | [**drip\_wrapper\_init**](#function-drip_wrapper_init) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper) <br>_Initialize a wrapper._ |
+|  int | [**drip\_wrapper\_set\_det**](#function-drip_wrapper_set_det) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const [**drip\_det\_t**](#typedef-drip_det_t) \*det) <br>_Set the DET._ |
+|  int | [**drip\_wrapper\_set\_signature**](#function-drip_wrapper_set_signature) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, const [**drip\_signature\_t**](#typedef-drip_signature_t) \*signature) <br>_Set the signature._ |
 |  int | [**drip\_wrapper\_set\_vna**](#function-drip_wrapper_set_vna) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint32\_t vna) <br>_Set the vna timestamp._ |
 |  int | [**drip\_wrapper\_set\_vna\_unixtime**](#function-drip_wrapper_set_vna_unixtime) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint32\_t unixtime) <br>_Set the vna from unix timestamp._ |
 |  int | [**drip\_wrapper\_set\_vnb**](#function-drip_wrapper_set_vnb) ([**drip\_wrapper\_t**](#struct-drip_wrapper_t) \*wrapper, uint32\_t vnb) <br>_Set the vnb timestamp._ |
@@ -2768,10 +2768,11 @@ The buffer must contain only the bytes for the wrapper and nothing else.
 * `DRIP_ERROR_NULL_POINTER` if wrapper or buffer is NULL. 
 * `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is less than DRIP\_WRAPPER\_MIN\_SIZE. 
 * `DRIP_ERROR_INVALID_LENGTH` if the evidence payload length is not a multiple of RID\_MESSAGE\_SIZE. 
-* `DRIP_ERROR_ARRAY_OVERFLOW` if the evidence count would exceed DRIP\_wrapper\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if the evidence count would exceed DRIP\_WRAPPER\_EVIDENCE\_MAX. 
 * `DRIP_ERROR_INVALID_SAM_TYPE` if the decoded SAM type is not DRIP\_SAM\_TYPE\_WRAPPER.
 ### function `drip_wrapper_encode`
 
+_Encode a wrapper to its wire format._
 ```c
 int drip_wrapper_encode (
     const drip_wrapper_t *wrapper,
@@ -2781,6 +2782,27 @@ int drip_wrapper_encode (
 ) 
 ```
 
+
+Writes the wrapper wire format to buffer and sets encoded\_length.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to encode. 
+* `buffer` Output buffer for the wire format bytes. 
+* `buffer_size` Size of buffer in bytes. 
+* `encoded_length` Receives the number of bytes written.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` on success. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper buffer or encoded\_length is NULL. 
+* `DRIP_ERROR_ARRAY_OVERFLOW` if evidence\_count exceeds DRIP\_WRAPPER\_EVIDENCE\_MAX. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is less than DRIP\_WRAPPER\_MIN\_SIZE + evidence\_count \* RID\_MESSAGE\_SIZE.
 ### function `drip_wrapper_evidence_count`
 
 _Get the evidence count._
@@ -2802,14 +2824,26 @@ uint8_t drip_wrapper_evidence_count (
 The evidence count or 0 if wrapper is NULL.
 ### function `drip_wrapper_get_det`
 
+_Get the DET._
 ```c
 const drip_det_t * drip_wrapper_get_det (
     const drip_wrapper_t *wrapper
 ) 
 ```
 
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper.
+
+
+**Returns:**
+
+Pointer to the stored DET or NULL if wrapper is NULL.
 ### function `drip_wrapper_get_evidence_at`
 
+_Get evidence at the given index._
 ```c
 const uint8_t * drip_wrapper_get_evidence_at (
     const drip_wrapper_t *wrapper,
@@ -2817,14 +2851,36 @@ const uint8_t * drip_wrapper_get_evidence_at (
 ) 
 ```
 
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper. 
+* `index` Zero-based evidence index.
+
+
+**Returns:**
+
+Pointer to the stored 25-byte message or NULL if wrapper is NULL or index &gt;= evidence\_count.
 ### function `drip_wrapper_get_signature`
 
+_Get the signature._
 ```c
 const drip_signature_t * drip_wrapper_get_signature (
     const drip_wrapper_t *wrapper
 ) 
 ```
 
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper.
+
+
+**Returns:**
+
+Pointer to the stored signature or NULL if wrapper is NULL.
 ### function `drip_wrapper_get_vna`
 
 _Get the vna timestamp._
@@ -2911,14 +2967,32 @@ uint32_t drip_wrapper_get_vnb_unixtime (
 The vnb as unix timestamp or 0 if wrapper is NULL.
 ### function `drip_wrapper_init`
 
+_Initialize a wrapper._
 ```c
 int drip_wrapper_init (
     drip_wrapper_t *wrapper
 ) 
 ```
 
+
+Zeroes the wrapper and sets sam\_type to DRIP\_SAM\_TYPE\_WRAPPER.
+
+
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to initialize.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if the wrapper was initialized. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper is NULL.
 ### function `drip_wrapper_set_det`
 
+_Set the DET._
 ```c
 int drip_wrapper_set_det (
     drip_wrapper_t *wrapper,
@@ -2926,8 +3000,22 @@ int drip_wrapper_set_det (
 ) 
 ```
 
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to modify. 
+* `det` Pointer to the DET to store.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if the DET was stored. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper or det is NULL.
 ### function `drip_wrapper_set_signature`
 
+_Set the signature._
 ```c
 int drip_wrapper_set_signature (
     drip_wrapper_t *wrapper,
@@ -2935,6 +3023,19 @@ int drip_wrapper_set_signature (
 ) 
 ```
 
+
+**Parameters:**
+
+
+* `wrapper` Pointer to the wrapper to modify. 
+* `signature` Pointer to the signature to store.
+
+
+**Return value:**
+
+
+* `DRIP_SUCCESS` if the signature was stored. 
+* `DRIP_ERROR_NULL_POINTER` if wrapper or signature is NULL.
 ### function `drip_wrapper_set_vna`
 
 _Set the vna timestamp._
@@ -3098,7 +3199,7 @@ On success writes a NULL terminated JSON to buffer. When buffer\_size is too sma
 * `wrapper` Pointer to the wrapper to serialize. 
 * `buffer` Output buffer for the JSON representation. 
 * `buffer_size` Size of buffer in bytes. 
-* `json_length` Optional. Receives receives the number of characters for the full non truncated output. Ignored if NULL.
+* `json_length` Optional. Receives the number of characters for the full non truncated output. Ignored if NULL.
 
 
 **Return value:**
