@@ -192,6 +192,14 @@ const drip_det_t *drip_wrapper_get_det(const drip_wrapper_t *wrapper);
  * @retval DRIP_ERROR_NULL_POINTER if wrapper or det is NULL.
  */
 int drip_wrapper_set_det(drip_wrapper_t *wrapper, const drip_det_t *det);
+
+/**
+ * @brief Get the signature.
+ *
+ * @param wrapper Pointer to the wrapper.
+ *
+ * @return Pointer to the stored signature or NULL if wrapper is NULL.
+ */
 const drip_signature_t *drip_wrapper_get_signature(const drip_wrapper_t *wrapper);
 int drip_wrapper_set_signature(
     drip_wrapper_t *wrapper, const drip_signature_t *signature
