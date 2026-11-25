@@ -14,7 +14,9 @@
 #define DRIP_WRAPPER_MIN_SIZE 89 /* When zero messages. */
 #define DRIP_WRAPPER_MAX_SIZE 189 /* When four messages. */
 
+#ifndef RID_MESSAGE_SIZE
 #define RID_MESSAGE_SIZE 25
+#endif
 
 typedef struct drip_wrapper {
     uint8_t sam_type;
