@@ -1,9 +1,11 @@
-#include <inttypes.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "drip/hash.h"
 #include "drip/manifest.h"
+
+#ifndef DRIP_DISABLE_JSON
+#include "json.h"
+#endif
 
 int drip_manifest_init(drip_manifest_t *manifest) {
     if (manifest == NULL) {
@@ -494,20 +496,19 @@ int drip_manifest_decode(
     return DRIP_SUCCESS;
 }
 
+#ifndef DRIP_DISABLE_JSON
 int drip_manifest_to_json(
     const drip_manifest_t *manifest, char *buffer, size_t buffer_size, size_t *json_length
 ) {
-    const drip_hash_t *previous_hash, *current_hash, *link_hash;
+    drip_json_t json;
+    const drip_hash_t *previous_hash;
+    const drip_hash_t *current_hash;
+    const drip_hash_t *link_hash;
     const drip_det_t *det;
     const drip_signature_t *signature;
-    char det_hex[33];
-    char previous_hex[17], current_hex[17], link_hex[17];
-    char sig_hex[129];
-    char evidence_json[256] = "[";
-    size_t sig_pos = 0;
-    int needed;
+    uint8_t i;
 
-    if (manifest == NULL || buffer == NULL) {
+    if (manifest == NULL || (buffer == NULL && json_length == NULL)) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
@@ -517,56 +518,48 @@ int drip_manifest_to_json(
     det = drip_manifest_get_det(manifest);
     signature = drip_manifest_get_signature(manifest);
 
-    for (uint8_t i = 0; i < 16; i++) {
-        snprintf(det_hex + i * 2, 3, "%02x", (*det)[i]);
-    }
-
-    drip_hash_to_hex(previous_hash, previous_hex, sizeof(previous_hex));
-    drip_hash_to_hex(current_hash, current_hex, sizeof(current_hex));
-    drip_hash_to_hex(link_hash, link_hex, sizeof(link_hex));
-
-    for (uint8_t i = 0; i < 64; i++) {
-        sig_pos += snprintf(sig_hex + sig_pos, 3, "%02x", (*signature)[i]);
-    }
-
-    for (uint8_t i = 0; i < manifest->evidence_count; i++) {
-        if (i > 0) {
-            strcat(evidence_json, ",");
+    drip_json_start(&json, buffer, buffer_size);
+    drip_json_key(&json, "sam_type");
+    drip_json_uint(&json, manifest->sam_type);
+    drip_json_key(&json, "vnb");
+    drip_json_uint(&json, manifest->vnb);
+    drip_json_key(&json, "vna");
+    drip_json_uint(&json, manifest->vna);
+    drip_json_key(&json, "previous_hash");
+    drip_json_hex(&json, *previous_hash, DRIP_HASH_SIZE);
+    drip_json_key(&json, "current_hash");
+    drip_json_hex(&json, *current_hash, DRIP_HASH_SIZE);
+    drip_json_key(&json, "link_hash");
+    drip_json_hex(&json, *link_hash, DRIP_HASH_SIZE);
+    drip_json_key(&json, "evidence_count");
+    drip_json_uint(&json, manifest->evidence_count);
+    drip_json_key(&json, "evidence");
+    drip_json_array_start(&json);
+    for (i = 0; i < manifest->evidence_count; i++) {
+        if (json.need_comma) {
+            drip_json_raw(&json, ",", 1);
         }
-        char ev_hex[17];
-        drip_hash_to_hex(&manifest->evidence[i], ev_hex, sizeof(ev_hex));
-        strcat(evidence_json, "\"");
-        strcat(evidence_json, ev_hex);
-        strcat(evidence_json, "\"");
+        drip_json_hex(&json, manifest->evidence[i], DRIP_HASH_SIZE);
     }
-    strcat(evidence_json, "]");
-
-    needed = snprintf(
-        buffer, buffer_size,
-        "{"
-        "\"sam_type\": %u, "
-        "\"vnb\": %" PRIu32 ", "
-        "\"vna\": %" PRIu32 ", "
-        "\"previous_hash\": \"%s\", "
-        "\"current_hash\": \"%s\", "
-        "\"link_hash\": \"%s\", "
-        "\"evidence_count\": %u, "
-        "\"evidence\": %s, "
-        "\"det\": \"%s\", "
-        "\"signature\": \"%s\""
-        "}",
-        manifest->sam_type, manifest->vnb, manifest->vna, previous_hex, current_hex,
-        link_hex, manifest->evidence_count, evidence_json, det_hex, sig_hex
-    );
+    drip_json_array_end(&json);
+    drip_json_key(&json, "det");
+    drip_json_hex(&json, *det, DRIP_DET_SIZE);
+    drip_json_key(&json, "signature");
+    drip_json_hex(&json, *signature, DRIP_SIGNATURE_SIZE);
+    drip_json_end(&json);
 
     if (json_length != NULL) {
-        /* If snprintf() fails 0 bytes needed */
-        *json_length = (needed < 0) ? 0 : (size_t)needed;
+        *json_length = json.position + 1;
     }
 
-    if ((size_t)needed >= buffer_size) {
+    if (buffer == NULL) {
+        return DRIP_SUCCESS;
+    }
+
+    if (json.position + 1 > buffer_size) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
 
     return DRIP_SUCCESS;
 }
+#endif /* DRIP_DISABLE_JSON */

@@ -1037,10 +1037,13 @@ TEST test_to_json_null_ptr_link(void) {
 
 TEST test_to_json_null_ptr_buffer(void) {
     drip_link_t link;
-    drip_link_init(&link);
     size_t json_length = 0;
-    int rc = drip_link_to_json(&link, NULL, 256, &json_length);
-    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+
+    drip_link_init(&link);
+
+    ASSERT_EQ(DRIP_SUCCESS, drip_link_to_json(&link, NULL, 0, &json_length));
+    ASSERT(json_length > 0);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, drip_link_to_json(&link, NULL, 256, NULL));
     PASS();
 }
 

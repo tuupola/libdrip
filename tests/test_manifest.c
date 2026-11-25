@@ -917,10 +917,13 @@ TEST test_to_json_null_ptr_manifest(void) {
 
 TEST test_to_json_null_ptr_buffer(void) {
     drip_manifest_t manifest;
-    drip_manifest_init(&manifest);
     size_t json_length = 0;
-    int rc = drip_manifest_to_json(&manifest, NULL, 256, &json_length);
-    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+
+    drip_manifest_init(&manifest);
+
+    ASSERT_EQ(DRIP_SUCCESS, drip_manifest_to_json(&manifest, NULL, 0, &json_length));
+    ASSERT(json_length > 0);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, drip_manifest_to_json(&manifest, NULL, 256, NULL));
     PASS();
 }
 

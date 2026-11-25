@@ -1,8 +1,10 @@
-#include <inttypes.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "drip/link.h"
+
+#ifndef DRIP_DISABLE_JSON
+#include "json.h"
+#endif
 
 #define SIGNED_PAYLOAD_SIZE 72
 
@@ -466,58 +468,54 @@ int drip_link_filter_chain(
     return DRIP_SUCCESS;
 }
 
+#ifndef DRIP_DISABLE_JSON
 int drip_link_to_json(
     const drip_link_t *link, char *buffer, size_t buffer_size, size_t *json_length
 ) {
-    if (link == NULL || buffer == NULL) {
+    drip_json_t json;
+    const drip_det_t *child_det;
+    const drip_hi_t *child_hi;
+    const drip_det_t *parent_det;
+    const drip_signature_t *signature;
+
+    if (link == NULL || (buffer == NULL && json_length == NULL)) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    const drip_det_t *child_det = drip_link_get_child_det(link);
-    const drip_hi_t *child_hi = drip_link_get_child_hi(link);
-    const drip_det_t *parent_det = drip_link_get_parent_det(link);
-    const drip_signature_t *signature = drip_link_get_signature(link);
+    child_det = drip_link_get_child_det(link);
+    child_hi = drip_link_get_child_hi(link);
+    parent_det = drip_link_get_parent_det(link);
+    signature = drip_link_get_signature(link);
 
-    char child_det_hex[33];
-    char child_hi_hex[65];
-    char parent_det_hex[33];
-    for (uint8_t i = 0; i < 16; i++) {
-        snprintf(child_det_hex + i * 2, 3, "%02x", (*child_det)[i]);
-        snprintf(parent_det_hex + i * 2, 3, "%02x", (*parent_det)[i]);
-    }
-    for (uint8_t i = 0; i < 32; i++) {
-        snprintf(child_hi_hex + i * 2, 3, "%02x", (*child_hi)[i]);
-    }
-
-    char sig_hex[129];
-    size_t sig_pos = 0;
-    for (uint8_t i = 0; i < 64; i++) {
-        sig_pos += snprintf(sig_hex + sig_pos, 3, "%02x", (*signature)[i]);
-    }
-
-    int needed = snprintf(
-        buffer, buffer_size,
-        "{"
-        "\"sam_type\": %u, "
-        "\"vnb\": %" PRIu32 ", "
-        "\"vna\": %" PRIu32 ", "
-        "\"child_det\": \"%s\", "
-        "\"child_hi\": \"%s\", "
-        "\"parent_det\": \"%s\", "
-        "\"signature\": \"%s\""
-        "}",
-        link->sam_type, link->vnb, link->vna, child_det_hex, child_hi_hex, parent_det_hex,
-        sig_hex
-    );
+    drip_json_start(&json, buffer, buffer_size);
+    drip_json_key(&json, "sam_type");
+    drip_json_uint(&json, link->sam_type);
+    drip_json_key(&json, "vnb");
+    drip_json_uint(&json, link->vnb);
+    drip_json_key(&json, "vna");
+    drip_json_uint(&json, link->vna);
+    drip_json_key(&json, "child_det");
+    drip_json_hex(&json, *child_det, DRIP_DET_SIZE);
+    drip_json_key(&json, "child_hi");
+    drip_json_hex(&json, *child_hi, DRIP_HI_SIZE);
+    drip_json_key(&json, "parent_det");
+    drip_json_hex(&json, *parent_det, DRIP_DET_SIZE);
+    drip_json_key(&json, "signature");
+    drip_json_hex(&json, *signature, DRIP_SIGNATURE_SIZE);
+    drip_json_end(&json);
 
     if (json_length != NULL) {
-        /* If snprintf() fails 0 bytes needed */
-        *json_length = (needed < 0) ? 0 : (size_t)needed;
+        *json_length = json.position + 1;
     }
 
-    if ((size_t)needed >= buffer_size) {
+    if (buffer == NULL) {
+        return DRIP_SUCCESS;
+    }
+
+    if (json.position + 1 > buffer_size) {
         return DRIP_ERROR_BUFFER_TOO_SMALL;
     }
 
     return DRIP_SUCCESS;
 }
+#endif /* DRIP_DISABLE_JSON */

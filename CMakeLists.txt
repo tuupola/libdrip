@@ -1,16 +1,28 @@
 if(ESP_PLATFORM)
+  set(DRIP_SRCS
+        "src/det.c"
+        "src/error.c"
+        "src/hash.c"
+        "src/link.c"
+        "src/manifest.c"
+        "src/wrapper.c"
+    )
+
+  if(NOT DRIP_DISABLE_JSON)
+    list(APPEND DRIP_SRCS "src/json.c")
+  endif()
+
   idf_component_register(
-        SRCS
-            "src/det.c"
-            "src/error.c"
-            "src/hash.c"
-            "src/link.c"
-            "src/manifest.c"
-            "src/wrapper.c"
+        SRCS ${DRIP_SRCS}
         INCLUDE_DIRS
             "include"
     )
   target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-error=format)
+
+  if(DRIP_DISABLE_JSON)
+    target_compile_definitions(${COMPONENT_LIB} PUBLIC DRIP_DISABLE_JSON)
+  endif()
+
 else()
   cmake_minimum_required(VERSION 3.30)
   project(libdrip LANGUAGES C)
@@ -32,8 +44,9 @@ else()
 
   option(DRIP_BUILD_EXAMPLES "Build example programs" OFF)
   option(DRIP_BUILD_TESTS "Build unit tests" OFF)
+  option(DRIP_DISABLE_JSON "Exclude JSON serialization" OFF)
 
-  add_library(drip
+  set(DRIP_SRCS
         src/error.c
         src/hash.c
         src/link.c
@@ -42,8 +55,18 @@ else()
         src/wrapper.c
     )
 
+  if(NOT DRIP_DISABLE_JSON)
+    list(APPEND DRIP_SRCS src/json.c)
+  endif()
+
+  add_library(drip ${DRIP_SRCS})
+
   target_include_directories(drip PUBLIC include)
   target_compile_options(drip PRIVATE -Wall -Wextra -Wdouble-promotion)
+
+  if(DRIP_DISABLE_JSON)
+    target_compile_definitions(drip PUBLIC DRIP_DISABLE_JSON)
+  endif()
 
   include(GNUInstallDirs)
 
@@ -71,4 +94,5 @@ else()
     enable_testing()
     add_subdirectory(tests)
   endif()
+
 endif()
