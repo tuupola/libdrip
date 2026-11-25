@@ -369,25 +369,23 @@ int drip_wrapper_decode(
     drip_wrapper_t *wrapper, const uint8_t *buffer, size_t buffer_size
 );
 
+#ifndef DRIP_DISABLE_JSON
 /**
  * @brief Serialize a DRIP wrapper to a JSON string.
  *
- * On success writes a NULL terminated JSON to buffer. When buffer_size is
- * too small the output is truncated and DRIP_ERROR_BUFFER_TOO_SMALL is returned.
- * The truncated buffer is still NULL terminated.
- *
  * @param wrapper Pointer to the wrapper to serialize.
- * @param buffer Output buffer for the JSON representation.
+ * @param buffer Output buffer for the JSON string or NULL.
  * @param buffer_size Size of buffer in bytes.
- * @param json_length Optional. Receives the number of characters
- *        for the full non truncated output. Ignored if NULL.
+ * @param json_length Receives the required buffer size. Can be NULL.
  *
  * @retval DRIP_SUCCESS on success.
- * @retval DRIP_ERROR_NULL_POINTER if wrapper or buffer is NULL.
- * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is too small.
+ * @retval DRIP_ERROR_NULL_POINTER if wrapper is NULL or if both buffer and
+ *         json_length are NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer is too small.
  */
 int drip_wrapper_to_json(
     const drip_wrapper_t *wrapper, char *buffer, size_t buffer_size, size_t *json_length
 );
+#endif /* DRIP_DISABLE_JSON */
 
 #endif /* DRIP_WRAPPER_H */

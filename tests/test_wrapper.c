@@ -401,6 +401,35 @@ TEST test_validate_success(void) {
     PASS();
 }
 
+TEST test_to_json_null_ptr_wrapper(void) {
+    char buffer[256];
+    size_t json_length = 0;
+    int rc = drip_wrapper_to_json(NULL, buffer, sizeof(buffer), &json_length);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
+    PASS();
+}
+
+TEST test_to_json_null_ptr_buffer(void) {
+    drip_wrapper_t wrapper;
+    size_t json_length = 0;
+
+    drip_wrapper_init(&wrapper);
+
+    ASSERT_EQ(DRIP_SUCCESS, drip_wrapper_to_json(&wrapper, NULL, 0, &json_length));
+    ASSERT(json_length > 0);
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, drip_wrapper_to_json(&wrapper, NULL, 256, NULL));
+    PASS();
+}
+
+TEST test_to_json_optional_json_length(void) {
+    drip_wrapper_t wrapper;
+    drip_wrapper_init(&wrapper);
+    char buffer[1024];
+    int rc = drip_wrapper_to_json(&wrapper, buffer, sizeof(buffer), NULL);
+    ASSERT_EQ(DRIP_SUCCESS, rc);
+    PASS();
+}
+
 SUITE(wrapper_suite) {
     RUN_TEST(test_add_evidence_null_wrapper);
     RUN_TEST(test_add_evidence_null_buffer);
@@ -416,6 +445,9 @@ SUITE(wrapper_suite) {
     RUN_TEST(test_validate_evidence_overflow);
     RUN_TEST(test_encode_evidence_overflow);
     RUN_TEST(test_validate_success);
+    RUN_TEST(test_to_json_null_ptr_wrapper);
+    RUN_TEST(test_to_json_null_ptr_buffer);
+    RUN_TEST(test_to_json_optional_json_length);
     RUN_TEST(test_sign_invalid_output_length);
     RUN_TEST(test_sign_invalid_input);
     RUN_TEST(test_verify_invalid_input);

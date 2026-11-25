@@ -1,7 +1,10 @@
-#include <stdio.h>
 #include <string.h>
 
 #include "drip/wrapper.h"
+
+#ifndef DRIP_DISABLE_JSON
+#include "json.h"
+#endif
 
 static int check_evidence_type(const uint8_t *buffer) {
     uint8_t type = buffer[0] >> 4;
@@ -408,14 +411,58 @@ int drip_wrapper_decode(
     return DRIP_SUCCESS;
 }
 
+#ifndef DRIP_DISABLE_JSON
 int drip_wrapper_to_json(
     const drip_wrapper_t *wrapper, char *buffer, size_t buffer_size, size_t *json_length
 ) {
-    if (wrapper == NULL || buffer == NULL) {
+    uint8_t i;
+    drip_json_t json;
+    const drip_det_t *det;
+    const drip_signature_t *signature;
+
+    if (wrapper == NULL || (buffer == NULL && json_length == NULL)) {
         return DRIP_ERROR_NULL_POINTER;
     }
 
-    /* TODO */
+    det = drip_wrapper_get_det(wrapper);
+    signature = drip_wrapper_get_signature(wrapper);
+
+    drip_json_start(&json, buffer, buffer_size);
+    drip_json_key(&json, "sam_type");
+    drip_json_uint(&json, wrapper->sam_type);
+    drip_json_key(&json, "vnb");
+    drip_json_uint(&json, wrapper->vnb);
+    drip_json_key(&json, "vna");
+    drip_json_uint(&json, wrapper->vna);
+    drip_json_key(&json, "evidence_count");
+    drip_json_uint(&json, wrapper->evidence_count);
+    drip_json_key(&json, "evidence");
+    drip_json_array_start(&json);
+    for (i = 0; i < wrapper->evidence_count; i++) {
+        if (json.need_comma) {
+            drip_json_raw(&json, ",", 1);
+        }
+        drip_json_hex(&json, wrapper->evidence[i], RID_MESSAGE_SIZE);
+    }
+    drip_json_array_end(&json);
+    drip_json_key(&json, "det");
+    drip_json_hex(&json, *det, DRIP_DET_SIZE);
+    drip_json_key(&json, "signature");
+    drip_json_hex(&json, *signature, DRIP_SIGNATURE_SIZE);
+    drip_json_end(&json);
+
+    if (json_length != NULL) {
+        *json_length = json.position + 1;
+    }
+
+    if (buffer == NULL) {
+        return DRIP_SUCCESS;
+    }
+
+    if (json.position + 1 > buffer_size) {
+        return DRIP_ERROR_BUFFER_TOO_SMALL;
+    }
 
     return DRIP_SUCCESS;
 }
+#endif /* DRIP_DISABLE_JSON */
