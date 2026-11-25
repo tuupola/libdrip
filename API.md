@@ -1696,25 +1696,21 @@ int drip_link_to_json (
 ```
 
 
-On success writes a NULL terminated JSON to buffer. When buffer\_size is too small the output is truncated and DRIP\_ERROR\_BUFFER\_TOO\_SMALL is returned. The truncated buffer is still NULL terminated.
-
-
-
 **Parameters:**
 
 
 * `link` Pointer to the link to serialize. 
-* `buffer` Output buffer for the JSON representation. 
+* `buffer` Output buffer for the JSON string or NULL. 
 * `buffer_size` Size of buffer in bytes. 
-* `json_length` Optional. Receives the number of characters for the full non truncated output. Ignored if NULL.
+* `json_length` Receives the required buffer size. Can be NULL.
 
 
 **Return value:**
 
 
 * `DRIP_SUCCESS` on success. 
-* `DRIP_ERROR_NULL_POINTER` if link or buffer is NULL. 
-* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is too small.
+* `DRIP_ERROR_NULL_POINTER` if link is NULL or if both buffer and json\_length are NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer is too small.
 ### function `drip_link_validate`
 
 _Validate the structural state of a DRIP Link._
@@ -2410,25 +2406,21 @@ int drip_manifest_to_json (
 ```
 
 
-On success writes a NULL terminated JSON to buffer. When buffer\_size is too small the output is truncated and DRIP\_ERROR\_BUFFER\_TOO\_SMALL is returned. The truncated buffer is still NULL terminated.
-
-
-
 **Parameters:**
 
 
 * `manifest` Pointer to the manifest to serialize. 
-* `buffer` Output buffer for the JSON representation. 
+* `buffer` Output buffer for the JSON string or NULL. 
 * `buffer_size` Size of buffer in bytes. 
-* `json_length` Optional. Receives the number of characters for the full non truncated output. Ignored if NULL.
+* `json_length` Receives the required buffer size. Can be NULL.
 
 
 **Return value:**
 
 
 * `DRIP_SUCCESS` on success. 
-* `DRIP_ERROR_NULL_POINTER` if manifest or buffer is NULL. 
-* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is too small.
+* `DRIP_ERROR_NULL_POINTER` if manifest is NULL or if both buffer and json\_length are NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer is too small.
 ### function `drip_manifest_update_current_hash`
 
 _Update the current hash of a manifest._
@@ -3189,25 +3181,21 @@ int drip_wrapper_to_json (
 ```
 
 
-On success writes a NULL terminated JSON to buffer. When buffer\_size is too small the output is truncated and DRIP\_ERROR\_BUFFER\_TOO\_SMALL is returned. The truncated buffer is still NULL terminated.
-
-
-
 **Parameters:**
 
 
 * `wrapper` Pointer to the wrapper to serialize. 
-* `buffer` Output buffer for the JSON representation. 
+* `buffer` Output buffer for the JSON string or NULL. 
 * `buffer_size` Size of buffer in bytes. 
-* `json_length` Optional. Receives the number of characters for the full non truncated output. Ignored if NULL.
+* `json_length` Receives the required buffer size. Can be NULL.
 
 
 **Return value:**
 
 
 * `DRIP_SUCCESS` on success. 
-* `DRIP_ERROR_NULL_POINTER` if wrapper or buffer is NULL. 
-* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer\_size is too small.
+* `DRIP_ERROR_NULL_POINTER` if wrapper is NULL or if both buffer and json\_length are NULL. 
+* `DRIP_ERROR_BUFFER_TOO_SMALL` if buffer is too small.
 ### function `drip_wrapper_validate`
 
 _Validate the structural state of a wrapper._
