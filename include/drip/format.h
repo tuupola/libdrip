@@ -108,9 +108,31 @@ typedef enum {
     DRIP_HHIT_ENTITY_TYPE_CROWD_SOURCED_RID_FINDER = 27,
 } drip_hhit_entity_type_t;
 
+/**
+ * @brief Decode any DRIP SAM format from its wire format.
+ *
+ * Determines the SAM type and calls the appropriate type specific
+ * drip_xxx_decode() function.
+ *
+ * @param format Pointer to storage for the decoded type. Must be large
+ *        enough for that type. Use drip_format_t when the type is unknown.
+ * @param buffer Input buffer holding the wire format bytes.
+ * @param buffer_size Size of buffer in bytes.
+ *
+ * @retval DRIP_SUCCESS on success.
+ * @retval DRIP_ERROR_NULL_POINTER if format or buffer is NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer_size is less than 1.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not a known format.
+ * @retval Other error codes from the type-specific decoder.
+ */
+int drip_format_decode(void *format, const uint8_t *buffer, size_t buffer_size);
+
 #ifndef DRIP_DISABLE_JSON
 /**
  * @brief Serialize any DRIP SAM format to a JSON string.
+ *
+ * Determines the SAM type from the first byte and calls the appropriate
+ * type specific drip_xxx_to_json() function.
  *
  * @param format Pointer to a decoded SAM format.
  * @param buffer Output buffer for the JSON string or NULL.
