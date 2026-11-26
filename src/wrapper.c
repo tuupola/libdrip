@@ -411,7 +411,18 @@ int drip_wrapper_decode(
     return DRIP_SUCCESS;
 }
 
-#ifndef DRIP_DISABLE_JSON
+#ifdef DRIP_DISABLE_JSON
+int drip_wrapper_to_json(
+    const drip_wrapper_t *wrapper, char *buffer, size_t buffer_size, size_t *json_length
+) {
+    (void)wrapper;
+    (void)buffer;
+    (void)buffer_size;
+    (void)json_length;
+
+    return DRIP_ERROR_NOT_IMPLEMENTED;
+}
+#else
 int drip_wrapper_to_json(
     const drip_wrapper_t *wrapper, char *buffer, size_t buffer_size, size_t *json_length
 ) {

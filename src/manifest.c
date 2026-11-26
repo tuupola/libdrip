@@ -496,7 +496,18 @@ int drip_manifest_decode(
     return DRIP_SUCCESS;
 }
 
-#ifndef DRIP_DISABLE_JSON
+#ifdef DRIP_DISABLE_JSON
+int drip_manifest_to_json(
+    const drip_manifest_t *manifest, char *buffer, size_t buffer_size, size_t *json_length
+) {
+    (void)manifest;
+    (void)buffer;
+    (void)buffer_size;
+    (void)json_length;
+
+    return DRIP_ERROR_NOT_IMPLEMENTED;
+}
+#else
 int drip_manifest_to_json(
     const drip_manifest_t *manifest, char *buffer, size_t buffer_size, size_t *json_length
 ) {

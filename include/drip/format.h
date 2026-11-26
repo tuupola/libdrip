@@ -127,7 +127,6 @@ typedef enum {
  */
 int drip_format_decode(const uint8_t *buffer, size_t buffer_size, void *format);
 
-#ifndef DRIP_DISABLE_JSON
 /**
  * @brief Serialize any DRIP SAM format to a JSON string.
  *
@@ -144,10 +143,10 @@ int drip_format_decode(const uint8_t *buffer, size_t buffer_size, void *format);
  *         json_length are NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer is too small.
  * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not a known format.
+ * @retval DRIP_ERROR_NOT_IMPLEMENTED if JSON support is disabled.
  */
 int drip_format_to_json(
     const void *format, char *buffer, size_t buffer_size, size_t *json_length
 );
-#endif /* DRIP_DISABLE_JSON */
 
 #endif

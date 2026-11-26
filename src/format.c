@@ -29,7 +29,18 @@ int drip_format_decode(const uint8_t *buffer, size_t buffer_size, void *format) 
     }
 }
 
-#ifndef DRIP_DISABLE_JSON
+#ifdef DRIP_DISABLE_JSON
+int drip_format_to_json(
+    const void *format, char *buffer, size_t buffer_size, size_t *json_length
+) {
+    (void)format;
+    (void)buffer;
+    (void)buffer_size;
+    (void)json_length;
+
+    return DRIP_ERROR_NOT_IMPLEMENTED;
+}
+#else
 int drip_format_to_json(
     const void *format, char *buffer, size_t buffer_size, size_t *json_length
 ) {

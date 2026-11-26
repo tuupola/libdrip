@@ -36,6 +36,8 @@ const char *drip_error_to_string(drip_error_t error) {
             return "DRIP_ERROR_INVALID_MESSAGE_TYPE";
         case DRIP_ERROR_INVALID_IPV6_STRING:
             return "DRIP_ERROR_INVALID_IPV6_STRING";
+        case DRIP_ERROR_NOT_IMPLEMENTED:
+            return "DRIP_ERROR_NOT_IMPLEMENTED";
         case DRIP_ERROR_INVALID_DET:
             return "DRIP_ERROR_INVALID_DET";
         case DRIP_ERROR_TIMESTAMP_NOT_YET_VALID:

@@ -468,7 +468,18 @@ int drip_link_filter_chain(
     return DRIP_SUCCESS;
 }
 
-#ifndef DRIP_DISABLE_JSON
+#ifdef DRIP_DISABLE_JSON
+int drip_link_to_json(
+    const drip_link_t *link, char *buffer, size_t buffer_size, size_t *json_length
+) {
+    (void)link;
+    (void)buffer;
+    (void)buffer_size;
+    (void)json_length;
+
+    return DRIP_ERROR_NOT_IMPLEMENTED;
+}
+#else
 int drip_link_to_json(
     const drip_link_t *link, char *buffer, size_t buffer_size, size_t *json_length
 ) {

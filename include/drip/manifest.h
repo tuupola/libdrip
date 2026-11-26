@@ -312,7 +312,6 @@ int drip_manifest_decode(
     const uint8_t *buffer, size_t buffer_size, drip_manifest_t *manifest
 );
 
-#ifndef DRIP_DISABLE_JSON
 /**
  * @brief Serialize a DRIP manifest to a JSON string.
  *
@@ -325,10 +324,10 @@ int drip_manifest_decode(
  * @retval DRIP_ERROR_NULL_POINTER if manifest is NULL or if both buffer and
  *         json_length are NULL.
  * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer is too small.
+ * @retval DRIP_ERROR_NOT_IMPLEMENTED if JSON support is disabled.
  */
 int drip_manifest_to_json(
     const drip_manifest_t *manifest, char *buffer, size_t buffer_size, size_t *json_length
 );
-#endif /* DRIP_DISABLE_JSON */
 
 #endif /* DRIP_MANIFEST_H */
