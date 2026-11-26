@@ -7,6 +7,7 @@ if(ESP_PLATFORM)
         "src/link.c"
         "src/manifest.c"
         "src/wrapper.c"
+        "src/version.c"
     )
 
   if(NOT DRIP_DISABLE_JSON)
@@ -55,6 +56,7 @@ else()
         src/manifest.c
         src/det.c
         src/wrapper.c
+        src/version.c
     )
 
   if(NOT DRIP_DISABLE_JSON)
