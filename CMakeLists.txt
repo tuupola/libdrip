@@ -2,6 +2,7 @@ if(ESP_PLATFORM)
   set(DRIP_SRCS
         "src/det.c"
         "src/error.c"
+        "src/format.c"
         "src/hash.c"
         "src/link.c"
         "src/manifest.c"
@@ -48,6 +49,7 @@ else()
 
   set(DRIP_SRCS
         src/error.c
+        src/format.c
         src/hash.c
         src/link.c
         src/manifest.c

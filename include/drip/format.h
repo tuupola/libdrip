@@ -108,4 +108,24 @@ typedef enum {
     DRIP_HHIT_ENTITY_TYPE_CROWD_SOURCED_RID_FINDER = 27,
 } drip_hhit_entity_type_t;
 
+#ifndef DRIP_DISABLE_JSON
+/**
+ * @brief Serialize any DRIP SAM format to a JSON string.
+ *
+ * @param format Pointer to a decoded SAM format.
+ * @param buffer Output buffer for the JSON string or NULL.
+ * @param buffer_size Size of buffer in bytes.
+ * @param json_length Receives the required buffer size. Can be NULL.
+ *
+ * @retval DRIP_SUCCESS on success.
+ * @retval DRIP_ERROR_NULL_POINTER if format is NULL or if both buffer and
+ *         json_length are NULL.
+ * @retval DRIP_ERROR_BUFFER_TOO_SMALL if buffer is too small.
+ * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not a known format.
+ */
+int drip_format_to_json(
+    const void *format, char *buffer, size_t buffer_size, size_t *json_length
+);
+#endif /* DRIP_DISABLE_JSON */
+
 #endif

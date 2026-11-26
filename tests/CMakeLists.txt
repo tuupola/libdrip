@@ -4,6 +4,7 @@ pkg_check_modules(SODIUM libsodium REQUIRED)
 add_executable(test_runner
     unit.c
     test_error.c
+    test_format.c
     test_manifest.c
     test_hash.c
     test_link.c
