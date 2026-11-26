@@ -195,7 +195,7 @@ int drip_link_set_signature(drip_link_t *link, const drip_signature_t *signature
  */
 int drip_link_validate(const drip_link_t *link);
 
-int drip_link_decode(drip_link_t *link, const uint8_t *buffer, size_t buffer_size);
+int drip_link_decode(const uint8_t *buffer, size_t buffer_size, drip_link_t *link);
 int drip_link_encode(
     const drip_link_t *link, uint8_t *buffer, size_t buffer_size, size_t *encoded_length
 );

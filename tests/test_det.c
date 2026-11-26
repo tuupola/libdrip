@@ -675,7 +675,7 @@ TEST test_encode_success(void) {
 
 TEST test_decode_null_ptr_det(void) {
     uint8_t buffer[DRIP_DET_SIZE] = {0};
-    int rc = drip_det_decode(NULL, buffer, sizeof(buffer));
+    int rc = drip_det_decode(buffer, sizeof(buffer), NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -683,7 +683,7 @@ TEST test_decode_null_ptr_det(void) {
 TEST test_decode_null_ptr_buffer(void) {
     drip_det_t det;
     drip_det_init(&det);
-    int rc = drip_det_decode(&det, NULL, DRIP_DET_SIZE);
+    int rc = drip_det_decode(NULL, DRIP_DET_SIZE, &det);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -691,7 +691,7 @@ TEST test_decode_null_ptr_buffer(void) {
 TEST test_decode_buffer_too_small(void) {
     drip_det_t det;
     uint8_t buffer[10] = {0};
-    int rc = drip_det_decode(&det, buffer, sizeof(buffer));
+    int rc = drip_det_decode(buffer, sizeof(buffer), &det);
     ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
     PASS();
 }
@@ -700,7 +700,7 @@ TEST test_decode_invalid_prefix(void) {
     drip_det_t det;
     uint8_t buffer[DRIP_DET_SIZE] = {0};
     buffer[0] = 0xff;
-    int rc = drip_det_decode(&det, buffer, sizeof(buffer));
+    int rc = drip_det_decode(buffer, sizeof(buffer), &det);
     ASSERT_EQ(DRIP_ERROR_INVALID_IPV6_PREFIX, rc);
     PASS();
 }
@@ -714,7 +714,7 @@ TEST test_decode_success(void) {
     };
     /* clang-format on */
 
-    int rc = drip_det_decode(&det, buffer, sizeof(buffer));
+    int rc = drip_det_decode(buffer, sizeof(buffer), &det);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
     ASSERT_EQ(10, drip_det_get_raa(&det));

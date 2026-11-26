@@ -173,7 +173,7 @@ int drip_link_validate(const drip_link_t *link) {
     return DRIP_SUCCESS;
 }
 
-int drip_link_decode(drip_link_t *link, const uint8_t *buffer, size_t buffer_size) {
+int drip_link_decode(const uint8_t *buffer, size_t buffer_size, drip_link_t *link) {
     if (link == NULL || buffer == NULL) {
         return DRIP_ERROR_NULL_POINTER;
     }

@@ -388,9 +388,9 @@ int drip_det_encode(const drip_det_t *det, uint8_t *buffer, size_t buffer_size);
  * You could also just use `memcpy()` but using this future proofs your
  * code in case the internal representation ever changes.
  *
- * @param det Pointer to the DET that receives the decoded bytes.
  * @param buffer Input buffer holding the wire format bytes.
  * @param buffer_size Size of buffer in bytes. Must be at least DRIP_DET_SIZE.
+ * @param det Pointer to the DET that receives the decoded bytes.
  *
  * @retval DRIP_SUCCESS on success.
  * @retval DRIP_ERROR_NULL_POINTER if det or buffer is NULL.
@@ -399,6 +399,6 @@ int drip_det_encode(const drip_det_t *det, uint8_t *buffer, size_t buffer_size);
  *
  * @see drip_det_validate
  */
-int drip_det_decode(drip_det_t *det, const uint8_t *buffer, size_t buffer_size);
+int drip_det_decode(const uint8_t *buffer, size_t buffer_size, drip_det_t *det);
 
 #endif /* DRIP_DET_H */

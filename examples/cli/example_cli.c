@@ -84,7 +84,7 @@ static int decode_and_print(const char *hex_string, int force) {
         }
 
         drip_manifest_t manifest;
-        rc = drip_manifest_decode(&manifest, buffer, length);
+        rc = drip_manifest_decode(buffer, length, &manifest);
         if (rc < 0) {
             fprintf(stderr, "Failed to decode manifest: %s\n", drip_error_to_string(rc));
             return 1;

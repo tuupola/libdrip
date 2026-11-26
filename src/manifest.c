@@ -426,7 +426,7 @@ int drip_manifest_encode(
 }
 
 int drip_manifest_decode(
-    drip_manifest_t *manifest, const uint8_t *buffer, size_t buffer_size
+    const uint8_t *buffer, size_t buffer_size, drip_manifest_t *manifest
 ) {
     uint8_t evidence_count;
     size_t evidence_size = 0, offset = 0;

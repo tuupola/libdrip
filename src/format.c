@@ -2,7 +2,7 @@
 #include "drip/manifest.h"
 #include "drip/wrapper.h"
 
-int drip_format_decode(void *format, const uint8_t *buffer, size_t buffer_size) {
+int drip_format_decode(const uint8_t *buffer, size_t buffer_size, void *format) {
     uint8_t sam_type;
 
     if (format == NULL || buffer == NULL) {
@@ -19,11 +19,11 @@ int drip_format_decode(void *format, const uint8_t *buffer, size_t buffer_size) 
 
     switch (sam_type) {
         case DRIP_SAM_TYPE_LINK:
-            return drip_link_decode(format, buffer, buffer_size);
+            return drip_link_decode(buffer, buffer_size, format);
         case DRIP_SAM_TYPE_WRAPPER:
-            return drip_wrapper_decode(format, buffer, buffer_size);
+            return drip_wrapper_decode(buffer, buffer_size, format);
         case DRIP_SAM_TYPE_MANIFEST:
-            return drip_manifest_decode(format, buffer, buffer_size);
+            return drip_manifest_decode(buffer, buffer_size, format);
         default:
             return DRIP_ERROR_INVALID_SAM_TYPE;
     }

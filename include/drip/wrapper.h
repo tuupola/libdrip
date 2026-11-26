@@ -356,9 +356,9 @@ int drip_wrapper_encode(
  *
  * The buffer must contain only the bytes for the wrapper and nothing else.
  *
- * @param wrapper Pointer to the wrapper that receives the decoded data.
  * @param buffer Input buffer holding the wire format bytes.
  * @param buffer_size Size of buffer in bytes.
+ * @param wrapper Pointer to the wrapper that receives the decoded data.
  *
  * @retval DRIP_SUCCESS on success.
  * @retval DRIP_ERROR_NULL_POINTER if wrapper or buffer is NULL.
@@ -368,7 +368,7 @@ int drip_wrapper_encode(
  * @retval DRIP_ERROR_INVALID_SAM_TYPE if the decoded SAM type is not DRIP_SAM_TYPE_WRAPPER.
  */
 int drip_wrapper_decode(
-    drip_wrapper_t *wrapper, const uint8_t *buffer, size_t buffer_size
+    const uint8_t *buffer, size_t buffer_size, drip_wrapper_t *wrapper
 );
 
 #ifndef DRIP_DISABLE_JSON

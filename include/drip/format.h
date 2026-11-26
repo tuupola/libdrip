@@ -114,10 +114,10 @@ typedef enum {
  * Determines the SAM type and calls the appropriate type specific
  * drip_xxx_decode() function.
  *
- * @param format Pointer to storage for the decoded type. Must be large
- *        enough for that type. Use drip_format_t when the type is unknown.
  * @param buffer Input buffer holding the wire format bytes.
  * @param buffer_size Size of buffer in bytes.
+ * @param format Pointer to storage for the decoded type. Must be large
+ *        enough for that type. Use drip_format_t when the type is unknown.
  *
  * @retval DRIP_SUCCESS on success.
  * @retval DRIP_ERROR_NULL_POINTER if format or buffer is NULL.
@@ -125,7 +125,7 @@ typedef enum {
  * @retval DRIP_ERROR_INVALID_SAM_TYPE if sam_type is not a known format.
  * @retval Other error codes from the type-specific decoder.
  */
-int drip_format_decode(void *format, const uint8_t *buffer, size_t buffer_size);
+int drip_format_decode(const uint8_t *buffer, size_t buffer_size, void *format);
 
 #ifndef DRIP_DISABLE_JSON
 /**

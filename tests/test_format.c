@@ -123,8 +123,8 @@ TEST test_decode_null_ptr(void) {
 
     buffer[0] = DRIP_SAM_TYPE_LINK;
 
-    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, drip_format_decode(NULL, buffer, sizeof(buffer)));
-    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, drip_format_decode(&format, NULL, sizeof(buffer)));
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, drip_format_decode(buffer, sizeof(buffer), NULL));
+    ASSERT_EQ(DRIP_ERROR_NULL_POINTER, drip_format_decode(NULL, sizeof(buffer), &format));
     PASS();
 }
 
@@ -134,7 +134,7 @@ TEST test_decode_empty_buffer(void) {
     int rc;
 
     buffer[0] = DRIP_SAM_TYPE_LINK;
-    rc = drip_format_decode(&format, buffer, 0);
+    rc = drip_format_decode(buffer, 0, &format);
     ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
     PASS();
 }
@@ -149,7 +149,7 @@ TEST test_decode_invalid_sam_type(void) {
     memset(&format, 0xA5, sizeof(format));
     memcpy(&original, &format, sizeof(format));
 
-    rc = drip_format_decode(&format, buffer, sizeof(buffer));
+    rc = drip_format_decode(buffer, sizeof(buffer), &format);
     ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, rc);
     ASSERT_MEM_EQ(&original, &format, sizeof(format));
 
@@ -169,10 +169,10 @@ TEST test_decode_link(void) {
     drip_link_set_vnb(&link, 10);
     ASSERT_EQ(DRIP_SUCCESS, drip_link_encode(&link, buffer, sizeof(buffer), &length));
 
-    rc = drip_link_decode(&expected, buffer, length);
+    rc = drip_link_decode(buffer, length, &expected);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
-    rc = drip_format_decode(&actual, buffer, length);
+    rc = drip_format_decode(buffer, length, &actual);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     memcpy(&sam_type, &actual, sizeof(sam_type));
     ASSERT_EQ(DRIP_SAM_TYPE_LINK, sam_type);
@@ -195,10 +195,10 @@ TEST test_decode_wrapper(void) {
         DRIP_SUCCESS, drip_wrapper_encode(&wrapper, buffer, sizeof(buffer), &length)
     );
 
-    rc = drip_wrapper_decode(&expected, buffer, length);
+    rc = drip_wrapper_decode(buffer, length, &expected);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
-    rc = drip_format_decode(&actual, buffer, length);
+    rc = drip_format_decode(buffer, length, &actual);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     memcpy(&sam_type, &actual, sizeof(sam_type));
     ASSERT_EQ(DRIP_SAM_TYPE_WRAPPER, sam_type);
@@ -221,10 +221,10 @@ TEST test_decode_manifest(void) {
         DRIP_SUCCESS, drip_manifest_encode(&manifest, buffer, sizeof(buffer), &length)
     );
 
-    rc = drip_manifest_decode(&expected, buffer, length);
+    rc = drip_manifest_decode(buffer, length, &expected);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
-    rc = drip_format_decode(&actual, buffer, length);
+    rc = drip_format_decode(buffer, length, &actual);
     ASSERT_EQ(DRIP_SUCCESS, rc);
     memcpy(&sam_type, &actual, sizeof(sam_type));
     ASSERT_EQ(DRIP_SAM_TYPE_MANIFEST, sam_type);
@@ -240,7 +240,7 @@ TEST test_decode_invalid_length(void) {
     memset(buffer, 0, sizeof(buffer));
     buffer[0] = DRIP_SAM_TYPE_WRAPPER;
 
-    rc = drip_format_decode(&format, buffer, sizeof(buffer));
+    rc = drip_format_decode(buffer, sizeof(buffer), &format);
     ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
     PASS();
 }

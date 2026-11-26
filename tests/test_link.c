@@ -192,10 +192,10 @@ static int det_cshake128_cb(
 }
 
 static void init_full_chain(drip_link_t *root, drip_link_t links[3]) {
-    drip_link_decode(root, raa16376, sizeof(raa16376));
-    drip_link_decode(&links[0], hda16376_16376a, sizeof(hda16376_16376a));
-    drip_link_decode(&links[1], hda16376_16376i, sizeof(hda16376_16376i));
-    drip_link_decode(&links[2], ua1_16376_16376, sizeof(ua1_16376_16376));
+    drip_link_decode(raa16376, sizeof(raa16376), root);
+    drip_link_decode(hda16376_16376a, sizeof(hda16376_16376a), &links[0]);
+    drip_link_decode(hda16376_16376i, sizeof(hda16376_16376i), &links[1]);
+    drip_link_decode(ua1_16376_16376, sizeof(ua1_16376_16376), &links[2]);
 }
 
 TEST test_init_null_ptr(void) {
@@ -499,7 +499,7 @@ TEST test_set_and_get_signature(void) {
 
 TEST test_decode_null_ptr_link(void) {
     uint8_t buffer[DRIP_LINK_SIZE] = {0};
-    int rc = drip_link_decode(NULL, buffer, sizeof(buffer));
+    int rc = drip_link_decode(buffer, sizeof(buffer), NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -507,7 +507,7 @@ TEST test_decode_null_ptr_link(void) {
 TEST test_decode_null_ptr_buffer(void) {
     drip_link_t link;
     drip_link_init(&link);
-    int rc = drip_link_decode(&link, NULL, DRIP_LINK_SIZE);
+    int rc = drip_link_decode(NULL, DRIP_LINK_SIZE, &link);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -515,7 +515,7 @@ TEST test_decode_null_ptr_buffer(void) {
 TEST test_decode_buffer_too_small(void) {
     drip_link_t link;
     uint8_t buffer[10] = {0};
-    int rc = drip_link_decode(&link, buffer, sizeof(buffer));
+    int rc = drip_link_decode(buffer, sizeof(buffer), &link);
     ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
     PASS();
 }
@@ -524,7 +524,7 @@ TEST test_decode_invalid_sam_type(void) {
     drip_link_t link;
     uint8_t buffer[DRIP_LINK_SIZE] = {0};
     buffer[0] = DRIP_SAM_TYPE_WRAPPER;
-    int rc = drip_link_decode(&link, buffer, sizeof(buffer));
+    int rc = drip_link_decode(buffer, sizeof(buffer), &link);
     ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, rc);
     PASS();
 }
@@ -554,7 +554,7 @@ TEST test_decode_success(void) {
     int rc = drip_link_encode(&in, buffer, sizeof(buffer), &encoded_length);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
-    rc = drip_link_decode(&out, buffer, encoded_length);
+    rc = drip_link_decode(buffer, encoded_length, &out);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
     ASSERT_EQ(DRIP_SAM_TYPE_LINK, out.sam_type);
@@ -597,7 +597,7 @@ TEST test_from_endorsement_success(void) {
     int rc = drip_link_from_endorsement(&link_a, endorsement, sizeof(raa16376) - 1);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
-    rc = drip_link_decode(&link_b, raa16376, sizeof(raa16376));
+    rc = drip_link_decode(raa16376, sizeof(raa16376), &link_b);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
     ASSERT_MEM_EQ(&link_a, &link_b, sizeof(drip_link_t));
@@ -642,7 +642,7 @@ TEST test_to_endorsement_success(void) {
     drip_link_t link;
     uint8_t endorsement[DRIP_LINK_ENDORSEMENT_SIZE];
 
-    int rc = drip_link_decode(&link, raa16376, sizeof(raa16376));
+    int rc = drip_link_decode(raa16376, sizeof(raa16376), &link);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
     rc = drip_link_to_endorsement(&link, endorsement, sizeof(endorsement));
@@ -787,8 +787,8 @@ TEST test_verify_unixtime_skipped(void) {
     drip_link_t parent, child;
     const drip_hi_t *parent_hi;
 
-    drip_link_decode(&parent, raa16376, sizeof(raa16376));
-    drip_link_decode(&child, hda16376_16376a, sizeof(hda16376_16376a));
+    drip_link_decode(raa16376, sizeof(raa16376), &parent);
+    drip_link_decode(hda16376_16376a, sizeof(hda16376_16376a), &child);
     parent_hi = drip_link_get_child_hi(&parent);
 
     int rc = drip_link_verify(&child, 0, verify_ed25519, (void *)parent_hi);
@@ -801,8 +801,8 @@ TEST test_verify_unixtime_success(void) {
     const drip_hi_t *parent_hi;
     uint32_t vnb, vna;
 
-    drip_link_decode(&parent, raa16376, sizeof(raa16376));
-    drip_link_decode(&child, hda16376_16376a, sizeof(hda16376_16376a));
+    drip_link_decode(raa16376, sizeof(raa16376), &parent);
+    drip_link_decode(hda16376_16376a, sizeof(hda16376_16376a), &child);
     parent_hi = drip_link_get_child_hi(&parent);
     vnb = drip_link_get_vnb_unixtime(&child);
     vna = drip_link_get_vna_unixtime(&child);
@@ -825,8 +825,8 @@ TEST test_verify_unixtime_not_yet_valid(void) {
     const drip_hi_t *parent_hi;
     uint32_t vnb;
 
-    drip_link_decode(&parent, raa16376, sizeof(raa16376));
-    drip_link_decode(&child, hda16376_16376a, sizeof(hda16376_16376a));
+    drip_link_decode(raa16376, sizeof(raa16376), &parent);
+    drip_link_decode(hda16376_16376a, sizeof(hda16376_16376a), &child);
     parent_hi = drip_link_get_child_hi(&parent);
     vnb = drip_link_get_vnb_unixtime(&child);
 
@@ -840,8 +840,8 @@ TEST test_verify_unixtime_expired(void) {
     const drip_hi_t *parent_hi;
     uint32_t vna;
 
-    drip_link_decode(&parent, raa16376, sizeof(raa16376));
-    drip_link_decode(&child, hda16376_16376a, sizeof(hda16376_16376a));
+    drip_link_decode(raa16376, sizeof(raa16376), &parent);
+    drip_link_decode(hda16376_16376a, sizeof(hda16376_16376a), &child);
     parent_hi = drip_link_get_child_hi(&parent);
     vna = drip_link_get_vna_unixtime(&child);
 

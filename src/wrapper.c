@@ -352,7 +352,7 @@ int drip_wrapper_encode(
 }
 
 int drip_wrapper_decode(
-    drip_wrapper_t *wrapper, const uint8_t *buffer, size_t buffer_size
+    const uint8_t *buffer, size_t buffer_size, drip_wrapper_t *wrapper
 ) {
     uint8_t evidence_count;
     size_t evidence_size = 0, offset = 0;

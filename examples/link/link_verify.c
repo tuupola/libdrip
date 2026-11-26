@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    rc = drip_link_decode(&parent_link, buffer, (size_t)length);
+    rc = drip_link_decode(buffer, (size_t)length, &parent_link);
     if (rc != 0) {
         fprintf(stderr, "Failed to decode parent link: %s\n", drip_error_to_string(rc));
         return 1;
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    rc = drip_link_decode(&child_link, buffer, (size_t)length);
+    rc = drip_link_decode(buffer, (size_t)length, &child_link);
     if (rc != 0) {
         fprintf(stderr, "Failed to decode child link: %s\n", drip_error_to_string(rc));
         return 1;

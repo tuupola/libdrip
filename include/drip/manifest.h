@@ -297,9 +297,9 @@ int drip_manifest_encode(
  *
  * The buffer must contain only the bytes for the manifest and nothing else.
  *
- * @param manifest Pointer to the manifest that receives the decoded data.
  * @param buffer Input buffer holding the wire format bytes.
  * @param buffer_size Size of buffer in bytes.
+ * @param manifest Pointer to the manifest that receives the decoded data.
  *
  * @retval DRIP_SUCCESS on success.
  * @retval DRIP_ERROR_NULL_POINTER if manifest or buffer is NULL.
@@ -309,7 +309,7 @@ int drip_manifest_encode(
  * @retval DRIP_ERROR_INVALID_SAM_TYPE if the decoded SAM type is not DRIP_SAM_TYPE_MANIFEST.
  */
 int drip_manifest_decode(
-    drip_manifest_t *manifest, const uint8_t *buffer, size_t buffer_size
+    const uint8_t *buffer, size_t buffer_size, drip_manifest_t *manifest
 );
 
 #ifndef DRIP_DISABLE_JSON

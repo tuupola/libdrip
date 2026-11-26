@@ -821,7 +821,7 @@ TEST test_encode_success(void) {
 
 TEST test_decode_null_ptr_manifest(void) {
     uint8_t buffer[256] = {0};
-    int rc = drip_manifest_decode(NULL, buffer, sizeof(buffer));
+    int rc = drip_manifest_decode(buffer, sizeof(buffer), NULL);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -829,7 +829,7 @@ TEST test_decode_null_ptr_manifest(void) {
 TEST test_decode_null_ptr_buffer(void) {
     drip_manifest_t manifest;
     drip_manifest_init(&manifest);
-    int rc = drip_manifest_decode(&manifest, NULL, 256);
+    int rc = drip_manifest_decode(NULL, 256, &manifest);
     ASSERT_EQ(DRIP_ERROR_NULL_POINTER, rc);
     PASS();
 }
@@ -837,7 +837,7 @@ TEST test_decode_null_ptr_buffer(void) {
 TEST test_decode_buffer_too_small(void) {
     drip_manifest_t manifest;
     uint8_t buffer[10] = {0};
-    int rc = drip_manifest_decode(&manifest, buffer, sizeof(buffer));
+    int rc = drip_manifest_decode(buffer, sizeof(buffer), &manifest);
     ASSERT_EQ(DRIP_ERROR_BUFFER_TOO_SMALL, rc);
     PASS();
 }
@@ -846,7 +846,7 @@ TEST test_decode_invalid_length(void) {
     drip_manifest_t manifest;
     uint8_t buffer[114];
     buffer[0] = DRIP_SAM_TYPE_MANIFEST;
-    int rc = drip_manifest_decode(&manifest, buffer, sizeof(buffer));
+    int rc = drip_manifest_decode(buffer, sizeof(buffer), &manifest);
     ASSERT_EQ(DRIP_ERROR_INVALID_LENGTH, rc);
     PASS();
 }
@@ -890,7 +890,7 @@ TEST test_decode_success(void) {
     int rc = drip_manifest_encode(&in, buffer, sizeof(buffer), &encoded_length);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
-    rc = drip_manifest_decode(&out, buffer, encoded_length);
+    rc = drip_manifest_decode(buffer, encoded_length, &out);
     ASSERT_EQ(DRIP_SUCCESS, rc);
 
     ASSERT_EQ(DRIP_SAM_TYPE_MANIFEST, out.sam_type);
@@ -940,7 +940,7 @@ TEST test_decode_invalid_sam_type(void) {
     drip_manifest_t manifest;
     uint8_t buffer[DRIP_MANIFEST_MIN_SIZE] = {0};
     buffer[0] = DRIP_SAM_TYPE_WRAPPER;
-    int rc = drip_manifest_decode(&manifest, buffer, sizeof(buffer));
+    int rc = drip_manifest_decode(buffer, sizeof(buffer), &manifest);
     ASSERT_EQ(DRIP_ERROR_INVALID_SAM_TYPE, rc);
     PASS();
 }

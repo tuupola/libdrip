@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     }
 
     drip_manifest_t manifest;
-    rc = drip_manifest_decode(&manifest, buffer, length);
+    rc = drip_manifest_decode(buffer, length, &manifest);
     if (rc != DRIP_SUCCESS) {
         fprintf(stderr, "Failed to decode manifest: %s\n", drip_error_to_string(rc));
         return 1;
